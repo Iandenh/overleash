@@ -1,0 +1,154 @@
+package server
+
+import (
+    "time"
+	"overleash/overleash"
+    "strconv"
+)
+
+func hasOverride(key string, overrides map[string]*overleash.Override) (bool, bool) {
+	override, ok := overrides[key]
+
+	if !ok {
+		return false, false
+	}
+
+	return true, override.Enabled
+}
+
+templ layout(name string) {
+	<html lang="en">
+		<head>
+		<meta charset="utf-8" />
+		<title>{ name }</title>
+        <script src="/static/htmx.1.9.12.min.js"></script>
+		<link href="/static/style.css" rel="stylesheet" />
+		</head>
+		<body>
+			<main>
+				{ children... }
+			</main>
+
+		  <script src="/static/overleash.js"></script>
+		</body>
+	</html>
+}
+
+templ featureTemplate(flags []overleash.Feature, o *overleash.OverleashContext) {
+        <div class="feature-container" id="flags">
+            for _, flag := range flags {
+                <div class="card flag">
+                    @feature(flag, o)
+                </div>
+            }
+    </div>
+}
+
+templ feature(flag overleash.Feature, o *overleash.OverleashContext) {
+    <div class="key">
+        if flag.SearchTerm != "" {
+            @templ.Raw(flag.SearchTerm)
+        } else {
+            { flag.Name }
+        }
+    </div>
+
+    <div class="current-status">
+        <div>
+            <span class="label">Feature flag:</span>
+            <span class="text">
+                 if flag.Enabled {
+                    enabled
+                 } else {
+                    disabled
+                 }
+            </span>
+        </div>
+        for _, status := range o.RemoteDatafile().FeatureFlagStatus(flag.Name) {
+        <div>
+            <span class="label">{ status.Strategy }:</span>
+            <span class="text">{ status.Status }</span>
+        </div>
+        }
+    </div>
+
+    <div class="action">
+        <buton class="btn black" hx-post={"/override/" + flag.Name + "/true"} hx-target="closest .flag" hx-swap="innerHTML" hx-trigger="click, enable-flag from:closest .flag">Enable <span class="shortcuts">(e)</span></buton>
+        <buton class="btn white" hx-post={"/override/" + flag.Name + "/false"} hx-target="closest .flag" hx-swap="innerHTML" hx-trigger="click, disable-flag from:closest .flag">Disable <span class="shortcuts">(d)</span></buton>
+    </div>
+
+     if ok, status := hasOverride(flag.Name, o.Overrides()); ok == true {
+        <div class={"override", templ.KV("enabled", status), templ.KV("paused", o.Paused()), templ.KV("disabled", !status)}>
+            <div>
+            if o.Paused() {
+                Override <strong>paused</strong>:
+            } else {
+                Override active:
+            }
+            if status {
+                <div class="status">Enabled</div>
+            } else {
+                <div class="status">Disabled</div>
+            }
+            </div>
+
+            <buton class="btn white" hx-delete={"/override/" + flag.Name} hx-target="closest .flag" hx-swap="innerHTML" hx-trigger="click, remove-flag from:closest .flag">Remove Override <span class="shortcuts">(q)</span></buton>
+        </div>
+     }
+}
+
+templ remoteSelector(o *overleash.OverleashContext) {
+    if len(o.GetRemotes()) != 1 {
+        <select name="remote"
+                class="remote-select"
+                hx-trigger="input changed, remote"
+                hx-post="/changeRemote"
+                hx-swap="innerHTML"
+                hx-target="body">
+            for idx, remote := range o.GetRemotes() {
+                <option value={ strconv.Itoa(idx) }
+                 if idx == o.DataFileIdx() {
+                      selected="selected"
+                 }
+                >{ remote }</option>
+            }
+        </select>
+    }
+}
+
+templ features(o *overleash.OverleashContext) {
+	@layout("Overleash") {
+	    <div class="container">
+	        <div class="head">
+                <div class="actions">
+                    <buton class="btn small black" hx-delete={"/"} hx-swap="innerHTML" hx-target="body">Remove all overrides</buton>
+                    if o.Paused() {
+                        <buton class="btn small white" hx-post={"/unpause"} hx-swap="innerHTML" hx-target="body">Unpause overrides</buton>
+                    } else {
+                       <buton class="btn small white" hx-post={"/pause"} hx-swap="innerHTML" hx-target="body">Pause overrides</buton>
+                    }
+                    @remoteSelector(o)
+                </div>
+                <div class="sync">
+                    @lastSync(o.LastSync())
+                    <buton class="sync-btn" hx-post={"/refresh"} hx-swap="innerHTML" hx-target="body"><img src="/static/icons/sync.svg" alt="Sync" /></buton>
+                </div>
+            </div>
+            <div class="search">
+                <input class="input" type="search"
+                       name="search" placeholder="Begin Typing To Search Feature Flags..."
+                       autocomplete="off"
+                       autofocus
+                       hx-post="/search"
+                       hx-trigger="input changed delay:100ms, search"
+                       hx-target=".feature-container"
+                       hx-swap="outerHTML" />
+            </div>
+		    @featureTemplate(o.FeatureFile().Features, o)
+		</div>
+	}
+}
+
+templ lastSync(t time.Time) {
+    <span hx-get="/lastSync" hx-trigger="every 15s" id="last-sync" hx-swap="outerHTML">Last sync: <strong>{ t.Format("15:04:05") }</strong></span>
+}

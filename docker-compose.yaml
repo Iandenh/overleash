@@ -1,0 +1,31 @@
+version: '3.7'
+
+services:
+  overleash:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    container_name: overleash
+    hostname: overleash
+    volumes:
+      - overleash-data:/data
+    environment:
+      - OVERLEASH_URL=${OVERLEASH_URL}
+      - OVERLEASH_TOKEN=${OVERLEASH_TOKEN}
+      - OVERLEASH_RELOAD=${OVERLEASH_RELOAD}
+      - TZ=${TZ}
+    networks:
+      - web
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.overleash.rule=Host(`${HOST_NAME}`)"
+      - "traefik.http.services.overleash.loadbalancer.server.port=8080"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+volumes:
+  overleash-data:
+
+networks:
+  web:
+    external:
+      name: ${NETWORK_NAME}
