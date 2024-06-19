@@ -141,12 +141,12 @@ func frontendFromYggdrasil(res map[string]ResolvedToggle, includeAll bool) Front
 
 func createContextFromRequest(r *http.Request) *unleashengine.Context {
 	return unleashengine.NewContext(
-		getQuery(r, "user_id"),
-		getQuery(r, "session_id"),
+		getQuery(r, "userId"),
+		getQuery(r, "sessionId"),
 		getQuery(r, "environment"),
-		getQuery(r, "environment"),
-		getQuery(r, "current_time"),
-		getQuery(r, "current_time"),
+		getQuery(r, "appName"),
+		getQuery(r, "currentTime"),
+		getQuery(r, "remoteAddress"),
 		nil,
 	)
 }

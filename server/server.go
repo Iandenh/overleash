@@ -4,6 +4,7 @@ import (
 	"embed"
 	"fmt"
 	"github.com/a-h/templ"
+	"github.com/rs/cors"
 	"io/fs"
 	"net/http"
 	"overleash/overleash"
@@ -131,7 +132,8 @@ func (c *Config) Start() {
 		templ.Handler(lastSync(c.Overleash.LastSync())).ServeHTTP(w, request)
 	})
 
-	if err := http.ListenAndServe(fmt.Sprintf(":%d", c.port), s); err != nil {
+	handler := cors.AllowAll().Handler(s)
+	if err := http.ListenAndServe(fmt.Sprintf(":%d", c.port), handler); err != nil {
 		panic(err)
 	}
 }
