@@ -18,9 +18,8 @@ func (c *Config) registerFrontendApi(s *http.ServeMux) {
 		w.Header().Add("Content-Type", "application/json")
 		w.WriteHeader(200)
 
-		engine.TakeState(string(c.Overleash.CachedJson()))
-
 		ctx := createContextFromRequest(r)
+		engine.TakeState(string(c.Overleash.CachedJson()))
 
 		var apiResponse ApiResponse
 		err := json.Unmarshal(engine.ResolveAll(ctx), &apiResponse)
@@ -30,8 +29,6 @@ func (c *Config) registerFrontendApi(s *http.ServeMux) {
 		}
 
 		result := frontendFromYggdrasil(apiResponse.Value, false)
-
-		// Print result
 		resultJson, _ := json.MarshalIndent(result, "", "  ")
 
 		w.Write(resultJson)
@@ -41,9 +38,8 @@ func (c *Config) registerFrontendApi(s *http.ServeMux) {
 		w.Header().Add("Content-Type", "application/json")
 		w.WriteHeader(200)
 
-		engine.TakeState(string(c.Overleash.CachedJson()))
-
 		ctx := createContextFromRequest(r)
+		engine.TakeState(string(c.Overleash.CachedJson()))
 
 		var apiResponse ApiResponse
 		err := json.Unmarshal(engine.ResolveAll(ctx), &apiResponse)
@@ -53,8 +49,6 @@ func (c *Config) registerFrontendApi(s *http.ServeMux) {
 		}
 
 		result := frontendFromYggdrasil(apiResponse.Value, true)
-
-		// Print result
 		resultJson, _ := json.MarshalIndent(result, "", "  ")
 
 		w.Write(resultJson)
@@ -81,10 +75,11 @@ type EvaluatedToggle struct {
 }
 
 type EvaluatedVariant struct {
-	Name           string         `json:"name"`
-	Enabled        bool           `json:"enabled"`
-	Payload        VariantPayload `json:"payload"`
-	FeatureEnabled bool           `json:"feature_enabled"`
+	Name              string         `json:"name"`
+	Enabled           bool           `json:"enabled"`
+	Payload           VariantPayload `json:"payload"`
+	FeatureEnabled    bool           `json:"feature_enabled"`
+	OldFeatureEnabled bool           `json:"featureEnabled"`
 }
 
 type VariantPayload struct {
@@ -125,10 +120,11 @@ func frontendFromYggdrasil(res map[string]ResolvedToggle, includeAll bool) Front
 				Name:    name,
 				Enabled: resolved.Enabled,
 				Variant: EvaluatedVariant{
-					Name:           resolved.Variant.Name,
-					Enabled:        resolved.Variant.Enabled,
-					Payload:        resolved.Variant.Payload,
-					FeatureEnabled: resolved.Variant.FeatureEnabled,
+					Name:              resolved.Variant.Name,
+					Enabled:           resolved.Variant.Enabled,
+					Payload:           resolved.Variant.Payload,
+					FeatureEnabled:    resolved.Variant.FeatureEnabled,
+					OldFeatureEnabled: resolved.Variant.FeatureEnabled,
 				},
 				ImpressionData: resolved.ImpressionData,
 			}
@@ -140,19 +136,43 @@ func frontendFromYggdrasil(res map[string]ResolvedToggle, includeAll bool) Front
 }
 
 func createContextFromRequest(r *http.Request) *unleashengine.Context {
-	return unleashengine.NewContext(
-		getQuery(r, "userId"),
-		getQuery(r, "sessionId"),
-		getQuery(r, "environment"),
-		getQuery(r, "appName"),
-		getQuery(r, "currentTime"),
-		getQuery(r, "remoteAddress"),
-		nil,
-	)
+	properties := make(map[string]interface{})
+	clean := make(map[string]string)
+
+	ctx := &unleashengine.Context{}
+
+	for k, _ := range r.URL.Query() {
+		switch k {
+		case "userId":
+			ctx.UserID = getQuery(r, "userId")
+		case "environment":
+			ctx.Environment = getQuery(r, "environment")
+		case "appName":
+			ctx.AppName = getQuery(r, "appName")
+		case "sessionId":
+			ctx.SessionID = getQuery(r, "sessionId")
+		case "currentTime":
+			ctx.CurrentTime = getQuery(r, "currentTime")
+		case "remoteAddress":
+			ctx.RemoteAddress = getQuery(r, "remoteAddress")
+		default:
+			properties[k] = r.URL.Query().Get(k)
+		}
+	}
+
+	for k, v := range properties {
+		if v != nil {
+			clean[k] = v.(string)
+		}
+	}
+
+	ctx.Properties = &clean
+
+	return ctx
 }
 
 func getQuery(r *http.Request, name string) *string {
-	if r.URL.Query().Has(name) {
+	if !r.URL.Query().Has(name) {
 		return nil
 	}
 

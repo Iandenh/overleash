@@ -28,7 +28,7 @@ func initConfig() {
 	viper.SetEnvKeyReplacer(strings.NewReplacer("-", "_"))
 
 	pflag.String("url", "", "Url to load")
-	pflag.String("token", "", "Url to load")
+	pflag.String("token", "", "Token to load")
 	pflag.String("port", "5433", "Port")
 	pflag.Int("reload", 0, "Reload")
 	pflag.Parse()

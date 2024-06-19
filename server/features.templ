@@ -64,7 +64,7 @@ templ feature(flag overleash.Feature, o *overleash.OverleashContext) {
                  }
             </span>
         </div>
-        for _, status := range o.RemoteDatafile().FeatureFlagStatus(flag.Name) {
+        for _, status := range o.RemoteFeatureFile().FeatureFlagStatus(flag.Name) {
         <div>
             <span class="label">{ status.Strategy }:</span>
             <span class="text">{ status.Status }</span>
@@ -107,7 +107,7 @@ templ remoteSelector(o *overleash.OverleashContext) {
                 hx-target="body">
             for idx, remote := range o.GetRemotes() {
                 <option value={ strconv.Itoa(idx) }
-                 if idx == o.DataFileIdx() {
+                 if idx == o.FeatureFileIdx() {
                       selected="selected"
                  }
                 >{ remote }</option>

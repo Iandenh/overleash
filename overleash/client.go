@@ -61,7 +61,7 @@ func createHTTPClient() *http.Client {
 				return http.ErrUseLastResponse
 			},
 			Transport: &http.Transport{
-				TLSClientConfig: &tls.Config{InsecureSkipVerify: false},
+				TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 			},
 		}
 	}

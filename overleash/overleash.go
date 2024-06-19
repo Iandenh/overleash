@@ -58,7 +58,7 @@ func NewOverleash(url string, tokens []string) *OverleashContext {
 		o.overrides = overrides
 	}
 
-	o.compileDatafile()
+	o.compileFeatureFile()
 
 	return o
 }
@@ -103,24 +103,24 @@ func (o *OverleashContext) loadRemotes() error {
 		o.featureFiles[idx] = *featureFile
 	}
 
-	o.compileDatafile()
+	o.compileFeatureFile()
 	o.lastSync = time.Now()
 
 	return e
 }
 
-func (o *OverleashContext) RefreshDatafiles() error {
+func (o *OverleashContext) RefreshFeatureFiles() error {
 	err := o.loadRemotes()
 	o.ticker.resetTicker()
 
 	return err
 }
 
-func (o *OverleashContext) DataFileIdx() int {
+func (o *OverleashContext) FeatureFileIdx() int {
 	return o.featureIdx
 }
 
-func (o *OverleashContext) SetDataFileIdx(idx int) error {
+func (o *OverleashContext) SetFeatureFileIdx(idx int) error {
 	o.lockMutex.Lock()
 	defer o.lockMutex.Unlock()
 
@@ -130,7 +130,7 @@ func (o *OverleashContext) SetDataFileIdx(idx int) error {
 
 	o.featureIdx = idx
 
-	o.compileDatafile()
+	o.compileFeatureFile()
 
 	return nil
 }
@@ -144,7 +144,7 @@ func (o *OverleashContext) AddOverride(featureFlag string, enabled bool) {
 		Enabled:     enabled,
 	}
 
-	o.compileDatafile()
+	o.compileFeatureFile()
 	WriteOverrides(o.overrides)
 }
 
@@ -154,7 +154,7 @@ func (o *OverleashContext) DeleteOverride(featureFlag string) {
 
 	delete(o.overrides, featureFlag)
 
-	o.compileDatafile()
+	o.compileFeatureFile()
 	WriteOverrides(o.overrides)
 }
 
@@ -164,7 +164,7 @@ func (o *OverleashContext) DeleteAllOverride() {
 
 	o.overrides = make(map[string]*Override)
 
-	o.compileDatafile()
+	o.compileFeatureFile()
 	WriteOverrides(o.overrides)
 }
 
@@ -174,7 +174,7 @@ func (o *OverleashContext) SetPaused(paused bool) {
 
 	o.paused = paused
 
-	o.compileDatafile()
+	o.compileFeatureFile()
 }
 
 func (o *OverleashContext) Paused() bool {
@@ -184,7 +184,7 @@ func (o *OverleashContext) FeatureFile() FeatureFile {
 	return o.cachedFeatureFile
 }
 
-func (o *OverleashContext) RemoteDatafile() FeatureFile {
+func (o *OverleashContext) RemoteFeatureFile() FeatureFile {
 	return o.featureFiles[o.featureIdx]
 }
 
@@ -215,7 +215,7 @@ func (o *OverleashContext) LastSync() time.Time {
 	return o.lastSync
 }
 
-func (o *OverleashContext) compileDatafile() {
+func (o *OverleashContext) compileFeatureFile() {
 	df := o.featureFileWithOverwrites()
 
 	o.cachedFeatureFile = df
@@ -233,7 +233,7 @@ func (o *OverleashContext) compileDatafile() {
 }
 
 func (o *OverleashContext) featureFileWithOverwrites() FeatureFile {
-	featureFile := o.RemoteDatafile()
+	featureFile := o.RemoteFeatureFile()
 
 	f := make(FeatureFlags, len(featureFile.Features))
 	copy(f, featureFile.Features)

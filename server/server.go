@@ -77,7 +77,7 @@ func (c *Config) Start() {
 	})
 
 	s.HandleFunc("POST /refresh", func(w http.ResponseWriter, request *http.Request) {
-		err := c.Overleash.RefreshDatafiles()
+		err := c.Overleash.RefreshFeatureFiles()
 
 		if err != nil {
 			w.WriteHeader(404)
@@ -112,7 +112,7 @@ func (c *Config) Start() {
 			return
 		}
 
-		err = c.Overleash.SetDataFileIdx(idx)
+		err = c.Overleash.SetFeatureFileIdx(idx)
 
 		if err != nil {
 			w.WriteHeader(400)

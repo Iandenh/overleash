@@ -2,7 +2,6 @@ package unleashengine
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"unsafe"
 )
@@ -33,52 +32,12 @@ func (e *UnleashEngine) ResolveAll(context *Context) []byte {
 	}
 	cjsonContext := C.CString(string(jsonContext))
 
-	defer func() {
-		C.free(unsafe.Pointer(cjsonContext))
-	}()
+	defer C.free(unsafe.Pointer(cjsonContext))
 
 	cresolveAllDef := C.resolve_all(e.ptr, cjsonContext)
 	jsonResolveAll := C.GoString(cresolveAllDef)
 
 	return []byte(jsonResolveAll)
-}
-
-type VariantDef struct {
-	Name    string   `json:"name,omitempty"`
-	Payload *Payload `json:"payload,omitempty"`
-	Enabled bool     `json:"enabled,omitempty"`
-}
-
-type Payload struct {
-	PayloadType string `json:"type,omitempty"`
-	Value       string `json:"value,omitempty"`
-}
-
-func (e *UnleashEngine) GetVariant(toggleName string, context *Context) *VariantDef {
-	ctoggleName := C.CString(toggleName)
-
-	jsonContext, err := json.Marshal(context)
-	if err != nil {
-		fmt.Printf("Failed to serialize context: %v\n", err)
-		return nil
-	}
-	cjsonContext := C.CString(string(jsonContext))
-
-	defer func() {
-		C.free(unsafe.Pointer(ctoggleName))
-		C.free(unsafe.Pointer(cjsonContext))
-	}()
-
-	cvariantDef := C.check_variant(e.ptr, ctoggleName, cjsonContext)
-	jsonVariant := C.GoString(cvariantDef)
-
-	variantDef := &VariantDef{}
-	err = json.Unmarshal([]byte(jsonVariant), variantDef)
-	if err != nil {
-		fmt.Printf("Failed to deserialize variantDef: %v\n", err)
-		return nil
-	}
-	return variantDef
 }
 
 type Context struct {
@@ -89,16 +48,4 @@ type Context struct {
 	CurrentTime   *string            `json:"currentTime,omitempty"`
 	RemoteAddress *string            `json:"remoteAddress,omitempty"`
 	Properties    *map[string]string `json:"properties,omitempty"`
-}
-
-func NewContext(userID, sessionID, environment, appName, currentTime, remoteAddress *string, properties *map[string]string) *Context {
-	return &Context{
-		UserID:        userID,
-		SessionID:     sessionID,
-		Environment:   environment,
-		AppName:       appName,
-		CurrentTime:   currentTime,
-		RemoteAddress: remoteAddress,
-		Properties:    properties,
-	}
 }

@@ -12,11 +12,10 @@ RUN GOOS=linux go build -o /entrypoint main.go
 # Deploy.
 FROM debian AS release-stage
 ENV OVERLEASH_PORT=8080
-ENV LD_LIBRARY_PATH="/"
 WORKDIR /
 COPY --from=build-stage --chown=nonroot:nonroot /data /data
 COPY --from=build-stage /entrypoint /entrypoint
-COPY --from=build-stage /app/unleashengine/libyggdrasilffi.so /libyggdrasilffi.so
+COPY --from=build-stage /app/unleashengine/libyggdrasilffi.so /usr/lib/libyggdrasilffi.so
 VOLUME ["/data"]
 ENV DATA_DIR="/data"
 EXPOSE 8080
