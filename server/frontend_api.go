@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"overleash/unleashengine"
+	"strings"
 )
 
 var engine *unleashengine.UnleashEngine
@@ -142,6 +143,13 @@ func createContextFromRequest(r *http.Request) *unleashengine.Context {
 	ctx := &unleashengine.Context{}
 
 	for k, _ := range r.URL.Query() {
+		if strings.Contains(k, "properties[") {
+			key := strings.Split(k, "properties[")[1]
+			key = strings.Split(key, "]")[0]
+			properties[key] = *getQuery(r, k)
+			continue
+		}
+
 		switch k {
 		case "userId":
 			ctx.UserID = getQuery(r, "userId")

@@ -38,6 +38,18 @@ func (fr FeatureFile) FeatureFlagStatus(featureFlag string) []FeatureFlagStatus 
 	return statuses
 }
 
+func (fr FeatureFile) FeatureFlagEnabled(featureFlag string) bool {
+	idx := slices.IndexFunc(fr.Features, func(f Feature) bool { return f.Name == featureFlag })
+
+	if idx == -1 {
+		return false
+	}
+
+	flag := fr.Features[idx]
+
+	return flag.Enabled
+}
+
 func parseFromStrategy(strategy api.Strategy) (string, string) {
 	switch strategy.Name {
 	case "default":

@@ -261,6 +261,16 @@ func (o *OverleashContext) featureFileWithOverwrites() FeatureFile {
 	return featureFile
 }
 
+func (o *OverleashContext) HasOverride(key string) (bool, bool) {
+	override, ok := o.overrides[key]
+
+	if !ok {
+		return false, false
+	}
+
+	return true, override.Enabled
+}
+
 func WriteOverrides(overrides map[string]*Override) error {
 	data, err := json.Marshal(overrides)
 

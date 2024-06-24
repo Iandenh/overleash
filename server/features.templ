@@ -6,16 +6,6 @@ import (
     "strconv"
 )
 
-func hasOverride(key string, overrides map[string]*overleash.Override) (bool, bool) {
-	override, ok := overrides[key]
-
-	if !ok {
-		return false, false
-	}
-
-	return true, override.Enabled
-}
-
 templ layout(name string) {
 	<html lang="en">
 		<head>
@@ -23,6 +13,7 @@ templ layout(name string) {
 		<title>{ name }</title>
         <script src="/static/htmx.1.9.12.min.js"></script>
 		<link href="/static/style.css" rel="stylesheet" />
+		<link rel="icon" href="/static/overleash.svg" />
 		</head>
 		<body>
 			<main>
@@ -57,7 +48,7 @@ templ feature(flag overleash.Feature, o *overleash.OverleashContext) {
         <div>
             <span class="label">Feature flag:</span>
             <span class="text">
-                 if flag.Enabled {
+                 if o.RemoteFeatureFile().FeatureFlagEnabled(flag.Name) {
                     enabled
                  } else {
                     disabled
@@ -77,7 +68,7 @@ templ feature(flag overleash.Feature, o *overleash.OverleashContext) {
         <buton class="btn white" hx-post={"/override/" + flag.Name + "/false"} hx-target="closest .flag" hx-swap="innerHTML" hx-trigger="click, disable-flag from:closest .flag">Disable <span class="shortcuts">(d)</span></buton>
     </div>
 
-     if ok, status := hasOverride(flag.Name, o.Overrides()); ok == true {
+     if ok, status := o.HasOverride(flag.Name); ok == true {
         <div class={"override", templ.KV("enabled", status), templ.KV("paused", o.Paused()), templ.KV("disabled", !status)}>
             <div>
             if o.Paused() {
