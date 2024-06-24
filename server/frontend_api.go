@@ -113,7 +113,7 @@ type ApiResponse struct {
 }
 
 func frontendFromYggdrasil(res map[string]ResolvedToggle, includeAll bool) FrontendResult {
-	var toggles []EvaluatedToggle
+	toggles := make([]EvaluatedToggle, 0)
 
 	for name, resolved := range res {
 		if includeAll || resolved.Enabled {
