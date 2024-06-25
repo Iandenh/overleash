@@ -20,7 +20,13 @@ func NewUnleashEngine() *UnleashEngine {
 }
 
 func (e *UnleashEngine) TakeState(json string) {
-	C.take_state(e.ptr, C.CString(json))
+	cjson := C.CString(json)
+
+	defer C.free(unsafe.Pointer(cjson))
+
+	res := C.take_state(e.ptr, cjson)
+
+	C.free_response(res)
 }
 
 func (e *UnleashEngine) ResolveAll(context *Context) []byte {
@@ -36,6 +42,7 @@ func (e *UnleashEngine) ResolveAll(context *Context) []byte {
 
 	cresolveAllDef := C.resolve_all(e.ptr, cjsonContext)
 	jsonResolveAll := C.GoString(cresolveAllDef)
+	C.free_response(cresolveAllDef)
 
 	return []byte(jsonResolveAll)
 }
