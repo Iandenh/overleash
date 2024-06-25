@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/sahilm/fuzzy"
 	"overleash/overleash"
+	"slices"
 	"strings"
 )
 
@@ -16,14 +17,14 @@ func fuzzyFeatureFlags(search string, o *overleash.OverleashContext) overleash.F
 
 	results := fuzzy.FindFrom(search, o.FeatureFile().Features)
 
-	flags := overleash.FeatureFlags{}
+	flags := make(overleash.FeatureFlags, 0, len(results))
 
 	for _, r := range results {
 		flag := o.FeatureFile().Features[r.Index]
 		name := ""
 
 		for i := 0; i < len(r.Str); i++ {
-			if contains(i, r.MatchedIndexes) {
+			if slices.Contains(r.MatchedIndexes, i) {
 				name += fmt.Sprintf("<strong>%s</strong>", string(r.Str[i]))
 			} else {
 				name += string(r.Str[i])
@@ -35,13 +36,4 @@ func fuzzyFeatureFlags(search string, o *overleash.OverleashContext) overleash.F
 	}
 
 	return flags
-}
-
-func contains(needle int, haystack []int) bool {
-	for _, i := range haystack {
-		if needle == i {
-			return true
-		}
-	}
-	return false
 }

@@ -8,49 +8,43 @@ import (
 	"strings"
 )
 
-var engine *unleashengine.UnleashEngine
-
-func init() {
-	engine = unleashengine.NewUnleashEngine()
-}
-
 func (c *Config) registerFrontendApi(s *http.ServeMux) {
 	s.HandleFunc("GET /api/frontend", func(w http.ResponseWriter, r *http.Request) {
+		c.Overleash.LockMutex.RLock()
+		defer c.Overleash.LockMutex.RUnlock()
+
 		w.Header().Add("Content-Type", "application/json")
 		w.WriteHeader(200)
 
 		ctx := createContextFromRequest(r)
-		engine.TakeState(string(c.Overleash.CachedJson()))
 
-		var apiResponse ApiResponse
-		err := json.Unmarshal(engine.ResolveAll(ctx), &apiResponse)
-		if err != nil {
-			fmt.Println("Error unmarshaling JSON:", err)
+		apiResponse, done := resolveAll(c.Overleash.Engine(), ctx)
+		if done {
 			return
 		}
 
 		result := frontendFromYggdrasil(apiResponse.Value, false)
-		resultJson, _ := json.MarshalIndent(result, "", "  ")
+		resultJson, _ := json.Marshal(result)
 
 		w.Write(resultJson)
 	})
 
 	s.HandleFunc("GET /api/frontend/all", func(w http.ResponseWriter, r *http.Request) {
+		c.Overleash.LockMutex.RLock()
+		defer c.Overleash.LockMutex.RUnlock()
+
 		w.Header().Add("Content-Type", "application/json")
 		w.WriteHeader(200)
 
 		ctx := createContextFromRequest(r)
-		engine.TakeState(string(c.Overleash.CachedJson()))
 
-		var apiResponse ApiResponse
-		err := json.Unmarshal(engine.ResolveAll(ctx), &apiResponse)
-		if err != nil {
-			fmt.Println("Error unmarshaling JSON:", err)
+		apiResponse, done := resolveAll(c.Overleash.Engine(), ctx)
+		if done {
 			return
 		}
 
 		result := frontendFromYggdrasil(apiResponse.Value, true)
-		resultJson, _ := json.MarshalIndent(result, "", "  ")
+		resultJson, _ := json.Marshal(result)
 
 		w.Write(resultJson)
 	})
@@ -62,6 +56,16 @@ func (c *Config) registerFrontendApi(s *http.ServeMux) {
 	s.HandleFunc("POST /api/frontend/client/register", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(200)
 	})
+}
+
+func resolveAll(engine *unleashengine.UnleashEngine, ctx *unleashengine.Context) (ApiResponse, bool) {
+	var apiResponse ApiResponse
+	err := json.Unmarshal(engine.ResolveAll(ctx), &apiResponse)
+	if err != nil {
+		fmt.Println("Error unmarshaling JSON:", err)
+		return ApiResponse{}, true
+	}
+	return apiResponse, false
 }
 
 type FrontendResult struct {
@@ -138,18 +142,10 @@ func frontendFromYggdrasil(res map[string]ResolvedToggle, includeAll bool) Front
 
 func createContextFromRequest(r *http.Request) *unleashengine.Context {
 	properties := make(map[string]interface{})
-	clean := make(map[string]string)
 
 	ctx := &unleashengine.Context{}
 
 	for k, _ := range r.URL.Query() {
-		if strings.Contains(k, "properties[") {
-			key := strings.Split(k, "properties[")[1]
-			key = strings.Split(key, "]")[0]
-			properties[key] = *getQuery(r, k)
-			continue
-		}
-
 		switch k {
 		case "userId":
 			ctx.UserID = getQuery(r, "userId")
@@ -164,10 +160,17 @@ func createContextFromRequest(r *http.Request) *unleashengine.Context {
 		case "remoteAddress":
 			ctx.RemoteAddress = getQuery(r, "remoteAddress")
 		default:
-			properties[k] = r.URL.Query().Get(k)
+			if strings.Contains(k, "properties[") {
+				key := strings.Split(k, "properties[")[1]
+				key = strings.Split(key, "]")[0]
+				properties[key] = *getQuery(r, k)
+			} else {
+				properties[k] = r.URL.Query().Get(k)
+			}
 		}
 	}
 
+	clean := make(map[string]string)
 	for k, v := range properties {
 		if v != nil {
 			clean[k] = v.(string)

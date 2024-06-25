@@ -143,7 +143,6 @@ type FeaturesHandler struct {
 }
 
 func NewFeaturesHandler(o *overleash.OverleashContext) FeaturesHandler {
-	// Replace this in-memory function with a call to a database.
 	ContextGetter := func() *overleash.OverleashContext {
 		return o
 	}

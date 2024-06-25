@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"github.com/Unleash/unleash-client-go/v4/api"
 	"overleash/cache"
+	"overleash/unleashengine"
 	"path/filepath"
 	"strings"
 	"sync"
@@ -31,10 +32,15 @@ type OverleashContext struct {
 	cachedJson        []byte
 	cachedBuf         bytes.Buffer
 	overrides         map[string]*Override
-	lockMutex         sync.Mutex
+	LockMutex         sync.RWMutex
 	lastSync          time.Time
 	paused            bool
 	ticker            ticker
+	engine            *unleashengine.UnleashEngine
+}
+
+func (o *OverleashContext) Engine() *unleashengine.UnleashEngine {
+	return o.engine
 }
 
 type Override struct {
@@ -51,6 +57,7 @@ func NewOverleash(url string, tokens []string) *OverleashContext {
 		overrides:    make(map[string]*Override),
 		lastSync:     time.Now(),
 		paused:       false,
+		engine:       unleashengine.NewUnleashEngine(),
 	}
 
 	overrides, err := ReadOverrides()
@@ -87,8 +94,8 @@ func (o *OverleashContext) Start(reload int) {
 }
 
 func (o *OverleashContext) loadRemotes() error {
-	o.lockMutex.Lock()
-	defer o.lockMutex.Unlock()
+	o.LockMutex.Lock()
+	defer o.LockMutex.Unlock()
 
 	e := error(nil)
 
@@ -121,8 +128,8 @@ func (o *OverleashContext) FeatureFileIdx() int {
 }
 
 func (o *OverleashContext) SetFeatureFileIdx(idx int) error {
-	o.lockMutex.Lock()
-	defer o.lockMutex.Unlock()
+	o.LockMutex.Lock()
+	defer o.LockMutex.Unlock()
 
 	if idx < 0 && idx >= len(o.featureFiles) {
 		return fmt.Errorf("invalid data file index: %d", idx)
@@ -136,8 +143,8 @@ func (o *OverleashContext) SetFeatureFileIdx(idx int) error {
 }
 
 func (o *OverleashContext) AddOverride(featureFlag string, enabled bool) {
-	o.lockMutex.Lock()
-	defer o.lockMutex.Unlock()
+	o.LockMutex.Lock()
+	defer o.LockMutex.Unlock()
 
 	o.overrides[featureFlag] = &Override{
 		FeatureFlag: featureFlag,
@@ -149,8 +156,8 @@ func (o *OverleashContext) AddOverride(featureFlag string, enabled bool) {
 }
 
 func (o *OverleashContext) DeleteOverride(featureFlag string) {
-	o.lockMutex.Lock()
-	defer o.lockMutex.Unlock()
+	o.LockMutex.Lock()
+	defer o.LockMutex.Unlock()
 
 	delete(o.overrides, featureFlag)
 
@@ -159,8 +166,8 @@ func (o *OverleashContext) DeleteOverride(featureFlag string) {
 }
 
 func (o *OverleashContext) DeleteAllOverride() {
-	o.lockMutex.Lock()
-	defer o.lockMutex.Unlock()
+	o.LockMutex.Lock()
+	defer o.LockMutex.Unlock()
 
 	o.overrides = make(map[string]*Override)
 
@@ -169,8 +176,8 @@ func (o *OverleashContext) DeleteAllOverride() {
 }
 
 func (o *OverleashContext) SetPaused(paused bool) {
-	o.lockMutex.Lock()
-	defer o.lockMutex.Unlock()
+	o.LockMutex.Lock()
+	defer o.LockMutex.Unlock()
 
 	o.paused = paused
 
@@ -230,6 +237,8 @@ func (o *OverleashContext) compileFeatureFile() {
 	}
 
 	o.cachedJson = buf.Bytes()
+
+	o.engine.TakeState(string(o.cachedJson))
 }
 
 func (o *OverleashContext) featureFileWithOverwrites() FeatureFile {
