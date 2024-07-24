@@ -29,6 +29,27 @@ func (e *UnleashEngine) TakeState(json string) {
 	C.free_response(res)
 }
 
+func (e *UnleashEngine) Resolve(context *Context, featureName string) []byte {
+	jsonContext, err := json.Marshal(context)
+
+	if err != nil {
+		log.Fatalf("Failed to serialize context: %v", err)
+		return []byte{}
+	}
+
+	cfeatureName := C.CString(featureName)
+	defer C.free(unsafe.Pointer(cfeatureName))
+
+	cjsonContext := C.CString(string(jsonContext))
+	defer C.free(unsafe.Pointer(cjsonContext))
+
+	cresolveDef := C.resolve(e.ptr, cfeatureName, cjsonContext)
+	jsonResolve := C.GoString(cresolveDef)
+	C.free_response(cresolveDef)
+
+	return []byte(jsonResolve)
+}
+
 func (e *UnleashEngine) ResolveAll(context *Context) []byte {
 	jsonContext, err := json.Marshal(context)
 

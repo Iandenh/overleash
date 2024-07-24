@@ -28,8 +28,9 @@ void *new_engine(void);
 void free_engine(void *engine_ptr);
 
 /**
- * Takes a JSON string representing a set of toggles. Returns a JSON string representing
- * the metrics that should be sent to the server.
+ * Takes a JSON string representing a set of toggles. Returns a JSON encoded response object
+ * specifying whether the update was successful or not. The caller is responsible
+ * for freeing this response object.
  *
  * # Safety
  *
@@ -58,6 +59,8 @@ const char *check_enabled(void *engine_ptr,
                           const char *context_ptr);
 
 const char *resolve_all(void *engine_ptr, const char *context_ptr);
+
+const char *resolve(void *engine_ptr, const char *toggle_name_ptr, const char *context_ptr);
 
 /**
  * Checks the toggle variant for a given context. Returns a JSON encoded response of type `VariantResponse`.
