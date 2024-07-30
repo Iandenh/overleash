@@ -13,11 +13,12 @@ RUN GOOS=linux go build -o /entrypoint main.go
 FROM debian AS release-stage
 ENV OVERLEASH_PORT=8080
 WORKDIR /
+RUN useradd -ms /bin/sh -u 1001 nonroot
+USER nonroot
 COPY --from=build-stage --chown=nonroot:nonroot /data /data
 COPY --from=build-stage /entrypoint /entrypoint
 COPY --from=build-stage /app/unleashengine/libyggdrasilffi.so /usr/lib/libyggdrasilffi.so
 VOLUME ["/data"]
 ENV DATA_DIR="/data"
 EXPOSE 8080
-#USER nonroot:nonroot
 ENTRYPOINT ["/entrypoint"]

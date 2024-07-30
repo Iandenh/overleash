@@ -44,7 +44,7 @@ func ReadFile(filename string) ([]byte, error) {
 
 func WriteFile(filename string, data []byte) (writeErr error) {
 	if writeErr = os.MkdirAll(filepath.Dir(filename), 0771); writeErr != nil {
-		return
+		return writeErr
 	}
 	var file *os.File
 	if file, writeErr = os.OpenFile(filename, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0600); writeErr != nil {
@@ -56,5 +56,5 @@ func WriteFile(filename string, data []byte) (writeErr error) {
 		}
 	}()
 	_, writeErr = file.Write(data)
-	return
+	return writeErr
 }
