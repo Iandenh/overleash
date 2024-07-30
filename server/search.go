@@ -2,7 +2,7 @@ package server
 
 import (
 	"fmt"
-	"github.com/sahilm/fuzzy"
+	"github.com/teal-finance/fuzzy"
 	"overleash/overleash"
 	"slices"
 	"strings"
