@@ -6,8 +6,30 @@
    fill="none"
    version="1.1"
    id="svg63"
+   sodipodi:docname="overleash.svg"
+   inkscape:version="1.1.2 (0a00cf5339, 2022-02-04)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns="http://www.w3.org/2000/svg"
    xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview9"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     showgrid="false"
+     inkscape:zoom="45.254834"
+     inkscape:cx="32.957805"
+     inkscape:cy="22.638466"
+     inkscape:window-width="2560"
+     inkscape:window-height="1328"
+     inkscape:window-x="1080"
+     inkscape:window-y="27"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg63" />
   <defs
      id="defs67" />
   <path
@@ -16,9 +38,10 @@
      id="path55"
      style="fill:#666666" />
   <path
-     d="M25.554 25.5541V17.0348H17.0348V25.5541V34.0733V42.5888H25.554H34.0733V34.0733H25.554V25.5541Z"
-     fill="white"
-     id="path57" />
+     d="m 25.554,25.5541 10.47402,0 -0.03228,-8.5193 H 17.0348 v 8.5193 8.5192 8.5155 h 8.5192 8.5193 V 34.0733 H 25.554 Z"
+     fill="#ffffff"
+     id="path57"
+     sodipodi:nodetypes="cccccccccccc" />
   <path
      d="M34.0733 17.0348V25.5541V34.0733H42.5888V25.5541V17.0348H34.0733Z"
      fill="white"
@@ -28,9 +51,4 @@
      fill="#817AFE"
      id="path61"
      style="fill:#000000" />
-  <path
-     d="M 36.547427,17.0348 H 23.079773 v 8.5193 h 13.467654 z"
-     fill="#817afe"
-     id="path61-3"
-     style="fill:#ffffff;stroke-width:1.25732" />
 </svg>
