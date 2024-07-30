@@ -38,10 +38,11 @@ func (e *UnleashEngine) Resolve(context *Context, featureName string) []byte {
 	}
 
 	cfeatureName := C.CString(featureName)
-	defer C.free(unsafe.Pointer(cfeatureName))
-
 	cjsonContext := C.CString(string(jsonContext))
-	defer C.free(unsafe.Pointer(cjsonContext))
+	defer func() {
+		defer C.free(unsafe.Pointer(cfeatureName))
+		defer C.free(unsafe.Pointer(cjsonContext))
+	}()
 
 	cresolveDef := C.resolve(e.ptr, cfeatureName, cjsonContext)
 	jsonResolve := C.GoString(cresolveDef)

@@ -14,19 +14,19 @@ const (
 )
 
 func DataDir() string {
-	var path string
 	if dir := os.Getenv(dataDir); dir != "" {
-		path = filepath.Join(dir, "overleash")
-	} else if a := os.Getenv(xdgDataHome); a != "" {
-		path = filepath.Join(a, "overleash")
-	} else if b := os.Getenv(localAppData); runtime.GOOS == "windows" && b != "" {
-		path = filepath.Join(b, "Overleash")
-	} else {
-		c, _ := os.UserHomeDir()
-		path = filepath.Join(c, ".local", "share", "overleash")
+		return filepath.Join(dir, "overleash")
+	}
+	if a := os.Getenv(xdgDataHome); a != "" {
+		return filepath.Join(a, "overleash")
+	}
+	if b := os.Getenv(localAppData); runtime.GOOS == "windows" && b != "" {
+		return filepath.Join(b, "Overleash")
 	}
 
-	return path
+	c, _ := os.UserHomeDir()
+
+	return filepath.Join(c, ".local", "share", "overleash")
 }
 
 func ReadFile(filename string) ([]byte, error) {

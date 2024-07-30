@@ -52,7 +52,7 @@ func (c *Config) Start() {
 		flag, err := c.Overleash.FeatureFile().Features.Get(key)
 
 		if err != nil {
-			w.WriteHeader(404)
+			http.Error(w, "Feature not found", http.StatusNotFound)
 			return
 		}
 
@@ -67,7 +67,7 @@ func (c *Config) Start() {
 		flag, err := c.Overleash.FeatureFile().Features.Get(key)
 
 		if err != nil {
-			w.WriteHeader(404)
+			http.Error(w, "Feature not found", http.StatusNotFound)
 			return
 		}
 
@@ -80,7 +80,7 @@ func (c *Config) Start() {
 		err := c.Overleash.RefreshFeatureFiles()
 
 		if err != nil {
-			w.WriteHeader(404)
+			http.Error(w, "Failed to refresh feature files", http.StatusInternalServerError)
 			return
 		}
 
@@ -103,19 +103,24 @@ func (c *Config) Start() {
 	})
 
 	s.HandleFunc("POST /changeRemote", func(w http.ResponseWriter, request *http.Request) {
-		request.ParseForm()
+		err := request.ParseForm()
+		if err != nil {
+			http.Error(w, "Failed to parse form", http.StatusUnprocessableEntity)
+			return
+		}
 
 		idx, err := strconv.Atoi(request.Form.Get("remote"))
 
 		if err != nil {
-			w.WriteHeader(400)
-			return
+			http.Error(w, "Invalid remote index", http.StatusBadRequest)
+			w.WriteHeader(http.StatusBadRequest)
 		}
 
 		err = c.Overleash.SetFeatureFileIdx(idx)
 
 		if err != nil {
-			w.WriteHeader(400)
+			http.Error(w, "Failed to load remote", http.StatusBadRequest)
+			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
 

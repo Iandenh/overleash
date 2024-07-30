@@ -21,17 +21,18 @@ func fuzzyFeatureFlags(search string, o *overleash.OverleashContext) overleash.F
 
 	for _, r := range results {
 		flag := o.FeatureFile().Features[r.Index]
-		name := ""
 
-		for i := 0; i < len(r.Str); i++ {
+		var nameBuilder strings.Builder
+
+		for i, char := range r.Str {
 			if slices.Contains(r.MatchedIndexes, i) {
-				name += fmt.Sprintf("<strong>%s</strong>", string(r.Str[i]))
+				nameBuilder.WriteString(fmt.Sprintf("<strong>%c</strong>", char))
 			} else {
-				name += string(r.Str[i])
+				nameBuilder.WriteRune(char)
 			}
 		}
 
-		flag.SearchTerm = name
+		flag.SearchTerm = nameBuilder.String()
 		flags = append(flags, flag)
 	}
 

@@ -8,7 +8,7 @@ import (
 func (c *Config) registerClientApi(s *http.ServeMux) {
 	s.HandleFunc("GET /api/client/features", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Content-Type", "application/json")
-		w.WriteHeader(200)
+		w.WriteHeader(http.StatusOK)
 
 		w.Write(c.Overleash.CachedJson())
 	})
@@ -17,7 +17,7 @@ func (c *Config) registerClientApi(s *http.ServeMux) {
 		key := r.PathValue("key")
 
 		w.Header().Add("Content-Type", "application/json")
-		w.WriteHeader(200)
+		w.WriteHeader(http.StatusOK)
 
 		flag, _ := c.Overleash.FeatureFile().Features.Get(key)
 
@@ -27,10 +27,10 @@ func (c *Config) registerClientApi(s *http.ServeMux) {
 	})
 
 	s.HandleFunc("POST /api/client/metrics", func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(200)
+		w.WriteHeader(http.StatusOK)
 	})
 
 	s.HandleFunc("POST /api/client/register", func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(200)
+		w.WriteHeader(http.StatusOK)
 	})
 }
