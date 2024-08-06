@@ -2,7 +2,9 @@ package server
 
 import (
 	"embed"
+	"encoding/json"
 	"fmt"
+	"github.com/Unleash/unleash-client-go/v4/api"
 	"github.com/a-h/templ"
 	"github.com/rs/cors"
 	"io/fs"
@@ -45,6 +47,33 @@ func (c *Config) Start() {
 
 	c.registerClientApi(s)
 	c.registerFrontendApi(s)
+
+	s.HandleFunc("POST /override/constrain/{key}/{enabled}", func(w http.ResponseWriter, request *http.Request) {
+		key := request.PathValue("key")
+		enabled := request.PathValue("enabled")
+		flag, err := c.Overleash.FeatureFile().Features.Get(key)
+
+		if err != nil {
+			http.Error(w, "Feature not found", http.StatusNotFound)
+			return
+		}
+
+		request.Body = http.MaxBytesReader(w, request.Body, 1048576)
+
+		dec := json.NewDecoder(request.Body)
+		dec.DisallowUnknownFields()
+
+		var constrain api.Constraint
+		err = dec.Decode(&constrain)
+		if err != nil {
+			http.Error(w, "Error parsing json", http.StatusBadRequest)
+			return
+		}
+
+		c.Overleash.AddOverrideConstraint(key, enabled == "true", constrain)
+
+		templ.Handler(feature(flag, c.Overleash)).ServeHTTP(w, request)
+	})
 
 	s.HandleFunc("POST /override/{key}/{enabled}", func(w http.ResponseWriter, request *http.Request) {
 		key := request.PathValue("key")

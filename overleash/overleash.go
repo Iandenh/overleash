@@ -43,9 +43,16 @@ func (o *OverleashContext) Engine() *unleashengine.UnleashEngine {
 	return o.engine
 }
 
+type OverrideConstraint struct {
+	Enabled    bool
+	Constraint api.Constraint
+}
+
 type Override struct {
 	FeatureFlag string
 	Enabled     bool
+	IsGlobal    bool
+	Constraints []OverrideConstraint
 }
 
 func NewOverleash(url string, tokens []string) *OverleashContext {
@@ -149,7 +156,30 @@ func (o *OverleashContext) AddOverride(featureFlag string, enabled bool) {
 	o.overrides[featureFlag] = &Override{
 		FeatureFlag: featureFlag,
 		Enabled:     enabled,
+		IsGlobal:    true,
 	}
+
+	o.compileFeatureFile()
+	WriteOverrides(o.overrides)
+}
+
+func (o *OverleashContext) AddOverrideConstraint(featureFlag string, enabled bool, constraint api.Constraint) {
+	o.LockMutex.Lock()
+	defer o.LockMutex.Unlock()
+
+	if o.overrides[featureFlag] == nil || o.overrides[featureFlag].IsGlobal == true {
+		o.overrides[featureFlag] = &Override{
+			FeatureFlag: featureFlag,
+			Enabled:     true,
+			IsGlobal:    false,
+			Constraints: make([]OverrideConstraint, 0),
+		}
+	}
+
+	o.overrides[featureFlag].Constraints = append(o.overrides[featureFlag].Constraints, OverrideConstraint{
+		Enabled:    enabled,
+		Constraint: constraint,
+	})
 
 	o.compileFeatureFile()
 	WriteOverrides(o.overrides)
@@ -257,7 +287,7 @@ func (o *OverleashContext) featureFileWithOverwrites() FeatureFile {
 			if flag.Name == override.FeatureFlag {
 				if override.Enabled {
 					featureFile.Features[idx].Enabled = true
-					featureFile.Features[idx].Strategies = []api.Strategy{forceEnable}
+					featureFile.Features[idx].Strategies = mapOverrideToStrategies(override, featureFile.Features[idx].Strategies)
 				} else {
 					featureFile.Features[idx].Enabled = false
 				}
@@ -268,6 +298,52 @@ func (o *OverleashContext) featureFileWithOverwrites() FeatureFile {
 	}
 
 	return featureFile
+}
+
+func mapOverrideToStrategies(override *Override, currentStrategies []api.Strategy) []api.Strategy {
+	if override.IsGlobal {
+		return []api.Strategy{forceEnable}
+	}
+
+	strategies := make([]api.Strategy, len(currentStrategies))
+	copy(strategies, currentStrategies)
+
+	var enabledConstraints []api.Constraint
+	var disabledConstraints []api.Constraint
+
+	for _, constraint := range override.Constraints {
+		if constraint.Enabled {
+			enabledConstraints = append(enabledConstraints, constraint.Constraint)
+		} else {
+			constraint.Constraint.Inverted = !constraint.Constraint.Inverted
+			disabledConstraints = append(disabledConstraints, constraint.Constraint)
+		}
+	}
+
+	if len(disabledConstraints) > 0 {
+		for idx, strategy := range strategies {
+			strategies[idx].Constraints = append(strategy.Constraints, disabledConstraints...)
+		}
+	}
+
+	if len(enabledConstraints) > 0 {
+		for _, constraint := range enabledConstraints {
+			strategies = append(strategies, api.Strategy{
+				Id:   0,
+				Name: "flexibleRollout",
+				Parameters: map[string]interface{}{
+					"groupId":    override.FeatureFlag,
+					"rollout":    "100",
+					"stickiness": "default",
+				},
+				Constraints: []api.Constraint{constraint},
+				Segments:    nil,
+				Variants:    make([]api.VariantInternal, 0),
+			})
+		}
+	}
+
+	return strategies
 }
 
 func (o *OverleashContext) HasOverride(key string) (bool, bool) {
