@@ -315,7 +315,7 @@ body {
     animation-play-state: paused;
 
     display: inline-block;
-    height: 14px;
+    height: 20px;
     aspect-ratio: 1 / 1;
     cursor: pointer;
 }
