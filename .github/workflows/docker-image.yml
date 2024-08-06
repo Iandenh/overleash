@@ -16,6 +16,9 @@ on:
 
 jobs:
   push_to_registry:
+    env:
+      REGISTRY: 'iandenh'
+      IMAGE_NAME: 'overleash'
     name: Push Docker image to Docker Hub
     runs-on: ubuntu-latest
     permissions:
