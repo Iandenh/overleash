@@ -115,7 +115,6 @@ func (o *OverleashContext) loadRemotesWithLock() error {
 func (o *OverleashContext) loadRemotes() error {
 	e := error(nil)
 
-	fmt.Printf("hallo: %+v\n\n", len(o.tokens))
 	for idx, token := range o.tokens {
 		featureFile, err := getFeatures(o.url, token)
 
