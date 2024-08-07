@@ -83,7 +83,6 @@ func NewOverleash(url string, tokens []string, dynamicMode bool) *OverleashConte
 
 func (o *OverleashContext) Start(reload int) {
 	err := o.loadRemotesWithLock()
-	o.ticker = createTicker(time.Duration(reload) * time.Minute)
 
 	if err != nil {
 		panic(err)
@@ -92,6 +91,8 @@ func (o *OverleashContext) Start(reload int) {
 	if reload == 0 {
 		return
 	}
+
+	o.ticker = createTicker(time.Duration(reload) * time.Minute)
 
 	fmt.Printf("Start with reloading with %d\n", reload)
 
@@ -114,12 +115,14 @@ func (o *OverleashContext) loadRemotesWithLock() error {
 func (o *OverleashContext) loadRemotes() error {
 	e := error(nil)
 
+	fmt.Printf("hallo: %+v\n\n", len(o.tokens))
 	for idx, token := range o.tokens {
 		featureFile, err := getFeatures(o.url, token)
 
 		if err != nil {
 			fmt.Println("Error loading features")
 			e = errors.Join(e, err)
+			continue
 		}
 
 		o.featureFiles[idx] = *featureFile
