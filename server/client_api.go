@@ -6,14 +6,16 @@ import (
 )
 
 func (c *Config) registerClientApi(s *http.ServeMux) {
-	s.HandleFunc("GET /api/client/features", func(w http.ResponseWriter, r *http.Request) {
+	middleware := createNewDynamicModeMiddleware(c.Overleash)
+
+	s.Handle("GET /api/client/features", middleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 
 		w.Write(c.Overleash.CachedJson())
-	})
+	})))
 
-	s.HandleFunc("GET /api/client/features/{key}", func(w http.ResponseWriter, r *http.Request) {
+	s.Handle("GET /api/client/features/{key}", middleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		key := r.PathValue("key")
 
 		w.Header().Add("Content-Type", "application/json")
@@ -24,13 +26,13 @@ func (c *Config) registerClientApi(s *http.ServeMux) {
 		writer := json.NewEncoder(w)
 
 		writer.Encode(flag)
-	})
+	})))
 
-	s.HandleFunc("POST /api/client/metrics", func(w http.ResponseWriter, r *http.Request) {
+	s.Handle("POST /api/client/metrics", middleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
-	})
+	})))
 
-	s.HandleFunc("POST /api/client/register", func(w http.ResponseWriter, r *http.Request) {
+	s.Handle("POST /api/client/register", middleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
-	})
+	})))
 }

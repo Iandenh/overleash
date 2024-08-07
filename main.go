@@ -15,8 +15,9 @@ func main() {
 
 	reload := viper.GetInt("reload")
 	port := viper.GetInt("port")
+	dynamicMode := viper.GetBool("dynamic_mode")
 
-	o := overleash.NewOverleash(viper.GetString("url"), tokens)
+	o := overleash.NewOverleash(viper.GetString("url"), tokens, dynamicMode)
 	o.Start(reload)
 
 	server.New(o, port).Start()
@@ -30,6 +31,7 @@ func initConfig() {
 	pflag.String("url", "", "Url to load")
 	pflag.String("token", "", "Token to load")
 	pflag.String("port", "5433", "Port")
+	pflag.Bool("dynamic_mode", false, "If enable dynamic mode")
 	pflag.Int("reload", 0, "Reload")
 	pflag.Parse()
 

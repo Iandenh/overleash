@@ -9,7 +9,9 @@ import (
 )
 
 func (c *Config) registerFrontendApi(s *http.ServeMux) {
-	s.HandleFunc("GET /api/frontend", func(w http.ResponseWriter, r *http.Request) {
+	middleware := createNewDynamicModeMiddleware(c.Overleash)
+
+	s.Handle("GET /api/frontend", middleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		c.Overleash.LockMutex.RLock()
 		defer c.Overleash.LockMutex.RUnlock()
 
@@ -27,9 +29,9 @@ func (c *Config) registerFrontendApi(s *http.ServeMux) {
 		resultJson, _ := json.Marshal(result)
 
 		w.Write(resultJson)
-	})
+	})))
 
-	s.HandleFunc("GET /api/frontend/all", func(w http.ResponseWriter, r *http.Request) {
+	s.Handle("GET /api/frontend/all", middleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		c.Overleash.LockMutex.RLock()
 		defer c.Overleash.LockMutex.RUnlock()
 
@@ -47,9 +49,9 @@ func (c *Config) registerFrontendApi(s *http.ServeMux) {
 		resultJson, _ := json.Marshal(result)
 
 		w.Write(resultJson)
-	})
+	})))
 
-	s.HandleFunc("GET /api/frontend/features/{featureName}", func(w http.ResponseWriter, r *http.Request) {
+	s.Handle("GET /api/frontend/features/{featureName}", middleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		featureName := r.PathValue("featureName")
 		c.Overleash.LockMutex.RLock()
 		defer c.Overleash.LockMutex.RUnlock()
@@ -83,15 +85,15 @@ func (c *Config) registerFrontendApi(s *http.ServeMux) {
 		resultJson, _ := json.Marshal(evaluated)
 
 		w.Write(resultJson)
-	})
+	})))
 
-	s.HandleFunc("POST /api/frontend/client/metrics", func(w http.ResponseWriter, r *http.Request) {
+	s.Handle("POST /api/frontend/client/metrics", middleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(200)
-	})
+	})))
 
-	s.HandleFunc("POST /api/frontend/client/register", func(w http.ResponseWriter, r *http.Request) {
+	s.Handle("POST /api/frontend/client/register", middleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(200)
-	})
+	})))
 }
 
 func resolveAll(engine *unleashengine.UnleashEngine, ctx *unleashengine.Context) (ApiResponse, bool) {

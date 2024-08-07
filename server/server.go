@@ -53,7 +53,7 @@ func (c *Config) Start() {
 		enabled := request.PathValue("enabled")
 		flag, err := c.Overleash.FeatureFile().Features.Get(key)
 
-		if err != nil {
+		if err != nil && !c.Overleash.IsDynamicMode() {
 			http.Error(w, "Feature not found", http.StatusNotFound)
 			return
 		}
@@ -80,7 +80,7 @@ func (c *Config) Start() {
 		enabled := request.PathValue("enabled")
 		flag, err := c.Overleash.FeatureFile().Features.Get(key)
 
-		if err != nil {
+		if err != nil && !c.Overleash.IsDynamicMode() {
 			http.Error(w, "Feature not found", http.StatusNotFound)
 			return
 		}
@@ -95,7 +95,7 @@ func (c *Config) Start() {
 
 		flag, err := c.Overleash.FeatureFile().Features.Get(key)
 
-		if err != nil {
+		if err != nil && !c.Overleash.IsDynamicMode() {
 			http.Error(w, "Feature not found", http.StatusNotFound)
 			return
 		}
