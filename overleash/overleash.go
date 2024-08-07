@@ -356,6 +356,16 @@ func (o *OverleashContext) HasOverride(key string) (bool, bool) {
 	return true, override.Enabled
 }
 
+func (o *OverleashContext) GetOverride(key string) *Override {
+	override, ok := o.overrides[key]
+
+	if !ok {
+		return nil
+	}
+
+	return override
+}
+
 func WriteOverrides(overrides map[string]*Override) error {
 	data, err := json.Marshal(overrides)
 

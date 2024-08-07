@@ -77,8 +77,10 @@ templ feature(flag overleash.Feature, o *overleash.OverleashContext) {
             } else {
                 Override active:
             }
-            if status {
+            if status && o.GetOverride(flag.Name).IsGlobal {
                 <div class="status">Enabled</div>
+            } else if status {
+                <div class="status">Enabled with constraints</div>
             } else {
                 <div class="status">Disabled</div>
             }
