@@ -358,7 +358,12 @@ func mapOverrideToStrategies(override *Override, currentStrategies []api.Strateg
 		if constraint.Enabled {
 			enabledConstraints = append(enabledConstraints, constraint.Constraint)
 		} else {
-			constraint.Constraint.Inverted = !constraint.Constraint.Inverted
+			if constraint.Constraint.Operator == api.OperatorIn {
+				constraint.Constraint.Operator = api.OperatorNotIn
+			} else {
+				constraint.Constraint.Inverted = !constraint.Constraint.Inverted
+			}
+
 			disabledConstraints = append(disabledConstraints, constraint.Constraint)
 		}
 	}
