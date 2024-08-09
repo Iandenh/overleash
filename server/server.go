@@ -45,8 +45,10 @@ func (c *Config) Start() {
 	s.Handle("/", NewFeaturesHandler(c.Overleash))
 	s.Handle("/static/", http.StripPrefix("/static/", fileServer))
 
-	c.registerClientApi(s)
-	c.registerFrontendApi(s)
+	middleware := createNewDynamicModeMiddleware(c.Overleash)
+
+	c.registerClientApi(s, middleware)
+	c.registerFrontendApi(s, middleware)
 
 	s.HandleFunc("POST /override/constrain/{key}/{enabled}", func(w http.ResponseWriter, request *http.Request) {
 		key := request.PathValue("key")

@@ -5,9 +5,7 @@ import (
 	"net/http"
 )
 
-func (c *Config) registerClientApi(s *http.ServeMux) {
-	middleware := createNewDynamicModeMiddleware(c.Overleash)
-
+func (c *Config) registerClientApi(s *http.ServeMux, middleware Middleware) {
 	s.Handle("GET /api/client/features", middleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)

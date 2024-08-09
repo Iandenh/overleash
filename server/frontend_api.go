@@ -8,9 +8,7 @@ import (
 	"strings"
 )
 
-func (c *Config) registerFrontendApi(s *http.ServeMux) {
-	middleware := createNewDynamicModeMiddleware(c.Overleash)
-
+func (c *Config) registerFrontendApi(s *http.ServeMux, middleware Middleware) {
 	s.Handle("GET /api/frontend", middleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		c.Overleash.LockMutex.RLock()
 		defer c.Overleash.LockMutex.RUnlock()

@@ -5,7 +5,9 @@ import (
 	"overleash/overleash"
 )
 
-func createNewDynamicModeMiddleware(o *overleash.OverleashContext) func(http.Handler) http.Handler {
+type Middleware func(http.Handler) http.Handler
+
+func createNewDynamicModeMiddleware(o *overleash.OverleashContext) Middleware {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			if o.ShouldDoDynamicCheck() {
