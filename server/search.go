@@ -2,8 +2,8 @@ package server
 
 import (
 	"fmt"
+	"github.com/Iandenh/overleash/overleash"
 	"github.com/teal-finance/fuzzy"
-	"overleash/overleash"
 	"slices"
 	"strings"
 )

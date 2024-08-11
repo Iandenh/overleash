@@ -1,11 +1,11 @@
 package main
 
 import (
+	"github.com/Iandenh/overleash/overleash"
+	"github.com/Iandenh/overleash/server"
 	"github.com/charmbracelet/log"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
-	"overleash/overleash"
-	"overleash/server"
 	"strings"
 )
 

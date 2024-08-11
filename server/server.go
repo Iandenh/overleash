@@ -4,12 +4,12 @@ import (
 	"embed"
 	"encoding/json"
 	"fmt"
+	"github.com/Iandenh/overleash/overleash"
 	"github.com/Unleash/unleash-client-go/v4/api"
 	"github.com/a-h/templ"
 	"github.com/rs/cors"
 	"io/fs"
 	"net/http"
-	"overleash/overleash"
 	"strconv"
 )
 
