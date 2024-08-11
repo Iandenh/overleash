@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/Unleash/unleash-client-go/v4/api"
+	"github.com/charmbracelet/log"
 	"overleash/cache"
 	"overleash/unleashengine"
 	"path/filepath"
@@ -89,15 +90,17 @@ func (o *OverleashContext) Start(reload int) {
 	}
 
 	if reload == 0 {
+		log.Info("Start without reloading")
 		return
 	}
 
 	o.ticker = createTicker(time.Duration(reload) * time.Minute)
 
-	fmt.Printf("Start with reloading with %d\n", reload)
+	log.Infof("Start with reloading with %d", reload)
 
 	go func() {
 		defer o.ticker.ticker.Stop()
+		log.Info("Reloading remotes")
 
 		for range o.ticker.ticker.C {
 			o.loadRemotesWithLock()
@@ -119,7 +122,7 @@ func (o *OverleashContext) loadRemotes() error {
 		featureFile, err := getFeatures(o.url, token)
 
 		if err != nil {
-			fmt.Println("Error loading features")
+			log.Errorf("Error loading features: %s", err.Error())
 			e = errors.Join(e, err)
 			continue
 		}
@@ -296,6 +299,7 @@ func (o *OverleashContext) LastSync() time.Time {
 }
 
 func (o *OverleashContext) compileFeatureFile() {
+	log.Debug("Compiling feature file")
 	df := o.featureFileWithOverwrites()
 
 	o.cachedFeatureFile = df
@@ -306,6 +310,7 @@ func (o *OverleashContext) compileFeatureFile() {
 	err := writer.Encode(df)
 
 	if err != nil {
+		log.Error(err)
 		panic(err)
 	}
 

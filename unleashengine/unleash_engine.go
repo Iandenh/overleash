@@ -2,7 +2,7 @@ package unleashengine
 
 import (
 	"encoding/json"
-	"log"
+	"github.com/charmbracelet/log"
 	"unsafe"
 )
 
@@ -25,6 +25,12 @@ func (e *UnleashEngine) TakeState(json string) {
 	defer C.free(unsafe.Pointer(cjson))
 
 	res := C.take_state(e.ptr, cjson)
+
+	if log.GetLevel() == log.DebugLevel {
+		resJson := C.GoString(res)
+
+		log.Debugf("TakeState: %s", string(resJson))
+	}
 
 	C.free_response(res)
 }
