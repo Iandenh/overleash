@@ -31,6 +31,9 @@
             case 'q':
                 remove()
                 return;
+            case 'i':
+                toggleInfo()
+                return;
             case '/':
                 focusInput(event)
                 return;
@@ -98,6 +101,14 @@
             return
         }
         htmx.trigger(elements[currentIdx], "enable-flag");
+    };
+
+    const toggleInfo = () => {
+        // Not in an element
+        if (currentIdx === -1) {
+            return
+        }
+        htmx.trigger(elements[currentIdx], "toggle-detail");
     };
 
     const disable = () => {

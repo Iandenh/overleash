@@ -291,6 +291,21 @@ body {
     scroll-margin: 80px;
 }
 
+.flag .action {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.flag .action .muted {
+    opacity: 0.8;
+}
+
+.flag .action .list {
+    visibility: hidden;
+    cursor: pointer;
+}
+
 .remote-select {
     font-size: 0.9rem;
     padding: .3rem 0.6rem;
@@ -324,6 +339,106 @@ body {
     animation-play-state: running;
 }
 
+.detail-container {
+    display: flex;
+    gap: 8px;
+    align-items: stretch;
+    flex-direction: column;
+}
+
+.strategy {
+    border-radius: 6px;
+    background: var(--card-border);
+}
+
+.strategy .title {
+    font-weight: 700;
+    padding: 0.5rem 0.5rem 0;;
+    font-size: 1rem;
+    color: var(--text-color);
+}
+
+.strategy .title .text {
+    font-weight: 500;
+}
+
+.constraint {
+    margin: 8px;
+    display: flex;
+    gap: 8px;
+
+    background: var(--card-background);
+    padding: 8px;
+    border: 1px solid rgb(225, 225, 227);
+    border-radius: 8px;
+    box-shadow: none;
+    align-items: center;
+}
+
+.name {
+    color: var(--text-color);
+    font-weight: 500;
+
+    overflow: hidden;
+    max-width: 100px;
+    min-width: 100px;
+    margin-right: 10px;
+    margin-top: auto;
+    margin-bottom: auto;
+    word-break: break-word;
+    font-size: 0.875rem;
+}
+
+.inverted {
+    color: var(--status-background-color);
+}
+
+.operator {
+    display: flex;
+    margin: auto 0px;
+    min-width: 100px;
+    position: relative;
+
+    padding: 4px 12px;
+    border-radius: 4px;
+    background-color:var(--override-background-color);
+    line-height: 1.25;
+
+    font-size: 0.875rem;
+
+    color: var(--text-color);
+    justify-content: center;
+}
+
+.values{
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    word-break: break-word;
+    font-size: 0.875rem;
+    margin: auto 0px;
+    color: var(--text-color);
+}
+
 @keyframes spin {
     100% {transform: rotate(1turn); }
+}
+
+.verdict {
+  color: var(--text-color);
+}
+
+.verdict span {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 5px 8px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    line-height: 1;
+    background-color: var(--override-background-color);
+    color: var(--text-color);
+    border: 1px solid var(--status-background-color);
 }

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/Unleash/unleash-client-go/v4/api"
 	"slices"
+	"strings"
 )
 
 type FeatureFlagStatus struct {
@@ -78,6 +79,57 @@ func parseFromStrategy(strategy api.Strategy) (string, string) {
 	}
 
 	return "", ""
+}
+
+func ToStrategyName(strategy api.Strategy) string {
+	switch strategy.Name {
+	case "default":
+		return "Standard"
+
+	case "flexibleRollout":
+		return "Gradual rollout"
+
+	case "gradualRolloutRandom":
+		return "Randomized"
+
+	case "gradualRolloutSessionId":
+		return "Sessions"
+
+	case "gradualRolloutUserId":
+		return "Users"
+
+	case "userWithId":
+		return "UserIDs"
+
+	case "remoteAddress":
+		return "IPs"
+
+	case "applicationHostname":
+		return "Hosts"
+	}
+
+	return ""
+}
+
+func ToLabelText(strategy api.Strategy) string {
+	switch strategy.Name {
+	case "default":
+		return "The standard strategy is <span>ON</span> for all users."
+	case "flexibleRollout":
+		extra := ""
+		if len(strategy.Constraints) > 0 {
+			extra = "who match constraints "
+		}
+
+		return fmt.Sprintf("<span>%s%%</span> of your base %sis included", rollout(strategy.Parameters), extra)
+
+	case "remoteAddress":
+		count := len(strings.Split(ips(strategy.Parameters), ","))
+
+		return fmt.Sprintf("%d IPs will get access: %s", count, ips(strategy.Parameters))
+	}
+
+	return ""
 }
 
 func rollout(parameterMap api.ParameterMap) string {

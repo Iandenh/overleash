@@ -74,7 +74,7 @@ func (c *Config) Start() {
 
 		c.Overleash.AddOverrideConstraint(key, enabled == "true", constrain)
 
-		templ.Handler(feature(flag, c.Overleash)).ServeHTTP(w, request)
+		templ.Handler(feature(flag, c.Overleash, false)).ServeHTTP(w, request)
 	})
 
 	s.HandleFunc("POST /override/{key}/{enabled}", func(w http.ResponseWriter, request *http.Request) {
@@ -89,7 +89,7 @@ func (c *Config) Start() {
 
 		c.Overleash.AddOverride(key, enabled == "true")
 
-		templ.Handler(feature(flag, c.Overleash)).ServeHTTP(w, request)
+		templ.Handler(feature(flag, c.Overleash, false)).ServeHTTP(w, request)
 	})
 
 	s.HandleFunc("DELETE /override/{key}", func(w http.ResponseWriter, request *http.Request) {
@@ -104,7 +104,7 @@ func (c *Config) Start() {
 
 		c.Overleash.DeleteOverride(key)
 
-		templ.Handler(feature(flag, c.Overleash)).ServeHTTP(w, request)
+		templ.Handler(feature(flag, c.Overleash, false)).ServeHTTP(w, request)
 	})
 
 	s.HandleFunc("POST /refresh", func(w http.ResponseWriter, request *http.Request) {
@@ -162,6 +162,25 @@ func (c *Config) Start() {
 		c.Overleash.SetPaused(false)
 
 		templ.Handler(features(c.Overleash)).ServeHTTP(w, request)
+	})
+
+	s.HandleFunc("GET /feature/{key}", func(w http.ResponseWriter, request *http.Request) {
+		key := request.PathValue("key")
+
+		flag, err := c.Overleash.FeatureFile().Features.Get(key)
+
+		if err != nil {
+			http.Error(w, "Feature not found", http.StatusNotFound)
+			return
+		}
+
+		showDetails := false
+		details := request.URL.Query().Get("details")
+		if details != "" {
+			showDetails = true
+		}
+
+		templ.Handler(feature(flag, c.Overleash, showDetails)).ServeHTTP(w, request)
 	})
 
 	s.HandleFunc("GET /lastSync", func(w http.ResponseWriter, request *http.Request) {

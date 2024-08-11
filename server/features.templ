@@ -3,7 +3,9 @@ package server
 import (
     "time"
 	"overleash/overleash"
+	"github.com/Unleash/unleash-client-go/v4/api"
     "strconv"
+    "strings"
 )
 
 templ layout(name string) {
@@ -30,13 +32,13 @@ templ featureTemplate(flags []overleash.Feature, o *overleash.OverleashContext) 
         <div class="feature-container" id="flags">
             for _, flag := range flags {
                 <div class="card flag">
-                    @feature(flag, o)
+                    @feature(flag, o, false)
                 </div>
             }
     </div>
 }
 
-templ feature(flag overleash.Feature, o *overleash.OverleashContext) {
+templ feature(flag overleash.Feature, o *overleash.OverleashContext, showDetail bool) {
     <div class="key">
         if flag.SearchTerm != "" {
             @templ.Raw(flag.SearchTerm)
@@ -56,17 +58,30 @@ templ feature(flag overleash.Feature, o *overleash.OverleashContext) {
                  }
             </span>
         </div>
-        for _, status := range o.RemoteFeatureFile().FeatureFlagStatus(flag.Name) {
-        <div>
-            <span class="label">{ status.Strategy }:</span>
-            <span class="text">{ status.Status }</span>
-        </div>
+
+        if !showDetail {
+            for _, status := range o.RemoteFeatureFile().FeatureFlagStatus(flag.Name) {
+                <div>
+                    <span class="label">{ status.Strategy }:</span>
+                    <span class="text">{ status.Status }</span>
+                </div>
+            }
+        }
+
+        if showDetail {
+            @featureDetail(flag.Strategies)
         }
     </div>
 
     <div class="action">
         <buton class="btn black" hx-post={"/override/" + flag.Name + "/true"} hx-target="closest .flag" hx-swap="innerHTML" hx-trigger="click, enable-flag from:closest .flag">Enable <span class="shortcuts">(e)</span></buton>
         <buton class="btn white" hx-post={"/override/" + flag.Name + "/false"} hx-target="closest .flag" hx-swap="innerHTML" hx-trigger="click, disable-flag from:closest .flag">Disable <span class="shortcuts">(d)</span></buton>
+
+        if showDetail {
+           <buton class="list muted" hx-get={"/feature/" + flag.Name} hx-target="closest .flag" hx-swap="innerHTML" hx-trigger="click, toggle-detail from:closest .flag"><img src="/static/icons/list.svg"/></buton>
+        } else {
+            <buton class="list" hx-get={"/feature/" + flag.Name + "?details=true"} hx-target="closest .flag" hx-swap="innerHTML" hx-trigger="click, toggle-detail from:closest .flag"><img src="/static/icons/list.svg"/></buton>
+        }
     </div>
 
      if ok, status := o.HasOverride(flag.Name); ok == true {
@@ -142,6 +157,41 @@ templ features(o *overleash.OverleashContext) {
 		</div>
 	}
 }
+
+templ featureDetail(strategies []api.Strategy) {
+        <div class="detail-container">
+         for _, strategy := range strategies {
+            <div class="strategy">
+                <div class="title">{ overleash.ToStrategyName(strategy) }</div>
+                for _, constraint := range strategy.Constraints {
+                    <div class="constraint">
+                        <div class={"name", templ.KV("inverted", constraint.Inverted)}>
+                            { constraint.ContextName }
+                            if constraint.Inverted {
+                                 <span class="inverted"><strong>NOT</strong></span>
+                            }
+                        </div>
+                        <div class="operator">{ string(constraint.Operator) }</div>
+
+                        if len(constraint.Values) > 0 {
+                            <div class="values" title={strings.Join(constraint.Values, ", ")}>
+                                {strings.Join(constraint.Values, ", ")}
+                            </div>
+                        } else {
+                            <div class="value">
+                                {constraint.Value}
+                            </div>
+                        }
+                    </div>
+                }
+                <div class="constraint verdict">
+                    @templ.Raw(overleash.ToLabelText(strategy))
+                </div>
+            </div>
+        }
+        </div>
+}
+
 
 templ lastSync(t time.Time) {
     <span hx-get="/lastSync" hx-trigger="every 15s" id="last-sync" hx-swap="outerHTML">Last sync: <strong>{ t.Format("15:04:05") }</strong></span>
