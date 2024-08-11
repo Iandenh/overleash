@@ -53,25 +53,25 @@ func (fr FeatureFile) FeatureFlagEnabled(featureFlag string) bool {
 func parseFromStrategy(strategy api.Strategy) (string, string) {
 	switch strategy.Name {
 	case "default":
-		return "Default", "On"
+		return "Standard", "On"
 
 	case "flexibleRollout":
-		return "Rollout", fmt.Sprintf("%s%%", rollout(strategy.Parameters))
+		return "Gradual rollout", fmt.Sprintf("%s%%", rollout(strategy.Parameters))
 
 	case "gradualRolloutRandom":
-		return "Random rollout", fmt.Sprintf("%s%%", percentage(strategy.Parameters))
+		return "Randomized", fmt.Sprintf("%s%%", percentage(strategy.Parameters))
 
 	case "gradualRolloutSessionId":
-		return "Session Id Rollout", fmt.Sprintf("%s%%", percentage(strategy.Parameters))
+		return "Sessions", fmt.Sprintf("%s%%", percentage(strategy.Parameters))
 
 	case "gradualRolloutUserId":
-		return "User Id Rollout", fmt.Sprintf("%s%%", percentage(strategy.Parameters))
+		return "Users", fmt.Sprintf("%s%%", percentage(strategy.Parameters))
 
 	case "userWithId":
-		return "User ids", fmt.Sprintf("%s%%", userIds(strategy.Parameters))
+		return "UserIDs", fmt.Sprintf("%s%%", userIds(strategy.Parameters))
 
 	case "remoteAddress":
-		return "IP", ips(strategy.Parameters)
+		return "IPs", ips(strategy.Parameters)
 
 	case "applicationHostname":
 		return "Hosts", hostNames(strategy.Parameters)
