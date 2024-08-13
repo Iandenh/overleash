@@ -34,6 +34,7 @@ func (p *Proxy) ServeHTTP(w http.ResponseWriter, req *http.Request) error {
 	newUrl.RawQuery = newQuery.Encode()
 	req.RequestURI = ""
 	req.URL = newUrl
+	req.Host = newUrl.Host
 
 	proxiedResponse, err := createProxyClient().Do(req)
 
