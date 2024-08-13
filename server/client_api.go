@@ -2,6 +2,7 @@ package server
 
 import (
 	"encoding/json"
+	"github.com/Iandenh/overleash/proxy"
 	"net/http"
 )
 
@@ -27,7 +28,18 @@ func (c *Config) registerClientApi(s *http.ServeMux, middleware Middleware) {
 	})))
 
 	s.Handle("POST /api/client/metrics", middleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusOK)
+		if c.proxyMetrics == false {
+			w.WriteHeader(http.StatusOK)
+
+			return
+		}
+		p := proxy.New(c.Overleash.Url())
+
+		err := p.ServeHTTP(w, r)
+
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
 	})))
 
 	s.Handle("POST /api/client/register", middleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

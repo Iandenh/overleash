@@ -22,12 +22,13 @@ func main() {
 	tokens := strings.Split(viper.GetString("token"), ",")
 	reload := viper.GetInt("reload")
 	port := viper.GetInt("port")
+	proxyMetrics := viper.GetBool("proxy_metrics")
 	dynamicMode := viper.GetBool("dynamic_mode")
 
 	o := overleash.NewOverleash(viper.GetString("url"), tokens, dynamicMode)
 	o.Start(reload)
 
-	server.New(o, port).Start()
+	server.New(o, port, proxyMetrics).Start()
 }
 
 func initConfig() {
@@ -41,6 +42,7 @@ func initConfig() {
 	pflag.Bool("dynamic_mode", false, "If enable dynamic mode")
 	pflag.Int("reload", 0, "Reload")
 	pflag.Bool("verbose", false, "Verbose mode")
+	pflag.Bool("proxy_metrics", false, "Proxy metrics")
 	pflag.Parse()
 
 	viper.BindPFlags(pflag.CommandLine)

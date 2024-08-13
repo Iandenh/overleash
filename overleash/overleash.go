@@ -256,6 +256,11 @@ func (o *OverleashContext) GetRemotes() []string {
 func (o *OverleashContext) IsDynamicMode() bool {
 	return o.dynamicMode
 }
+
+func (o *OverleashContext) Url() string {
+	return o.url
+}
+
 func (o *OverleashContext) ShouldDoDynamicCheck() bool {
 	if o.dynamicMode == false {
 		return false

@@ -19,14 +19,16 @@ var (
 )
 
 type Config struct {
-	Overleash *overleash.OverleashContext
-	port      int
+	Overleash    *overleash.OverleashContext
+	port         int
+	proxyMetrics bool
 }
 
-func New(config *overleash.OverleashContext, port int) *Config {
+func New(config *overleash.OverleashContext, port int, proxyMetrics bool) *Config {
 	return &Config{
-		Overleash: config,
-		port:      port,
+		Overleash:    config,
+		port:         port,
+		proxyMetrics: proxyMetrics,
 	}
 }
 

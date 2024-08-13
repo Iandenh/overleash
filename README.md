@@ -49,13 +49,15 @@ Setting the config for Overleash can be set in two ways, environment variable or
 
 Here are the config options:
 
-| Name 	                        | Value	                                                                                                                                                                   | Env	                      | Flag	             |
-|-------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------|-------------------|
-| Unleash url	                  | 	 example: `https://unleash.my-site.com`, this url without `/api`, can be a Unleash instance or Unleash edge                                                             | `OVERLEASH_URL`	          | `--url`	          |
-| Reload frequency	             | 	  default: `0`, example: `1`, value is in minutes, `0` is no reload                                                                                                     | `OVERLEASH_RELOAD`	       | `--reload`	       |
-| Server port	                  | default: `5433`                                                                                                                                                          | `OVERLEASH_PORT`	         | `--port`	         |
-| Unleash token (Client token)	 | example:  `*:development.a2a6261d38fe4f9c86aceddce09a00df6c348fd0feeab3c24a9547f2` Token or tokens that are used to fetch the feature flag config from upstream unleash. | `OVERLEASH_TOKEN`	        | `--token`	        |
-| Dynamic mode	                 | default:  `false` If it's needs to start in Dynamic mode. We recommend providing the token as the config option above.                                                   | `OVERLEASH_DYNAMIC_MODE`	 | `--dynamic-mode`	 |
+| Name 	                        | Value	                                                                                                                                                                   | Env	                      | Flag	              |
+|-------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------|--------------------|
+| Unleash url	                  | 	 example: `https://unleash.my-site.com`, this url without `/api`, can be a Unleash instance or Unleash edge                                                             | `OVERLEASH_URL`	          | `--url`	           |
+| Reload frequency	             | 	  default: `0`, example: `1`, value is in minutes, `0` is no reload                                                                                                     | `OVERLEASH_RELOAD`	       | `--reload`	        |
+| Server port	                  | default: `5433`                                                                                                                                                          | `OVERLEASH_PORT`	         | `--port`	          |
+| Unleash token (Client token)	 | example:  `*:development.a2a6261d38fe4f9c86aceddce09a00df6c348fd0feeab3c24a9547f2` Token or tokens that are used to fetch the feature flag config from upstream unleash. | `OVERLEASH_TOKEN`	        | `--token`	         |
+| Dynamic mode	                 | default:  `false` If it's needs to start in Dynamic mode. We recommend providing the token as the config option above.                                                   | `OVERLEASH_DYNAMIC_MODE`	 | `--dynamic-mode`	  |
+| Verbose	                      | default:  `false` Logs a bit more information for diagnose issues                                                                                                        | `OVERLEASH_VERBOSE`	      | `--verbose`	       |
+| Proxy metrics to upstream	    | default:  `false` Proxy the metric calls to the upstream. Make sure the correct token are in the authorization header.                                                   | `OVERLEASH_PROXY_METRICS`	      | `--proxy-metrics`	 |
 
 ### Dynamic mode
 

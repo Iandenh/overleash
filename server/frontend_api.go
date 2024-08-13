@@ -3,6 +3,7 @@ package server
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/Iandenh/overleash/proxy"
 	"github.com/Iandenh/overleash/unleashengine"
 	"net/http"
 	"strings"
@@ -86,11 +87,22 @@ func (c *Config) registerFrontendApi(s *http.ServeMux, middleware Middleware) {
 	})))
 
 	s.Handle("POST /api/frontend/client/metrics", middleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(200)
+		if c.proxyMetrics == false {
+			w.WriteHeader(http.StatusOK)
+
+			return
+		}
+		p := proxy.New(c.Overleash.Url())
+
+		err := p.ServeHTTP(w, r)
+
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
 	})))
 
 	s.Handle("POST /api/frontend/client/register", middleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(200)
+		w.WriteHeader(http.StatusOK)
 	})))
 }
 
