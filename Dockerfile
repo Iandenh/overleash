@@ -41,6 +41,7 @@ esac
 
 # Deploy.
 FROM --platform=$BUILDPLATFORM debian AS release-stage
+ARG TARGETPLATFORM
 ENV OVERLEASH_PORT=8080
 RUN if [ "$TARGETPLATFORM" = "linux/arm64" ]; then \
         apt-get update && apt-get install -y gcc-aarch64-linux-gnu ; \
