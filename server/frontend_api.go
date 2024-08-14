@@ -15,7 +15,7 @@ func (c *Config) registerFrontendApi(s *http.ServeMux, middleware Middleware) {
 		defer c.Overleash.LockMutex.RUnlock()
 
 		w.Header().Add("Content-Type", "application/json")
-		w.WriteHeader(200)
+		w.WriteHeader(http.StatusOK)
 
 		ctx := createContextFromRequest(r)
 
@@ -35,7 +35,7 @@ func (c *Config) registerFrontendApi(s *http.ServeMux, middleware Middleware) {
 		defer c.Overleash.LockMutex.RUnlock()
 
 		w.Header().Add("Content-Type", "application/json")
-		w.WriteHeader(200)
+		w.WriteHeader(http.StatusOK)
 
 		ctx := createContextFromRequest(r)
 
@@ -60,7 +60,7 @@ func (c *Config) registerFrontendApi(s *http.ServeMux, middleware Middleware) {
 		resolved, ok := resolve(c.Overleash.Engine(), ctx, featureName)
 
 		if !ok {
-			w.WriteHeader(404)
+			w.WriteHeader(http.StatusNotFound)
 
 			return
 		}
@@ -79,7 +79,7 @@ func (c *Config) registerFrontendApi(s *http.ServeMux, middleware Middleware) {
 		}
 
 		w.Header().Add("Content-Type", "application/json")
-		w.WriteHeader(200)
+		w.WriteHeader(http.StatusOK)
 
 		resultJson, _ := json.Marshal(evaluated)
 
@@ -94,7 +94,7 @@ func (c *Config) registerFrontendApi(s *http.ServeMux, middleware Middleware) {
 		}
 		p := proxy.New(c.Overleash.Url())
 
-		err := p.ServeHTTP(w, r)
+		err := p.ProxyRequest(w, r)
 
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)

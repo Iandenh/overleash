@@ -15,7 +15,7 @@ func New(upstream string) *Proxy {
 	return &Proxy{upstream: upstream}
 }
 
-func (p *Proxy) ServeHTTP(w http.ResponseWriter, req *http.Request) error {
+func (p *Proxy) ProxyRequest(w http.ResponseWriter, req *http.Request) error {
 	newUrl, _ := url.Parse(p.upstream)
 
 	concatPath := req.URL.Path

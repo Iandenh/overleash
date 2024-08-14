@@ -35,7 +35,7 @@ func (c *Config) registerClientApi(s *http.ServeMux, middleware Middleware) {
 		}
 		p := proxy.New(c.Overleash.Url())
 
-		err := p.ServeHTTP(w, r)
+		err := p.ProxyRequest(w, r)
 
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
