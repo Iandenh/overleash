@@ -1,1 +1,2 @@
-*.so
+.dockerignore
+unleashengine/libyggdrasilffi.so
