@@ -51,6 +51,10 @@ func (p *Proxy) ServeHTTP(w http.ResponseWriter, req *http.Request) error {
 
 func copyHeader(dst, src http.Header) {
 	for k, vv := range src {
+		if dst.Get(k) != "" {
+			continue
+		}
+
 		for _, v := range vv {
 			dst.Add(k, v)
 		}
