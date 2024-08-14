@@ -18,6 +18,8 @@ var (
 	staticFiles embed.FS
 )
 
+const maxBodySize = 1 * 1024 * 1024 // 1 MiB
+
 type Config struct {
 	Overleash    *overleash.OverleashContext
 	port         int
@@ -62,13 +64,13 @@ func (c *Config) Start() {
 			return
 		}
 
-		request.Body = http.MaxBytesReader(w, request.Body, 1048576)
+		request.Body = http.MaxBytesReader(w, request.Body, maxBodySize)
 
-		dec := json.NewDecoder(request.Body)
-		dec.DisallowUnknownFields()
+		decoder := json.NewDecoder(request.Body)
+		decoder.DisallowUnknownFields()
 
 		var constrain api.Constraint
-		err = dec.Decode(&constrain)
+		err = decoder.Decode(&constrain)
 		if err != nil {
 			http.Error(w, "Error parsing json", http.StatusBadRequest)
 			return
@@ -176,11 +178,7 @@ func (c *Config) Start() {
 			return
 		}
 
-		showDetails := false
-		details := request.URL.Query().Get("details")
-		if details != "" {
-			showDetails = true
-		}
+		showDetails := request.URL.Query().Get("details") != ""
 
 		templ.Handler(feature(flag, c.Overleash, showDetails)).ServeHTTP(w, request)
 	})

@@ -12,18 +12,18 @@ templ layout(name string) {
     <!doctype html>
 	<html lang="en">
 		<head>
-		<meta charset="utf-8" />
-		<title>{ name }</title>
-        <script src="/static/htmx.2.0.1.min.js"></script>
-		<link href="/static/style.css" rel="stylesheet" />
-		<link rel="icon" href="/static/overleash.svg" />
+            <meta charset="utf-8" />
+            <title>{ name }</title>
+            <script src="/static/htmx.2.0.1.min.js"></script>
+            <link href="/static/style.css" rel="stylesheet" />
+            <link rel="icon" href="/static/overleash.svg" />
+            <script src="/static/overleash.js"></script>
 		</head>
 		<body>
 			<main>
 				{ children... }
 			</main>
 
-		  <script src="/static/overleash.js"></script>
 		</body>
 	</html>
 }
