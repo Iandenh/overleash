@@ -1,4 +1,4 @@
-FROM --platform=$BUILDPLATFORM rust AS rust-build-stage
+FROM --platform=$BUILDPLATFORM rust:1.80 AS rust-build-stage
 WORKDIR /yggdrasil
 ARG TARGETPLATFORM
 RUN git clone --depth 5 --branch resolve_all https://github.com/Iandenh/yggdrasil.git .
@@ -7,17 +7,16 @@ RUN case "$TARGETPLATFORM" in \
   "linux/amd64") echo x86_64-unknown-linux-gnu > /rust_target.txt ;; \
   *) exit 1 ;; \
 esac
-RUN case "$TARGETPLATFORM" in \
-  "linux/arm64") apt-get update && apt-get install -y gcc-aarch64-linux-gnu && mkdir -p .cargo && echo '[target.aarch64-unknown-linux-gnu]' >> .cargo/config && echo 'linker = "aarch64-linux-gnu-gcc"' >> .cargo/config ;; \
-  *) ;; \
-esac
+RUN if [ "$TARGETPLATFORM" = "linux/arm64" ]; then \
+        apt-get update && apt-get install -y gcc-aarch64-linux-gnu && mkdir -p .cargo && echo '[target.aarch64-unknown-linux-gnu]' >> .cargo/config && echo 'linker = "aarch64-linux-gnu-gcc"' >> .cargo/config ; \
+fi
 RUN rustup toolchain install stable --profile default
 RUN rustup target add $(cat /rust_target.txt)
 RUN cargo build --release --target $(cat /rust_target.txt)
 RUN cp target/$(cat /rust_target.txt)/release/libyggdrasilffi.so libyggdrasilffi.so
 
 # Go Build.
-FROM --platform=$BUILDPLATFORM golang:1.22 AS build-stage
+FROM --platform=$BUILDPLATFORM golang:1.23 AS build-stage
 ARG TARGETPLATFORM
 ARG BUILDPLATFORM
 ARG TARGETOS
