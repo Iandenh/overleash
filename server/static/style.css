@@ -442,3 +442,60 @@ body {
     color: var(--text-color);
     border: 1px solid var(--status-background-color);
 }
+
+kbd {
+    border: 2px solid var(--status-background-color);
+    border-radius: 0.25rem;
+    box-shadow: var(--box-shadow);
+    font-size: .825rem;
+    padding: .25rem;
+}
+
+
+.kbd-shortcuts {
+    padding-top: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.kbd-shortcut {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    align-items: center;
+}
+
+.kbd-shortcut .action {
+    font-size: 0.8rem;
+}
+
+.help {
+    padding: 2rem;
+}
+
+#help-dialog {
+    margin: auto;
+
+    background: var(--card-background);
+    border: 1px solid var(--card-border);
+    box-shadow: var(--box-shadow);
+    border-radius: .5rem;
+}
+
+.keys {
+    flex: 1;
+    text-align: left;
+}
+
+.action {
+    flex: 1;
+    text-align: right;
+}
+
+::backdrop {
+    background: var(--text-color);
+    opacity: 0.4;
+}

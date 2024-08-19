@@ -24,6 +24,7 @@ templ layout(name string) {
 				{ children... }
 			</main>
 
+            @help()
 		</body>
 	</html>
 }
@@ -132,15 +133,15 @@ templ features(o *overleash.OverleashContext) {
                 <div class="actions">
                     <buton class="btn small black" hx-delete={"/"} hx-swap="innerHTML" hx-target="body">Remove all overrides</buton>
                     if o.Paused() {
-                        <buton class="btn small white" hx-post={"/unpause"} hx-swap="innerHTML" hx-target="body">Unpause overrides</buton>
+                        <buton class="btn small white pause-btn" hx-post={"/unpause"} hx-swap="innerHTML" hx-target="body" hx-trigger="click, toggle-pause">Unpause overrides</buton>
                     } else {
-                       <buton class="btn small white" hx-post={"/pause"} hx-swap="innerHTML" hx-target="body">Pause overrides</buton>
+                       <buton class="btn small white pause-btn" hx-post={"/pause"} hx-swap="innerHTML" hx-target="body" hx-trigger="click, toggle-pause">Pause overrides</buton>
                     }
                     @remoteSelector(o)
                 </div>
                 <div class="sync">
                     @lastSync(o.LastSync())
-                    <buton class="sync-btn" hx-post={"/refresh"} hx-swap="innerHTML" hx-target="body"><img src="/static/icons/sync.svg" alt="Sync" /></buton>
+                    <buton class="sync-btn" hx-post={"/refresh"} hx-swap="innerHTML" hx-target="body" hx-trigger="click, refresh"><img src="/static/icons/sync.svg" alt="Sync" /></buton>
                 </div>
             </div>
             <div class="search">
@@ -195,4 +196,86 @@ templ featureDetail(strategies []unleash.Strategy) {
 
 templ lastSync(t time.Time) {
     <span hx-get="/lastSync" hx-trigger="every 15s" id="last-sync" hx-swap="outerHTML">Last sync: <strong>{ t.Format("15:04:05") }</strong></span>
+}
+
+templ help() {
+    <dialog id="help-dialog">
+        <div class="help">
+            <button class="btn black">Close</button>
+            <div class="kbd-shortcuts">
+                <div class="kbd-shortcut">
+                    <div class="keys">
+                        <kbd>↓</kbd>
+                    </div>
+                    <div class="action">
+                        Move down the flag selection
+                    </div>
+                </div>
+                <div class="kbd-shortcut">
+                    <div class="keys">
+                        <kbd>↑</kbd>
+                    </div>
+                    <div class="action">
+                        Move up the flag selection
+                    </div>
+                </div>
+                <div class="kbd-shortcut">
+                    <div class="keys">
+                        <kbd>e</kbd>
+                    </div>
+                    <div class="action">
+                        Enable selected flag
+                    </div>
+                </div>
+                <div class="kbd-shortcut">
+                    <div class="keys">
+                        <kbd>d</kbd>
+                    </div>
+                    <div class="action">
+                        Disable selected flag
+                    </div>
+                </div>
+                <div class="kbd-shortcut">
+                    <div class="keys">
+                        <kbd>q</kbd>
+                    </div>
+                    <div class="action">
+                        Remove selected flag
+                    </div>
+                </div>
+                <div class="kbd-shortcut">
+                    <div class="keys">
+                        <kbd>i</kbd>
+                    </div>
+                    <div class="action">
+                        Toggle constraints info on selected flag
+                    </div>
+                </div>
+                <div class="kbd-shortcut">
+                    <div class="keys">
+                        <kbd>/</kbd>
+                    </div>
+                    <div class="action">
+                        Focus input
+                    </div>
+                </div>
+                <div class="kbd-shortcut">
+                    <div class="keys">
+                        <kbd>Alt</kbd> + <kbd>r</kbd>
+                    </div>
+                    <div class="action">
+                        Refresh all flags
+                    </div>
+                </div>
+                <div class="kbd-shortcut">
+                    <div class="keys">
+                        <kbd>Alt</kbd> + <kbd>p</kbd>
+                    </div>
+                    <div class="action">
+                        Pause all overrides
+                    </div>
+                </div>
+            </div>
+        </div>
+    </dialog>
 }

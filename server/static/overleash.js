@@ -15,11 +15,30 @@ document.addEventListener('DOMContentLoaded',function () {
      */
     let searchBar = document.querySelector('.input');
 
+    /**
+     * @type {HTMLDialogElement}
+     */
+    const helpDialog = document.querySelector("#help-dialog");
+
+    /**
+     * @type {HTMLButtonElement}
+     */
+    const closeButtonHelpDialog = document.querySelector("dialog button");
+
+    /**
+     * @type {boolean}
+     */
+    let altMode = false
+
     const searchListener = () => {
         moveTo(-1, false);
     };
 
     searchBar.addEventListener('click', searchListener);
+
+    closeButtonHelpDialog.addEventListener('click', () => {
+        helpDialog.close()
+    });
 
     const load = () => {
         currentIdx = -1;
@@ -54,6 +73,21 @@ document.addEventListener('DOMContentLoaded',function () {
             case 'e':
                 enable();
                 return;
+            case 'r':
+                if (altMode) {
+                    refreshFlags();
+                }
+                return;
+            case 'p':
+                if (altMode) {
+                    pauseOverrides();
+                }
+                return;
+            case 'h':
+                if (altMode) {
+                    toggleHelp();
+                }
+                return;
             case 'd':
                 disable();
                 return;
@@ -65,6 +99,17 @@ document.addEventListener('DOMContentLoaded',function () {
                 return;
             case '/':
                 focusInput(event);
+                return;
+            case 'Alt':
+                altMode = true;
+                return;
+        }
+    });
+
+    document.addEventListener("keyup", (event) => {
+        switch (event.key) {
+            case 'Alt':
+                altMode = false;
                 return;
         }
     });
@@ -186,4 +231,20 @@ document.addEventListener('DOMContentLoaded',function () {
             searchBar.setSelectionRange(searchBar.value.length, searchBar.value.length);
         }, 0);
     };
+
+    const refreshFlags = () => {
+        htmx.trigger(".sync-btn", "refresh");
+    }
+
+    const pauseOverrides = () => {
+        htmx.trigger(".pause-btn", "toggle-pause");
+    }
+
+    const toggleHelp = () => {
+        if (helpDialog.open) {
+            helpDialog.close()
+        } else {
+            helpDialog.showModal()
+        }
+    }
 });
