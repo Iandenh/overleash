@@ -32,6 +32,10 @@ document.addEventListener('DOMContentLoaded',function () {
         const elementLength = elements.length;
         for (let i = 0; i < elementLength; i++) {
             elements[i].addEventListener('click', () => {
+                if (currentIdx  === i) {
+                    return;
+                }
+
                 moveTo(i, false);
             });
         }
