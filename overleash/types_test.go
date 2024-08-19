@@ -1,7 +1,7 @@
 package overleash
 
 import (
-	"github.com/Unleash/unleash-client-go/v4/api"
+	unleash "github.com/Unleash/unleash-client-go/v4/api"
 	"reflect"
 	"testing"
 	"time"
@@ -13,7 +13,7 @@ func TestFeatureFlags_Get(t *testing.T) {
 	}
 
 	feature := Feature{
-		Feature: api.Feature{
+		Feature: unleash.Feature{
 			Name:         "flag",
 			Type:         "",
 			Description:  "",

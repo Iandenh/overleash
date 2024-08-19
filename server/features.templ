@@ -3,7 +3,7 @@ package server
 import (
     "time"
 	"github.com/Iandenh/overleash/overleash"
-	"github.com/Unleash/unleash-client-go/v4/api"
+	unleash "github.com/Unleash/unleash-client-go/v4/api"
     "strconv"
     "strings"
 )
@@ -158,7 +158,7 @@ templ features(o *overleash.OverleashContext) {
 	}
 }
 
-templ featureDetail(strategies []api.Strategy) {
+templ featureDetail(strategies []unleash.Strategy) {
         <div class="detail-container">
          for _, strategy := range strategies {
             <div class="strategy">

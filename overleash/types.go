@@ -2,11 +2,11 @@ package overleash
 
 import (
 	"errors"
-	"github.com/Unleash/unleash-client-go/v4/api"
+	unleash "github.com/Unleash/unleash-client-go/v4/api"
 )
 
 type FeatureFile struct {
-	api.FeatureResponse
+	unleash.FeatureResponse
 
 	Features FeatureFlags `json:"features"`
 }
@@ -14,7 +14,7 @@ type FeatureFile struct {
 type FeatureFlags []Feature
 
 type Feature struct {
-	api.Feature
+	unleash.Feature
 	SearchTerm string `json:"-"`
 }
 

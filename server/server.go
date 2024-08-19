@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/Iandenh/overleash/overleash"
-	"github.com/Unleash/unleash-client-go/v4/api"
+	unleash "github.com/Unleash/unleash-client-go/v4/api"
 	"github.com/a-h/templ"
 	"github.com/rs/cors"
 	"io/fs"
@@ -69,7 +69,7 @@ func (c *Config) Start() {
 		decoder := json.NewDecoder(request.Body)
 		decoder.DisallowUnknownFields()
 
-		var constrain api.Constraint
+		var constrain unleash.Constraint
 		err = decoder.Decode(&constrain)
 		if err != nil {
 			http.Error(w, "Error parsing json", http.StatusBadRequest)

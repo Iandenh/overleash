@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"github.com/Iandenh/overleash/cache"
 	"github.com/Iandenh/overleash/unleashengine"
-	"github.com/Unleash/unleash-client-go/v4/api"
+	unleash "github.com/Unleash/unleash-client-go/v4/api"
 	"github.com/charmbracelet/log"
 	"path/filepath"
 	"strings"
@@ -15,13 +15,13 @@ import (
 	"time"
 )
 
-var forceEnable = api.Strategy{
+var forceEnable = unleash.Strategy{
 	Id:          123,
 	Name:        "default",
-	Constraints: make([]api.Constraint, 0),
+	Constraints: make([]unleash.Constraint, 0),
 	Parameters:  make(map[string]interface{}),
 	Segments:    make([]int, 0),
-	Variants:    make([]api.VariantInternal, 0),
+	Variants:    make([]unleash.VariantInternal, 0),
 }
 
 type OverleashContext struct {
@@ -48,7 +48,7 @@ func (o *OverleashContext) Engine() *unleashengine.UnleashEngine {
 
 type OverrideConstraint struct {
 	Enabled    bool
-	Constraint api.Constraint
+	Constraint unleash.Constraint
 }
 
 type Override struct {
@@ -176,7 +176,7 @@ func (o *OverleashContext) AddOverride(featureFlag string, enabled bool) {
 	WriteOverrides(o.overrides)
 }
 
-func (o *OverleashContext) AddOverrideConstraint(featureFlag string, enabled bool, constraint api.Constraint) {
+func (o *OverleashContext) AddOverrideConstraint(featureFlag string, enabled bool, constraint unleash.Constraint) {
 	o.LockMutex.Lock()
 	defer o.LockMutex.Unlock()
 
@@ -353,23 +353,23 @@ func (o *OverleashContext) featureFileWithOverwrites() FeatureFile {
 	return featureFile
 }
 
-func mapOverrideToStrategies(override *Override, currentStrategies []api.Strategy) []api.Strategy {
+func mapOverrideToStrategies(override *Override, currentStrategies []unleash.Strategy) []unleash.Strategy {
 	if override.IsGlobal {
-		return []api.Strategy{forceEnable}
+		return []unleash.Strategy{forceEnable}
 	}
 
-	strategies := make([]api.Strategy, len(currentStrategies))
+	strategies := make([]unleash.Strategy, len(currentStrategies))
 	copy(strategies, currentStrategies)
 
-	var enabledConstraints []api.Constraint
-	var disabledConstraints []api.Constraint
+	var enabledConstraints []unleash.Constraint
+	var disabledConstraints []unleash.Constraint
 
 	for _, constraint := range override.Constraints {
 		if constraint.Enabled {
 			enabledConstraints = append(enabledConstraints, constraint.Constraint)
 		} else {
-			if constraint.Constraint.Operator == api.OperatorIn {
-				constraint.Constraint.Operator = api.OperatorNotIn
+			if constraint.Constraint.Operator == unleash.OperatorIn {
+				constraint.Constraint.Operator = unleash.OperatorNotIn
 			} else {
 				constraint.Constraint.Inverted = !constraint.Constraint.Inverted
 			}
@@ -386,7 +386,7 @@ func mapOverrideToStrategies(override *Override, currentStrategies []api.Strateg
 
 	if len(enabledConstraints) > 0 {
 		for _, constraint := range enabledConstraints {
-			strategies = append(strategies, api.Strategy{
+			strategies = append(strategies, unleash.Strategy{
 				Id:   0,
 				Name: "flexibleRollout",
 				Parameters: map[string]interface{}{
@@ -394,9 +394,9 @@ func mapOverrideToStrategies(override *Override, currentStrategies []api.Strateg
 					"rollout":    "100",
 					"stickiness": "default",
 				},
-				Constraints: []api.Constraint{constraint},
+				Constraints: []unleash.Constraint{constraint},
 				Segments:    nil,
-				Variants:    make([]api.VariantInternal, 0),
+				Variants:    make([]unleash.VariantInternal, 0),
 			})
 		}
 	}
