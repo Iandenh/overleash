@@ -12,5 +12,9 @@ func createTicker(period time.Duration) ticker {
 }
 
 func (t *ticker) resetTicker() {
+	if t.ticker == nil {
+		return
+	}
+
 	t.ticker.Reset(t.period)
 }
