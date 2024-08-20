@@ -169,10 +169,6 @@ type Variant struct {
 	Payload        VariantPayload `json:"payload"`
 }
 
-type EdgeToken struct {
-	Projects []string `json:"projects"`
-}
-
 type ApiResponse struct {
 	StatusCode   string                    `json:"status_code"`
 	Value        map[string]ResolvedToggle `json:"value"`
