@@ -18,12 +18,12 @@ document.addEventListener('DOMContentLoaded',function () {
     /**
      * @type {HTMLDialogElement}
      */
-    const helpDialog = document.querySelector("#help-dialog");
+    let helpDialog = document.querySelector("#help-dialog");
 
     /**
      * @type {HTMLButtonElement}
      */
-    const closeButtonHelpDialog = document.querySelector("dialog button");
+    let closeButtonHelpDialog = document.querySelector("dialog button");
 
     /**
      * @type {boolean}
@@ -34,19 +34,21 @@ document.addEventListener('DOMContentLoaded',function () {
         moveTo(-1, false);
     };
 
-    searchBar.addEventListener('click', searchListener);
-
-    closeButtonHelpDialog.addEventListener('click', () => {
+    const closeHelpDialogListener = () => {
         helpDialog.close()
-    });
+    };
 
     const load = () => {
         currentIdx = -1;
         elements = document.querySelectorAll('.flag');
         searchBar = document.querySelector('.input');
+        closeButtonHelpDialog = document.querySelector("dialog button");
+        helpDialog = document.querySelector("#help-dialog");
 
         searchBar.removeEventListener('click', searchListener);
         searchBar.addEventListener('click', searchListener);
+        closeButtonHelpDialog.removeEventListener('click', closeHelpDialogListener);
+        closeButtonHelpDialog.addEventListener('click', closeHelpDialogListener);
 
         const elementLength = elements.length;
         for (let i = 0; i < elementLength; i++) {
@@ -75,17 +77,17 @@ document.addEventListener('DOMContentLoaded',function () {
                 return;
             case 'r':
                 if (altMode) {
-                    refreshFlags();
+                    refreshFlags(event);
                 }
                 return;
             case 'p':
                 if (altMode) {
-                    pauseOverrides();
+                    pauseOverrides(event);
                 }
                 return;
             case 'h':
                 if (altMode) {
-                    toggleHelp();
+                    toggleHelp(event);
                 }
                 return;
             case 'd':
@@ -232,15 +234,23 @@ document.addEventListener('DOMContentLoaded',function () {
         }, 0);
     };
 
-    const refreshFlags = () => {
+    const refreshFlags = event => {
+        event.preventDefault();
+
         htmx.trigger(".sync-btn", "refresh");
     }
 
-    const pauseOverrides = () => {
+    const pauseOverrides = event => {
+        event.preventDefault();
+
         htmx.trigger(".pause-btn", "toggle-pause");
     }
 
-    const toggleHelp = () => {
+    /**
+     * @param event {KeyboardEvent}
+     */
+    const toggleHelp = event => {
+        event.preventDefault();
         if (helpDialog.open) {
             helpDialog.close()
         } else {
