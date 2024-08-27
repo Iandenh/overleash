@@ -26,8 +26,12 @@ func (fr FeatureFile) FeatureFlagStatus(featureFlag string) []FeatureFlagStatus 
 		name, status := parseFromStrategy(strategy)
 
 		suffix := ""
+		if len(strategy.Segments) > 0 {
+			suffix += " (with segments)"
+		}
+
 		if len(strategy.Constraints) > 0 {
-			suffix = " (with constraints)"
+			suffix += " (with constraints)"
 		}
 
 		statuses = append(statuses, FeatureFlagStatus{

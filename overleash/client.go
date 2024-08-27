@@ -10,6 +10,10 @@ import (
 	"sync"
 )
 
+const (
+	supportedSpecVersion string = "5.1.0"
+)
+
 var (
 	httpClient      *http.Client
 	httpClientMutex sync.Mutex
@@ -30,6 +34,7 @@ func getFeatures(url, token string) (*FeatureFile, error) {
 
 	req.Header.Add("Accept", "application/json")
 	req.Header.Add("Authorization", token)
+	req.Header.Add("Unleash-Client-Spec", supportedSpecVersion)
 
 	if err != nil {
 		return nil, err
@@ -67,6 +72,7 @@ func validateToken(url string, token string) (*EdgeToken, error) {
 
 	req.Header.Add("Accept", "application/json")
 	req.Header.Add("Content-Type", "application/json")
+	req.Header.Add("Unleash-Client-Spec", supportedSpecVersion)
 
 	requestData := validationRequest{Tokens: []string{token}}
 	tokenJson, err := json.Marshal(requestData)

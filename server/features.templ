@@ -70,7 +70,7 @@ templ feature(flag overleash.Feature, o *overleash.OverleashContext, showDetail 
         }
 
         if showDetail {
-            @featureDetail(flag.Strategies)
+            @featureDetail(flag.Strategies, o.FeatureFile().SegmentsMap())
         }
     </div>
 
@@ -159,12 +159,12 @@ templ features(o *overleash.OverleashContext) {
 	}
 }
 
-templ featureDetail(strategies []unleash.Strategy) {
+templ featureDetail(strategies []unleash.Strategy, segments map[int][]unleash.Constraint) {
         <div class="detail-container">
          for _, strategy := range strategies {
             <div class="strategy">
                 <div class="title">{ overleash.ToStrategyName(strategy) }</div>
-                for _, constraint := range strategy.Constraints {
+                for _, constraint := range constraintsOfStrategy(strategy, segments) {
                     <div class="constraint">
                         <div class={"name", templ.KV("inverted", constraint.Inverted)}>
                             { constraint.ContextName }
