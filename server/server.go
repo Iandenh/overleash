@@ -187,6 +187,11 @@ func (c *Config) Start() {
 		templ.Handler(lastSync(c.Overleash.LastSync())).ServeHTTP(w, request)
 	})
 
+	s.HandleFunc("GET /health", func(w http.ResponseWriter, request *http.Request) {
+		w.Header().Set("Content-Type", "text/plain")
+		w.Write([]byte("ok"))
+	})
+
 	handler := cors.AllowAll().Handler(s)
 	if err := http.ListenAndServe(fmt.Sprintf(":%d", c.port), handler); err != nil {
 		panic(err)
