@@ -2,6 +2,8 @@ package overleash
 
 import (
 	"bytes"
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -33,6 +35,7 @@ type OverleashContext struct {
 	featureIdx        int
 	cachedFeatureFile FeatureFile
 	cachedJson        []byte
+	etagOfCachedJson  string
 	cachedBuf         bytes.Buffer
 	overrides         map[string]*Override
 	LockMutex         sync.RWMutex
@@ -40,6 +43,10 @@ type OverleashContext struct {
 	paused            bool
 	ticker            ticker
 	engine            *unleashengine.UnleashEngine
+}
+
+func (o *OverleashContext) EtagOfCachedJson() string {
+	return o.etagOfCachedJson
 }
 
 func (o *OverleashContext) Engine() *unleashengine.UnleashEngine {
@@ -321,6 +328,8 @@ func (o *OverleashContext) compileFeatureFile() {
 
 	o.cachedJson = buf.Bytes()
 
+	o.etagOfCachedJson = calculateETag(o.cachedJson)
+
 	o.engine.TakeState(string(o.cachedJson))
 }
 
@@ -450,4 +459,10 @@ func ReadOverrides() (map[string]*Override, error) {
 	}
 
 	return *overrides, nil
+}
+
+func calculateETag(bytes []byte) string {
+	hasher := sha256.New()
+	hasher.Write(bytes)
+	return hex.EncodeToString(hasher.Sum(nil))
 }

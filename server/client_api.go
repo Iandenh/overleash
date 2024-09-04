@@ -2,12 +2,22 @@ package server
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/Iandenh/overleash/proxy"
 	"net/http"
+	"strings"
 )
 
 func (c *Config) registerClientApi(s *http.ServeMux, middleware Middleware) {
 	s.Handle("GET /api/client/features", middleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		ifNoneMatch := strings.Trim(strings.TrimPrefix(r.Header.Get("If-None-Match"), "W/"), "\"")
+
+		if ifNoneMatch != "" && ifNoneMatch == c.Overleash.EtagOfCachedJson() {
+			w.WriteHeader(http.StatusNotModified)
+			return
+		}
+
+		w.Header().Set("ETag", fmt.Sprintf("W/\"%s\"", c.Overleash.EtagOfCachedJson()))
 		w.Header().Add("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 
