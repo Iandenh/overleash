@@ -7,13 +7,13 @@ func constraintsOfStrategy(strategy unleash.Strategy, segments map[int][]unleash
 		return strategy.Constraints
 	}
 
-	var Constraints []unleash.Constraint
+	var constraints []unleash.Constraint
 
-	copy(Constraints, strategy.Constraints)
+	copy(constraints, strategy.Constraints)
 
 	for _, segmentId := range strategy.Segments {
-		Constraints = append(segments[segmentId], strategy.Constraints...)
+		constraints = append(segments[segmentId], strategy.Constraints...)
 	}
 
-	return Constraints
+	return constraints
 }

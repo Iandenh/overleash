@@ -32,13 +32,13 @@ func getFeatures(url, token string) (*FeatureFile, error) {
 
 	req, err := http.NewRequest(http.MethodGet, url+"/api/client/features", nil)
 
-	req.Header.Add("Accept", "application/json")
-	req.Header.Add("Authorization", token)
-	req.Header.Add("Unleash-Client-Spec", supportedSpecVersion)
-
 	if err != nil {
 		return nil, err
 	}
+
+	req.Header.Add("Accept", "application/json")
+	req.Header.Add("Authorization", token)
+	req.Header.Add("Unleash-Client-Spec", supportedSpecVersion)
 
 	res, err := httpClient.Do(req)
 
@@ -70,16 +70,16 @@ func validateToken(url string, token string) (*EdgeToken, error) {
 
 	req, err := http.NewRequest(http.MethodPost, url+"/edge/validate", nil)
 
+	if err != nil {
+		return nil, err
+	}
+
 	req.Header.Add("Accept", "application/json")
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Unleash-Client-Spec", supportedSpecVersion)
 
 	requestData := validationRequest{Tokens: []string{token}}
 	tokenJson, err := json.Marshal(requestData)
-
-	if err != nil {
-		return nil, err
-	}
 
 	if err != nil {
 		return nil, err

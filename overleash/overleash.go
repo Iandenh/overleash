@@ -227,7 +227,7 @@ func (o *OverleashContext) SetPaused(paused bool) {
 	o.compileFeatureFile()
 }
 
-func (o *OverleashContext) Paused() bool {
+func (o *OverleashContext) IsPaused() bool {
 	return o.paused
 }
 func (o *OverleashContext) FeatureFile() FeatureFile {

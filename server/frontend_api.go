@@ -2,9 +2,9 @@ package server
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/Iandenh/overleash/proxy"
 	"github.com/Iandenh/overleash/unleashengine"
+	"github.com/charmbracelet/log"
 	"net/http"
 	"strings"
 )
@@ -17,7 +17,7 @@ func (c *Config) registerFrontendApi(s *http.ServeMux, middleware Middleware) {
 		w.Header().Add("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 
-		ctx := createContextFromRequest(r)
+		ctx := createContextFromGetRequest(r)
 
 		apiResponse, ok := resolveAll(c.Overleash.Engine(), ctx)
 		if !ok {
@@ -37,7 +37,7 @@ func (c *Config) registerFrontendApi(s *http.ServeMux, middleware Middleware) {
 		w.Header().Add("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 
-		ctx := createContextFromRequest(r)
+		ctx := createContextFromGetRequest(r)
 
 		apiResponse, ok := resolveAll(c.Overleash.Engine(), ctx)
 		if !ok {
@@ -51,11 +51,12 @@ func (c *Config) registerFrontendApi(s *http.ServeMux, middleware Middleware) {
 	})))
 
 	s.Handle("GET /api/frontend/features/{featureName}", middleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		featureName := r.PathValue("featureName")
 		c.Overleash.LockMutex.RLock()
 		defer c.Overleash.LockMutex.RUnlock()
 
-		ctx := createContextFromRequest(r)
+		featureName := r.PathValue("featureName")
+
+		ctx := createContextFromGetRequest(r)
 
 		resolved, ok := resolve(c.Overleash.Engine(), ctx, featureName)
 
@@ -110,7 +111,7 @@ func resolveAll(engine *unleashengine.UnleashEngine, ctx *unleashengine.Context)
 	var apiResponse ApiResponse
 	err := json.Unmarshal(engine.ResolveAll(ctx), &apiResponse)
 	if err != nil {
-		fmt.Println("Error unmarshaling JSON:", err)
+		log.Errorf("Error unmarshalling JSON: %s", err)
 		return ApiResponse{}, false
 	}
 	return apiResponse, true
@@ -120,7 +121,7 @@ func resolve(engine *unleashengine.UnleashEngine, ctx *unleashengine.Context, fe
 	var resolvedToggle ResolvedToggleResult
 	err := json.Unmarshal(engine.Resolve(ctx, featureName), &resolvedToggle)
 	if err != nil {
-		fmt.Println("Error unmarshaling JSON:", err)
+		log.Errorf("Error unmarshalling JSON: %s", err)
 		return ResolvedToggle{}, false
 	}
 
@@ -205,7 +206,7 @@ func frontendFromYggdrasil(res map[string]ResolvedToggle, includeAll bool) Front
 	return FrontendResult{Toggles: toggles}
 }
 
-func createContextFromRequest(r *http.Request) *unleashengine.Context {
+func createContextFromGetRequest(r *http.Request) *unleashengine.Context {
 	properties := make(map[string]interface{})
 
 	ctx := &unleashengine.Context{}

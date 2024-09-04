@@ -86,9 +86,9 @@ templ feature(flag overleash.Feature, o *overleash.OverleashContext, showDetail 
     </div>
 
      if ok, status := o.HasOverride(flag.Name); ok == true {
-        <div class={"override", templ.KV("enabled", status), templ.KV("paused", o.Paused()), templ.KV("disabled", !status)}>
+        <div class={"override", templ.KV("enabled", status), templ.KV("paused", o.IsPaused()), templ.KV("disabled", !status)}>
             <div>
-            if o.Paused() {
+            if o.IsPaused() {
                 Override <strong>paused</strong>:
             } else {
                 Override active:
@@ -132,7 +132,7 @@ templ features(o *overleash.OverleashContext) {
 	        <div class="head">
                 <div class="actions">
                     <buton class="btn small black" hx-delete={"/"} hx-swap="innerHTML" hx-target="body">Remove all overrides</buton>
-                    if o.Paused() {
+                    if o.IsPaused() {
                         <buton class="btn small white pause-btn" hx-post={"/unpause"} hx-swap="innerHTML" hx-target="body" hx-trigger="click, toggle-pause">Unpause overrides</buton>
                     } else {
                        <buton class="btn small white pause-btn" hx-post={"/pause"} hx-swap="innerHTML" hx-target="body" hx-trigger="click, toggle-pause">Pause overrides</buton>
