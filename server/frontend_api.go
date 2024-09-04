@@ -6,6 +6,7 @@ import (
 	"github.com/Iandenh/overleash/unleashengine"
 	"github.com/charmbracelet/log"
 	"net/http"
+	"strconv"
 	"strings"
 )
 
@@ -18,6 +19,33 @@ func (c *Config) registerFrontendApi(s *http.ServeMux, middleware Middleware) {
 		w.WriteHeader(http.StatusOK)
 
 		ctx := createContextFromGetRequest(r)
+
+		apiResponse, ok := resolveAll(c.Overleash.Engine(), ctx)
+		if !ok {
+			return
+		}
+
+		result := frontendFromYggdrasil(apiResponse.Value, false)
+		resultJson, _ := json.Marshal(result)
+
+		w.Write(resultJson)
+	})))
+
+	s.Handle("POST /api/frontend", middleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		c.Overleash.LockMutex.RLock()
+		defer c.Overleash.LockMutex.RUnlock()
+
+		w.Header().Add("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+
+		ctx, err := createContextFromPostRequest(r)
+
+		if err != nil {
+			log.Error(err)
+			w.WriteHeader(http.StatusBadRequest)
+
+			return
+		}
 
 		apiResponse, ok := resolveAll(c.Overleash.Engine(), ctx)
 		if !ok {
@@ -248,12 +276,79 @@ func createContextFromGetRequest(r *http.Request) *unleashengine.Context {
 	return ctx
 }
 
+func createContextFromPostRequest(r *http.Request) (*unleashengine.Context, error) {
+	m := map[string]interface{}{}
+
+	decoder := json.NewDecoder(r.Body)
+
+	err := decoder.Decode(&m)
+
+	if err != nil {
+		return nil, err
+	}
+	properties := make(map[string]interface{})
+
+	ctx := &unleashengine.Context{}
+
+	for k, v := range m {
+		switch k {
+		case "userId":
+			ctx.UserID = getData(v)
+		case "environment":
+			ctx.Environment = getData(v)
+		case "appName":
+			ctx.AppName = getData(v)
+		case "sessionId":
+			ctx.SessionID = getData(v)
+		case "currentTime":
+			ctx.CurrentTime = getData(v)
+		case "remoteAddress":
+			ctx.RemoteAddress = getData(v)
+		case "properties":
+			properties = v.(map[string]interface{})
+		default:
+			properties[k] = v
+		}
+	}
+
+	clean := make(map[string]string)
+	for k, v := range properties {
+		switch val := v.(type) {
+		case string:
+			clean[k] = val
+		}
+	}
+
+	ctx.Properties = &clean
+
+	return ctx, nil
+}
+
 func getQuery(r *http.Request, name string) *string {
 	if !r.URL.Query().Has(name) {
 		return nil
 	}
 
 	result := r.URL.Query().Get(name)
+
+	return &result
+}
+
+func getData(data interface{}) *string {
+	var result string
+
+	switch v := data.(type) {
+	case string:
+		result = v
+	case float64:
+		result = strconv.FormatFloat(v, 'f', -1, 64)
+	case bool:
+		result = strconv.FormatBool(v)
+	case nil:
+		return nil
+	default:
+		return nil
+	}
 
 	return &result
 }
