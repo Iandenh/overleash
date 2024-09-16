@@ -66,6 +66,9 @@ document.addEventListener('DOMContentLoaded',function () {
 
     document.addEventListener("keydown", (event) => {
         switch (event.key) {
+            case 'Escape':
+                clearInput(event);
+                return
             case 'ArrowDown':
                 moveDown(event);
                 return
@@ -244,6 +247,17 @@ document.addEventListener('DOMContentLoaded',function () {
         event.preventDefault();
 
         htmx.trigger(".pause-btn", "toggle-pause");
+    }
+
+    const clearInput = event => {
+        if (currentIdx !== -1) {
+            return;
+        }
+
+        event.preventDefault();
+
+        searchBar.value = ""
+        htmx.trigger(searchBar, "search");
     }
 
     /**

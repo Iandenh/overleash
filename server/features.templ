@@ -126,7 +126,7 @@ templ remoteSelector(o *overleash.OverleashContext) {
     }
 }
 
-templ features(o *overleash.OverleashContext) {
+templ features(flags []overleash.Feature, o *overleash.OverleashContext, searchTerm string) {
 	@layout("Overleash") {
 	    <div class="container">
 	        <div class="head">
@@ -149,12 +149,13 @@ templ features(o *overleash.OverleashContext) {
                        name="search" placeholder="Begin Typing To Search Feature Flags..."
                        autocomplete="off"
                        autofocus
+                       value={searchTerm}
                        hx-post="/search"
                        hx-trigger="input changed delay:100ms, search"
                        hx-target=".feature-container"
                        hx-swap="outerHTML" />
             </div>
-		    @featureTemplate(o.FeatureFile().Features, o)
+		    @featureTemplate(flags, o)
 		</div>
 	}
 }

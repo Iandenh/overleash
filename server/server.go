@@ -11,6 +11,7 @@ import (
 	"io/fs"
 	"net/http"
 	"strconv"
+	"strings"
 )
 
 var (
@@ -119,7 +120,7 @@ func (c *Config) Start() {
 			return
 		}
 
-		templ.Handler(features(c.Overleash)).ServeHTTP(w, request)
+		renderFeatures(w, request, c.Overleash)
 	})
 
 	s.HandleFunc("POST /search", func(w http.ResponseWriter, request *http.Request) {
@@ -128,13 +129,20 @@ func (c *Config) Start() {
 
 		flags := fuzzyFeatureFlags(search, c.Overleash)
 
+		url := "/"
+		if search != "" {
+			url = "/?q=" + search
+		}
+
+		w.Header().Set("HX-Replace-Url", url)
+
 		templ.Handler(featureTemplate(flags, c.Overleash)).ServeHTTP(w, request)
 	})
 
 	s.HandleFunc("POST /pause", func(w http.ResponseWriter, request *http.Request) {
 		c.Overleash.SetPaused(true)
 
-		templ.Handler(features(c.Overleash)).ServeHTTP(w, request)
+		renderFeatures(w, request, c.Overleash)
 	})
 
 	s.HandleFunc("POST /changeRemote", func(w http.ResponseWriter, request *http.Request) {
@@ -159,13 +167,13 @@ func (c *Config) Start() {
 			return
 		}
 
-		templ.Handler(features(c.Overleash)).ServeHTTP(w, request)
+		renderFeatures(w, request, c.Overleash)
 	})
 
 	s.HandleFunc("POST /unpause", func(w http.ResponseWriter, request *http.Request) {
 		c.Overleash.SetPaused(false)
 
-		templ.Handler(features(c.Overleash)).ServeHTTP(w, request)
+		renderFeatures(w, request, c.Overleash)
 	})
 
 	s.HandleFunc("GET /feature/{key}", func(w http.ResponseWriter, request *http.Request) {
@@ -218,5 +226,21 @@ func (fh FeaturesHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		o.DeleteAllOverride()
 	}
 
-	templ.Handler(features(o)).ServeHTTP(w, r)
+	renderFeatures(w, r, o)
+}
+
+func renderFeatures(w http.ResponseWriter, r *http.Request, o *overleash.OverleashContext) {
+	searchTerm := r.URL.Query().Get("q")
+	search := strings.TrimSpace(searchTerm)
+
+	flags := fuzzyFeatureFlags(search, o)
+
+	url := "/"
+	if search != "" {
+		url = "/?q=" + search
+	}
+
+	w.Header().Set("HX-Replace-Url", url)
+
+	templ.Handler(features(flags, o, searchTerm)).ServeHTTP(w, r)
 }
