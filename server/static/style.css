@@ -417,7 +417,7 @@ body {
 
 @keyframes spin {
     100% {
-        transform: rotate(1turn);
+        transform: rotate(-1turn);
     }
 }
 
