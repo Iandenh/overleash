@@ -49,7 +49,7 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
-            VERSION=${{ github.event.release.tag_name }}
+            VERSION=${{ github.ref_name }}
 
       - name: Generate artifact attestation
         uses: actions/attest-build-provenance@v1
