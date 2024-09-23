@@ -13,16 +13,16 @@ type FeatureFlagStatus struct {
 }
 
 func (fr FeatureFile) FeatureFlagStatus(featureFlag string) []FeatureFlagStatus {
-	statuses := make([]FeatureFlagStatus, 0, 1)
 	idx := slices.IndexFunc(fr.Features, func(f Feature) bool { return f.Name == featureFlag })
 
 	if idx == -1 {
-		return statuses
+		return []FeatureFlagStatus{}
 	}
 
 	flag := fr.Features[idx]
+	statuses := make([]FeatureFlagStatus, len(flag.Strategies))
 
-	for _, strategy := range flag.Strategies {
+	for i, strategy := range flag.Strategies {
 		name, status := parseFromStrategy(strategy)
 
 		suffix := ""
@@ -34,10 +34,10 @@ func (fr FeatureFile) FeatureFlagStatus(featureFlag string) []FeatureFlagStatus 
 			suffix += " (with constraints)"
 		}
 
-		statuses = append(statuses, FeatureFlagStatus{
+		statuses[i] = FeatureFlagStatus{
 			Strategy: name,
 			Status:   status + suffix,
-		})
+		}
 	}
 
 	return statuses
