@@ -490,6 +490,12 @@ kbd {
     text-align: right;
 }
 
+.version {
+    margin-top: 1rem;
+    font-size: 0.875rem;
+    color: var(--text-color);
+}
+
 ::backdrop {
     background: var(--text-color);
     opacity: 0.4;
