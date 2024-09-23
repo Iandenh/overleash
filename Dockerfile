@@ -1,7 +1,7 @@
 FROM --platform=$BUILDPLATFORM rust:1.80 AS rust-build-stage
 WORKDIR /yggdrasil
 ARG TARGETPLATFORM
-RUN git clone --depth 5 --branch resolve_all https://github.com/Iandenh/yggdrasil.git .
+RUN git clone --depth 1 --branch resolve_all https://github.com/Iandenh/yggdrasil.git .
 RUN case "$TARGETPLATFORM" in \
   "linux/arm64") echo aarch64-unknown-linux-gnu > /rust_target.txt ;; \
   "linux/amd64") echo x86_64-unknown-linux-gnu > /rust_target.txt ;; \
