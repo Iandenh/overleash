@@ -34,7 +34,7 @@ RUN mkdir /data
 COPY . /app
 RUN templ generate
 RUN case "$TARGETPLATFORM" in \
-  "linux/arm64") CGO_ENABLED=1 CC=aarch64-linux-gnu-gcc CC_FOR_TARGET=aarch64-linux-gnu-gcc GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build -ldflags="-extld=aarch64-linux-gnu-gcc -s -w -X github.com/Iandenh/overleash/internal/version.Version=${VERSION}" -o /entrypoint main.go -X github.com/Iandenh/overleash/internal/version.Version=${VERSION} ;; \
+  "linux/arm64") CGO_ENABLED=1 CC=aarch64-linux-gnu-gcc CC_FOR_TARGET=aarch64-linux-gnu-gcc GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build -ldflags="-extld=aarch64-linux-gnu-gcc -s -w -X github.com/Iandenh/overleash/internal/version.Version=${VERSION}" -o /entrypoint main.go ;; \
   "linux/amd64") CGO_ENABLED=1 GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build  -ldflags="-s -w -X github.com/Iandenh/overleash/internal/version.Version=${VERSION}" -o /entrypoint main.go ;; \
   *) exit 1 ;; \
 esac
