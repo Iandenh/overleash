@@ -7,7 +7,6 @@ import (
 	"errors"
 	"io"
 	"net/http"
-	"sync"
 )
 
 const (
@@ -15,8 +14,7 @@ const (
 )
 
 var (
-	httpClient      *http.Client
-	httpClientMutex sync.Mutex
+	httpClient *http.Client
 )
 
 type validationRequest struct {
@@ -27,9 +25,19 @@ type validationResponse struct {
 	Tokens []*EdgeToken `json:"tokens"`
 }
 
-func getFeatures(url, token string) (*FeatureFile, error) {
-	httpClient := createHTTPClient()
+func init() {
+	httpClient = &http.Client{
+		// Do not auto-follow redirects
+		CheckRedirect: func(req *http.Request, via []*http.Request) error {
+			return http.ErrUseLastResponse
+		},
+		Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+		},
+	}
+}
 
+func getFeatures(url, token string) (*FeatureFile, error) {
 	req, err := http.NewRequest(http.MethodGet, url+"/api/client/features", nil)
 
 	if err != nil {
@@ -66,8 +74,6 @@ func getFeatures(url, token string) (*FeatureFile, error) {
 }
 
 func validateToken(url string, token string) (*EdgeToken, error) {
-	httpClient := createHTTPClient()
-
 	req, err := http.NewRequest(http.MethodPost, url+"/edge/validate", nil)
 
 	if err != nil {
@@ -116,22 +122,4 @@ func validateToken(url string, token string) (*EdgeToken, error) {
 	}
 
 	return tokens[0], nil
-}
-
-func createHTTPClient() *http.Client {
-	httpClientMutex.Lock()
-	defer httpClientMutex.Unlock()
-
-	if httpClient == nil {
-		httpClient = &http.Client{
-			// Do not auto-follow redirects
-			CheckRedirect: func(req *http.Request, via []*http.Request) error {
-				return http.ErrUseLastResponse
-			},
-			Transport: &http.Transport{
-				TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-			},
-		}
-	}
-	return httpClient
 }
