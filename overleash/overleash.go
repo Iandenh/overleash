@@ -7,7 +7,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/Iandenh/overleash/cache"
+	"github.com/Iandenh/overleash/internal/cache"
 	"github.com/Iandenh/overleash/unleashengine"
 	unleash "github.com/Unleash/unleash-client-go/v4/api"
 	"github.com/charmbracelet/log"
