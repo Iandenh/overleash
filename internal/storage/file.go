@@ -1,4 +1,4 @@
-package cache
+package storage
 
 import (
 	"io"
@@ -13,7 +13,13 @@ const (
 	dataDir      = "DATA_DIR"
 )
 
-func DataDir() string {
+type FileStore struct{}
+
+func NewFileStore() *FileStore {
+	return new(FileStore)
+}
+
+func (f *FileStore) dataDir() string {
 	if dir := os.Getenv(dataDir); dir != "" {
 		return filepath.Join(dir, "overleash")
 	}
@@ -29,23 +35,26 @@ func DataDir() string {
 	return filepath.Join(c, ".local", "share", "overleash")
 }
 
-func ReadFile(filename string) ([]byte, error) {
-	f, err := os.Open(filename)
+func (f *FileStore) Read(filename string) ([]byte, error) {
+	file, err := os.Open(filepath.Join(f.dataDir(), filename))
 	if err != nil {
 		return nil, err
 	}
-	defer f.Close()
-	data, err := io.ReadAll(f)
+	defer file.Close()
+	data, err := io.ReadAll(file)
 	if err != nil {
 		return nil, err
 	}
 	return data, nil
 }
 
-func WriteFile(filename string, data []byte) (writeErr error) {
+func (f *FileStore) Write(filename string, data []byte) (writeErr error) {
+	filename = filepath.Join(f.dataDir(), filename)
+
 	if writeErr = os.MkdirAll(filepath.Dir(filename), 0771); writeErr != nil {
 		return writeErr
 	}
+
 	var file *os.File
 	if file, writeErr = os.OpenFile(filename, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0600); writeErr != nil {
 		return

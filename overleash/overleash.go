@@ -7,11 +7,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/Iandenh/overleash/internal/cache"
+	"github.com/Iandenh/overleash/internal/storage"
 	"github.com/Iandenh/overleash/unleashengine"
 	unleash "github.com/Unleash/unleash-client-go/v4/api"
 	"github.com/charmbracelet/log"
-	"path/filepath"
 	"strings"
 	"sync"
 	"time"
@@ -43,6 +42,7 @@ type OverleashContext struct {
 	paused            bool
 	ticker            ticker
 	engine            *unleashengine.UnleashEngine
+	store             storage.Store
 }
 
 func (o *OverleashContext) EtagOfCachedJson() string {
@@ -77,9 +77,10 @@ func NewOverleash(url string, tokens []string, dynamicMode bool) *OverleashConte
 		lastSync:     time.Now(),
 		paused:       false,
 		engine:       unleashengine.NewUnleashEngine(),
+		store:        storage.NewFileStore(),
 	}
 
-	overrides, err := ReadOverrides()
+	overrides, err := o.readOverrides()
 	if err == nil {
 		o.overrides = overrides
 	}
@@ -180,7 +181,7 @@ func (o *OverleashContext) AddOverride(featureFlag string, enabled bool) {
 	}
 
 	o.compileFeatureFile()
-	WriteOverrides(o.overrides)
+	o.writeOverrides(o.overrides)
 }
 
 func (o *OverleashContext) AddOverrideConstraint(featureFlag string, enabled bool, constraint unleash.Constraint) {
@@ -202,7 +203,7 @@ func (o *OverleashContext) AddOverrideConstraint(featureFlag string, enabled boo
 	})
 
 	o.compileFeatureFile()
-	WriteOverrides(o.overrides)
+	o.writeOverrides(o.overrides)
 }
 
 func (o *OverleashContext) DeleteOverride(featureFlag string) {
@@ -212,7 +213,7 @@ func (o *OverleashContext) DeleteOverride(featureFlag string) {
 	delete(o.overrides, featureFlag)
 
 	o.compileFeatureFile()
-	WriteOverrides(o.overrides)
+	o.writeOverrides(o.overrides)
 }
 
 func (o *OverleashContext) DeleteAllOverride() {
@@ -222,7 +223,7 @@ func (o *OverleashContext) DeleteAllOverride() {
 	o.overrides = make(map[string]*Override)
 
 	o.compileFeatureFile()
-	WriteOverrides(o.overrides)
+	o.writeOverrides(o.overrides)
 }
 
 func (o *OverleashContext) SetPaused(paused bool) {
@@ -433,20 +434,20 @@ func (o *OverleashContext) GetOverride(key string) *Override {
 	return override
 }
 
-func WriteOverrides(overrides map[string]*Override) error {
+func (o *OverleashContext) writeOverrides(overrides map[string]*Override) error {
 	data, err := json.Marshal(overrides)
 
 	if err != nil {
 		return err
 	}
 
-	return cache.WriteFile(filepath.Join(cache.DataDir(), "overrides.json"), data)
+	return o.store.Write("overrides.json", data)
 }
 
-func ReadOverrides() (map[string]*Override, error) {
+func (o *OverleashContext) readOverrides() (map[string]*Override, error) {
 	overrides := &map[string]*Override{}
 
-	data, err := cache.ReadFile(filepath.Join(cache.DataDir(), "overrides.json"))
+	data, err := o.store.Read("overrides.json")
 
 	if err != nil {
 		return *overrides, err
