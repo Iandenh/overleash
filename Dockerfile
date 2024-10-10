@@ -43,6 +43,11 @@ esac
 FROM --platform=$BUILDPLATFORM debian AS release-stage
 ARG TARGETPLATFORM
 ENV OVERLEASH_PORT=8080
+
+LABEL org.opencontainers.image.title="Overleash"
+LABEL org.opencontainers.image.source="https://github.com/Iandenh/overleash"
+LABEL org.opencontainers.image.licenses="MIT"
+
 RUN if [ "$TARGETPLATFORM" = "linux/arm64" ]; then \
        dpkg --add-architecture arm64 && apt-get update && apt-get install -y gcc-aarch64-linux-gnu libc6:arm64 ; \
 fi
