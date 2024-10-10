@@ -204,78 +204,21 @@ templ help() {
         <div class="help">
             <button class="btn black">Close</button>
             <div class="kbd-shortcuts">
+
+            for _, shortcut := range getShortcuts() {
                 <div class="kbd-shortcut">
                     <div class="keys">
-                        <kbd>↓</kbd>
+                        if shortcut.alt {
+                            <kbd>Alt</kbd> +
+                        }
+                        <kbd>{ shortcut.character }</kbd>
                     </div>
                     <div class="action">
-                        Move down the flag selection
+                        { shortcut.description }
                     </div>
                 </div>
-                <div class="kbd-shortcut">
-                    <div class="keys">
-                        <kbd>↑</kbd>
-                    </div>
-                    <div class="action">
-                        Move up the flag selection
-                    </div>
-                </div>
-                <div class="kbd-shortcut">
-                    <div class="keys">
-                        <kbd>e</kbd>
-                    </div>
-                    <div class="action">
-                        Enable selected flag
-                    </div>
-                </div>
-                <div class="kbd-shortcut">
-                    <div class="keys">
-                        <kbd>d</kbd>
-                    </div>
-                    <div class="action">
-                        Disable selected flag
-                    </div>
-                </div>
-                <div class="kbd-shortcut">
-                    <div class="keys">
-                        <kbd>q</kbd>
-                    </div>
-                    <div class="action">
-                        Remove selected flag
-                    </div>
-                </div>
-                <div class="kbd-shortcut">
-                    <div class="keys">
-                        <kbd>i</kbd>
-                    </div>
-                    <div class="action">
-                        Toggle constraints info on selected flag
-                    </div>
-                </div>
-                <div class="kbd-shortcut">
-                    <div class="keys">
-                        <kbd>/</kbd>
-                    </div>
-                    <div class="action">
-                        Focus input
-                    </div>
-                </div>
-                <div class="kbd-shortcut">
-                    <div class="keys">
-                        <kbd>Alt</kbd> + <kbd>r</kbd>
-                    </div>
-                    <div class="action">
-                        Refresh all flags
-                    </div>
-                </div>
-                <div class="kbd-shortcut">
-                    <div class="keys">
-                        <kbd>Alt</kbd> + <kbd>p</kbd>
-                    </div>
-                    <div class="action">
-                        Pause all overrides
-                    </div>
-                </div>
+            }
+
             </div>
             <div class="version">
                 {getVersion()}

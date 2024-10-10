@@ -35,7 +35,7 @@ document.addEventListener('DOMContentLoaded',function () {
     };
 
     const closeHelpDialogListener = () => {
-        helpDialog.close()
+        helpDialog.close();
     };
 
     const load = () => {
@@ -61,8 +61,6 @@ document.addEventListener('DOMContentLoaded',function () {
             });
         }
     };
-
-    load()
 
     document.addEventListener("keydown", (event) => {
         switch (event.key) {
@@ -90,6 +88,11 @@ document.addEventListener('DOMContentLoaded',function () {
                 return;
             case 'h':
                 if (altMode) {
+                    toggleHelp(event);
+                }
+                return;
+            case '?':
+                if (document.activeElement !== searchBar) {
                     toggleHelp(event);
                 }
                 return;
@@ -211,6 +214,9 @@ document.addEventListener('DOMContentLoaded',function () {
         htmx.trigger(elements[currentIdx], "remove-flag");
     };
 
+    /**
+     * @param event {KeyboardEvent}
+     */
     const focusInput = (event) => {
         // Not in an element
         if (currentIdx === -1) {
@@ -237,18 +243,27 @@ document.addEventListener('DOMContentLoaded',function () {
         }, 0);
     };
 
+    /**
+     * @param event {KeyboardEvent}
+     */
     const refreshFlags = event => {
         event.preventDefault();
 
         htmx.trigger(".sync-btn", "refresh");
     }
 
+    /**
+     * @param event {KeyboardEvent}
+     */
     const pauseOverrides = event => {
         event.preventDefault();
 
         htmx.trigger(".pause-btn", "toggle-pause");
     }
 
+    /**
+     * @param event {KeyboardEvent}
+     */
     const clearInput = event => {
         if (currentIdx !== -1) {
             return;
@@ -256,7 +271,7 @@ document.addEventListener('DOMContentLoaded',function () {
 
         event.preventDefault();
 
-        searchBar.value = ""
+        searchBar.value = "";
         htmx.trigger(searchBar, "search");
     }
 
@@ -266,9 +281,12 @@ document.addEventListener('DOMContentLoaded',function () {
     const toggleHelp = event => {
         event.preventDefault();
         if (helpDialog.open) {
-            helpDialog.close()
+            helpDialog.close();
         } else {
-            helpDialog.showModal()
+            helpDialog.showModal();
         }
     }
+
+    load();
+    focus();
 });

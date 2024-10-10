@@ -31,3 +31,59 @@ func getVersion() string {
 
 	return fmt.Sprintf("v%s", v)
 }
+
+type shortcut struct {
+	character   string
+	description string
+	alt         bool
+}
+
+func getShortcuts() []shortcut {
+	return []shortcut{
+		{
+			character:   "↓",
+			description: "Move down the flag selection",
+			alt:         false,
+		},
+		{
+			character:   "↑",
+			description: "Move up the flag selection",
+			alt:         false,
+		},
+		{
+			character:   "e",
+			description: "Enable selected flag",
+			alt:         false,
+		},
+		{
+			character:   "d",
+			description: "Disable selected flag",
+			alt:         false,
+		},
+		{
+			character:   "q",
+			description: "Remove selected flag",
+			alt:         false,
+		},
+		{
+			character:   "i",
+			description: "Toggle constraints info on selected flag",
+			alt:         false,
+		},
+		{
+			character:   "/",
+			description: "Focus search input",
+			alt:         false,
+		},
+		{
+			character:   "r",
+			description: "Refresh all flags",
+			alt:         true,
+		},
+		{
+			character:   "p",
+			description: "Pause all overrides",
+			alt:         true,
+		},
+	}
+}
