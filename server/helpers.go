@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/Iandenh/overleash/internal/version"
 	unleash "github.com/Unleash/unleash-client-go/v4/api"
+	"net/url"
 )
 
 func constraintsOfStrategy(strategy unleash.Strategy, segments map[int][]unleash.Constraint) []unleash.Constraint {
@@ -86,4 +87,26 @@ func getShortcuts() []shortcut {
 			alt:         true,
 		},
 	}
+}
+
+func (list *featureList) generateUrl(key, value string) string {
+	urlValues := url.Values{}
+
+	urlValues.Set("q", list.searchTerm)
+	urlValues.Set("sort", list.sort)
+	urlValues.Set("filter", list.filter)
+
+	urlValues.Set(key, value)
+
+	return "/?" + urlValues.Encode()
+}
+
+func (list *featureList) isSelected(key, value string) bool {
+	urlValues := url.Values{}
+
+	urlValues.Set("q", list.searchTerm)
+	urlValues.Set("sort", list.sort)
+	urlValues.Set("filter", list.filter)
+
+	return urlValues.Get(key) == value
 }

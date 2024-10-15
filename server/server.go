@@ -11,7 +11,6 @@ import (
 	"io/fs"
 	"net/http"
 	"strconv"
-	"strings"
 )
 
 var (
@@ -124,19 +123,11 @@ func (c *Config) Start() {
 	})
 
 	s.HandleFunc("POST /search", func(w http.ResponseWriter, request *http.Request) {
-		request.ParseForm()
-		search := request.Form.Get("search")
+		list := search(request, c.Overleash)
 
-		flags := fuzzyFeatureFlags(search, c.Overleash)
+		w.Header().Set("HX-Replace-Url", list.url)
 
-		url := "/"
-		if search != "" {
-			url = "/?q=" + search
-		}
-
-		w.Header().Set("HX-Replace-Url", url)
-
-		templ.Handler(featureTemplate(flags, c.Overleash)).ServeHTTP(w, request)
+		templ.Handler(featureTemplate(list, c.Overleash)).ServeHTTP(w, request)
 	})
 
 	s.HandleFunc("POST /pause", func(w http.ResponseWriter, request *http.Request) {
@@ -230,17 +221,10 @@ func (fh FeaturesHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func renderFeatures(w http.ResponseWriter, r *http.Request, o *overleash.OverleashContext) {
-	searchTerm := r.URL.Query().Get("q")
-	search := strings.TrimSpace(searchTerm)
 
-	flags := fuzzyFeatureFlags(search, o)
+	list := search(r, o)
 
-	url := "/"
-	if search != "" {
-		url = "/?q=" + search
-	}
+	w.Header().Set("HX-Replace-Url", list.url)
 
-	w.Header().Set("HX-Replace-Url", url)
-
-	templ.Handler(features(flags, o, searchTerm)).ServeHTTP(w, r)
+	templ.Handler(features(list, o)).ServeHTTP(w, r)
 }

@@ -210,8 +210,22 @@ body {
     margin: 20px 0;
 }
 
+.features {
+    padding: 15px 0;
+}
+
+.feature-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.feature-count {
+    font-size: 0.8rem;
+}
+
 .feature-container {
-    padding: 20px 0;
+    padding: 10px 0;
 }
 
 *,
@@ -499,4 +513,114 @@ kbd {
 ::backdrop {
     background: var(--text-color);
     opacity: 0.4;
+}
+
+.select-menu details[open] summary {
+    border-radius: 5px 5px 0 0;
+}
+
+.select-menu details {
+    display: inline-block;
+    border-radius: 5px;
+}
+
+.select-menu summary {
+    font-size: 0.75rem;
+    list-style: none;
+    display: inline-flex;
+    align-items: center;
+    padding: 10px;
+    font-weight: bold;
+
+    cursor: pointer;
+
+    background-color: var(--override-background-color);
+    color: var(--text-color);
+    border-color: var(--card-border);
+    border-radius: 5px;
+}
+
+.dropdown-caret {
+    border-bottom-color: #0000;
+    border-left-color: #0000;
+    border-right-color: #0000;
+    border-top-color: var(--text-color);
+    border-style: solid;
+    border-width: max(4px, 0.25rem) max(4px, 0.25rem) 0;
+    content: "";
+    display: inline-block;
+    height: 0;
+    vertical-align: middle;
+    width: 0;
+    margin-left: 0.5rem;
+}
+
+.select-menu article {
+    position: absolute;
+    top: auto;
+    right: auto;
+    bottom: auto;
+    left: auto;
+    padding: 0;
+
+    z-index: 99;
+    display: flex;
+}
+
+.select-menu-modal {
+    position: relative;
+    z-index: 99;
+    display: flex;
+
+    overflow: hidden;
+    pointer-events: auto;
+    flex-direction: column;
+
+    width: 300px;
+    height: auto;
+    max-height: 480px;
+    border-radius: 5px;
+
+    border: 1px solid var(--card-border);
+    background: var(--card-background);
+    box-shadow: var(--box-shadow);
+}
+
+.select-menu-list {
+    position: relative;
+
+    padding: 0;
+    margin: 0 0 -1px;
+    flex: auto;
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
+.select-menu-item {
+    display: flex;
+    align-items: center;
+
+    font-size: 0.9rem;
+    padding: 0.8rem 7px;
+
+    width: 100%;
+    color: var(--text-color);
+    text-align: left;
+    cursor: pointer;
+    border-bottom: 1px solid var(--card-border);
+    text-decoration: none;
+}
+
+.select-menu-item:hover {
+    background: var(--override-background-color2);
+}
+
+.select-menu-selected {
+    font-weight: bolder;
+}
+
+.feature-filter{
+    display: flex;
+    flex-direction: row;
+    gap: 5px;
 }

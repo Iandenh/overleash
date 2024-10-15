@@ -29,13 +29,82 @@ templ layout(name string) {
 	</html>
 }
 
-templ featureTemplate(flags []overleash.Feature, o *overleash.OverleashContext) {
-        <div class="feature-container" id="flags">
-            for _, flag := range flags {
+templ featureTemplate(list featureList, o *overleash.OverleashContext) {
+    <div class="features" id="flags">
+        <div class="feature-bar">
+            <div class="feature-count">
+                if len(list.flags) == list.totalFlags {
+                    Showing <strong>{ strconv.Itoa(len(list.flags)) }</strong> flags
+                } else {
+                    Showing <strong>{ strconv.Itoa(len(list.flags)) }</strong> of <strong>{ strconv.Itoa(list.totalFlags) }</strong> flags
+                }
+            </div>
+            <div class="feature-filter">
+            <details class="select-menu">
+                <summary>Sort <span class="dropdown-caret"></span></summary>
+                <article>
+                <div class="select-menu-modal">
+                    <div class="select-menu-list">
+                        <a
+                            class={"select-menu-item", templ.KV("select-menu-selected", list.isSelected("sort", "name-asc"))}
+                            href="#"
+                            hx-get={list.generateUrl("sort", "name-asc")}
+                            hx-swap="innerHTML"
+                            hx-target="body">Name ascending</a>
+
+                        <a
+                            href="#"
+                            class={"select-menu-item", templ.KV("select-menu-selected", list.isSelected("sort", "name-desc"))}
+                            hx-get={list.generateUrl("sort", "name-desc")}
+                            hx-swap="innerHTML"
+                            hx-target="body">Name descending</a>
+                    </div>
+                </div>
+                </article>
+            </details>
+
+
+            <details class="select-menu">
+                <summary>Filter <span class="dropdown-caret"></span></summary>
+                    <article>
+                        <div class="select-menu-modal">
+                            <div class="select-menu-list">
+                            <a
+                                class={"select-menu-item", templ.KV("select-menu-selected", list.isSelected("filter", "all"))}
+                                href="#"
+                                hx-get={list.generateUrl("filter", "all")}
+                                hx-params="*"
+                                hx-swap="innerHTML"
+                                hx-target="body">Show all</a>
+
+                            <a
+                                href="#"
+                                class={"select-menu-item", templ.KV("select-menu-selected", list.isSelected("filter", "overridden"))}
+                                hx-get={list.generateUrl("filter", "overridden")}
+                                hx-swap="innerHTML"
+                                hx-target="body">Only overridden</a>
+
+                            <a
+                                href="#"
+                                class={"select-menu-item", templ.KV("select-menu-selected", list.isSelected("filter", "not-overridden"))}
+                                hx-get={list.generateUrl("filter", "not-overridden")}
+                                hx-params="*"
+                                hx-swap="innerHTML"
+                                hx-target="body">Not overridden</a>
+                            </div>
+                        </div>
+                    </article>
+                </details>
+            </div>
+        </div>
+
+        <div class="feature-container">
+            for _, flag := range list.flags {
                 <div class="card flag">
                     @feature(flag, o, false)
                 </div>
             }
+        </div>
     </div>
 }
 
@@ -126,7 +195,7 @@ templ remoteSelector(o *overleash.OverleashContext) {
     }
 }
 
-templ features(flags []overleash.Feature, o *overleash.OverleashContext, searchTerm string) {
+templ features(list featureList, o *overleash.OverleashContext) {
 	@layout("Overleash") {
 	    <div class="container">
 	        <div class="head">
@@ -149,13 +218,13 @@ templ features(flags []overleash.Feature, o *overleash.OverleashContext, searchT
                        name="search" placeholder="Begin Typing To Search Feature Flags..."
                        autocomplete="off"
                        autofocus
-                       value={searchTerm}
+                       value={list.searchTerm}
                        hx-post="/search"
                        hx-trigger="input changed delay:100ms, search"
-                       hx-target=".feature-container"
+                       hx-target=".features"
                        hx-swap="outerHTML" />
             </div>
-		    @featureTemplate(flags, o)
+		    @featureTemplate(list, o)
 		</div>
 	}
 }
