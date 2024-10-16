@@ -61,8 +61,8 @@ jobs:
       - name: Chart | Push
         uses: appany/helm-oci-chart-releaser@v0.3.0
         with:
-          name: iandenh
-          repository: overleash
+          name: overleash
+          repository: iandenh
           tag: ${{ github.ref_name }}
           app_version: ${{ github.ref_name }}
           path: helm/overleash
