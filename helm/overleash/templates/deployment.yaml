@@ -46,6 +46,8 @@ spec:
               value: "{{.Values.overleash.proxyMetrics}}"
             - name: OVERLEASH_VERBOSE
               value: "{{.Values.overleash.verbose}}"
+            - name: OVERLEASH_PORT
+              value: "{{.Values.service.port}}"
           ports:
             - name: http
               containerPort: {{ .Values.service.port }}

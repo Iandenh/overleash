@@ -7,6 +7,7 @@ import (
 	"github.com/Iandenh/overleash/overleash"
 	unleash "github.com/Unleash/unleash-client-go/v4/api"
 	"github.com/a-h/templ"
+	"github.com/charmbracelet/log"
 	"github.com/rs/cors"
 	"io/fs"
 	"net/http"
@@ -192,7 +193,9 @@ func (c *Config) Start() {
 	})
 
 	handler := cors.AllowAll().Handler(s)
+	log.Debugf("Starting server on port: %d", c.port)
 	if err := http.ListenAndServe(fmt.Sprintf(":%d", c.port), handler); err != nil {
+		log.Error(err)
 		panic(err)
 	}
 }
