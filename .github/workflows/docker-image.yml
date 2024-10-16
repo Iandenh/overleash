@@ -65,7 +65,7 @@ jobs:
           repository: overleash
           tag: ${{ github.ref_name }}
           app_version: ${{ github.ref_name }}
-          path: heml/overleash
+          path: helm/overleash
           registry: ghcr.io
           registry_username: ${{ secrets.REGISTRY_USERNAME }}
           registry_password: ${{ secrets.REGISTRY_PASSWORD }}
