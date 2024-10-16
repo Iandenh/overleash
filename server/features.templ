@@ -46,18 +46,24 @@ templ featureTemplate(list featureList, o *overleash.OverleashContext) {
                 <div class="select-menu-modal">
                     <div class="select-menu-list">
                         <a
+                            class={"select-menu-item", templ.KV("select-menu-selected", list.isSelected("sort", ""))}
+                            href="#"
+                            hx-get={list.generateUrl("sort", "")}
+                            hx-swap="innerHTML"
+                            hx-target="body">Default</a>
+                        <a
                             class={"select-menu-item", templ.KV("select-menu-selected", list.isSelected("sort", "name-asc"))}
                             href="#"
                             hx-get={list.generateUrl("sort", "name-asc")}
                             hx-swap="innerHTML"
-                            hx-target="body">Name ascending</a>
+                            hx-target="body">Alphabetic ascending</a>
 
                         <a
                             href="#"
                             class={"select-menu-item", templ.KV("select-menu-selected", list.isSelected("sort", "name-desc"))}
                             hx-get={list.generateUrl("sort", "name-desc")}
                             hx-swap="innerHTML"
-                            hx-target="body">Name descending</a>
+                            hx-target="body">Alphabetic descending</a>
                     </div>
                 </div>
                 </article>
@@ -70,9 +76,9 @@ templ featureTemplate(list featureList, o *overleash.OverleashContext) {
                         <div class="select-menu-modal">
                             <div class="select-menu-list">
                             <a
-                                class={"select-menu-item", templ.KV("select-menu-selected", list.isSelected("filter", "all"))}
+                                class={"select-menu-item", templ.KV("select-menu-selected", list.isSelected("filter", ""))}
                                 href="#"
-                                hx-get={list.generateUrl("filter", "all")}
+                                hx-get={list.generateUrl("filter", "")}
                                 hx-params="*"
                                 hx-swap="innerHTML"
                                 hx-target="body">Show all</a>

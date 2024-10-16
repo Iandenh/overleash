@@ -118,10 +118,6 @@ func sortFeatures(flags overleash.FeatureFlags, sortOption string) {
 		sort.Slice(flags, func(i, j int) bool {
 			return strings.ToLower(flags[i].Name) > strings.ToLower(flags[j].Name)
 		})
-	default:
-		sort.Slice(flags, func(i, j int) bool {
-			return strings.ToLower(flags[i].Name) < strings.ToLower(flags[j].Name)
-		})
 	}
 }
 
@@ -131,13 +127,13 @@ func filterFeaturesByOverrideStatus(flags overleash.FeatureFlags, filterOption s
 	switch filterOption {
 	case "overridden":
 		for _, flag := range flags {
-			if override, exists := o.Overrides()[flag.Name]; exists && override.Enabled {
+			if _, exists := o.Overrides()[flag.Name]; exists {
 				filteredFlags = append(filteredFlags, flag)
 			}
 		}
 	case "not-overridden":
 		for _, flag := range flags {
-			if override, exists := o.Overrides()[flag.Name]; !exists || !override.Enabled {
+			if _, exists := o.Overrides()[flag.Name]; !exists {
 				filteredFlags = append(filteredFlags, flag)
 			}
 		}

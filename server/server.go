@@ -221,7 +221,6 @@ func (fh FeaturesHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func renderFeatures(w http.ResponseWriter, r *http.Request, o *overleash.OverleashContext) {
-
 	list := search(r, o)
 
 	w.Header().Set("HX-Replace-Url", list.url)
