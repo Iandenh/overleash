@@ -68,7 +68,7 @@ spec:
           persistentVolumeClaim:
             claimName: {{ .Values.persistence.existingClaim | default (include "overleash.fullname" .) }}
         {{- else }}
-          emptyDir: { }
+          emptyDir: {}
         {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
