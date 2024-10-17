@@ -441,7 +441,13 @@ func (o *OverleashContext) writeOverrides(overrides map[string]*Override) error 
 		return err
 	}
 
-	return o.store.Write("overrides.json", data)
+	err = o.store.Write("overrides.json", data)
+
+	if err != nil {
+		log.Debugf(err.Error())
+	}
+
+	return err
 }
 
 func (o *OverleashContext) readOverrides() (map[string]*Override, error) {
