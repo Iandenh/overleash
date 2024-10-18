@@ -2,7 +2,7 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: {{ include "overleash.fullname" . }}
+  name: {{ include "overleash.fullname" . }}-secondary
   labels:
     {{- include "overleash.labels" . | nindent 4 }}
   {{- with .Values.secondaryIngress.annotations }}
