@@ -1,3 +1,4 @@
+# Rust Build
 FROM --platform=$BUILDPLATFORM rust:1.80 AS rust-build-stage
 WORKDIR /yggdrasil
 ARG TARGETPLATFORM
@@ -15,7 +16,7 @@ RUN rustup target add $(cat /rust_target.txt)
 RUN cargo build --release --target $(cat /rust_target.txt)
 RUN cp target/$(cat /rust_target.txt)/release/libyggdrasilffi.so libyggdrasilffi.so
 
-# Go Build.
+# Go Build
 FROM --platform=$BUILDPLATFORM golang:1.23 AS build-stage
 ARG VERSION
 ARG TARGETPLATFORM
@@ -45,6 +46,7 @@ ARG TARGETPLATFORM
 ENV OVERLEASH_PORT=8080
 
 LABEL org.opencontainers.image.title="Overleash"
+LABEL org.opencontainers.image.description="Override your Unleash feature flags blazing fast"
 LABEL org.opencontainers.image.source="https://github.com/Iandenh/overleash"
 LABEL org.opencontainers.image.licenses="MIT"
 
@@ -52,8 +54,8 @@ RUN if [ "$TARGETPLATFORM" = "linux/arm64" ]; then \
        dpkg --add-architecture arm64 && apt-get update && apt-get install -y gcc-aarch64-linux-gnu libc6:arm64 ; \
 fi
 WORKDIR /
-RUN useradd -ms /bin/sh -u 1001 nonroot
-USER nonroot
+RUN useradd -ms /bin/sh -u 1001 1001
+USER 1001
 COPY --from=build-stage /entrypoint /entrypoint
 COPY --from=rust-build-stage /yggdrasil/libyggdrasilffi.so /usr/lib/libyggdrasilffi.so
 VOLUME ["/data"]
