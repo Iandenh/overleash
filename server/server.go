@@ -112,7 +112,7 @@ func (c *Config) Start() {
 		templ.Handler(feature(flag, c.Overleash, false)).ServeHTTP(w, request)
 	})
 
-	s.HandleFunc("POST /refresh", func(w http.ResponseWriter, request *http.Request) {
+	s.HandleFunc("POST /dashboard/refresh", func(w http.ResponseWriter, request *http.Request) {
 		err := c.Overleash.RefreshFeatureFiles()
 
 		if err != nil {
@@ -123,7 +123,7 @@ func (c *Config) Start() {
 		renderFeatures(w, request, c.Overleash)
 	})
 
-	s.HandleFunc("POST /search", func(w http.ResponseWriter, request *http.Request) {
+	s.HandleFunc("POST /dashboard/search", func(w http.ResponseWriter, request *http.Request) {
 		list := search(request, c.Overleash)
 
 		w.Header().Set("HX-Replace-Url", list.url)
@@ -131,13 +131,13 @@ func (c *Config) Start() {
 		templ.Handler(featureTemplate(list, c.Overleash)).ServeHTTP(w, request)
 	})
 
-	s.HandleFunc("POST /pause", func(w http.ResponseWriter, request *http.Request) {
+	s.HandleFunc("POST /dashboard/pause", func(w http.ResponseWriter, request *http.Request) {
 		c.Overleash.SetPaused(true)
 
 		renderFeatures(w, request, c.Overleash)
 	})
 
-	s.HandleFunc("POST /changeRemote", func(w http.ResponseWriter, request *http.Request) {
+	s.HandleFunc("POST /dashboard/changeRemote", func(w http.ResponseWriter, request *http.Request) {
 		err := request.ParseForm()
 		if err != nil {
 			http.Error(w, "Failed to parse form", http.StatusUnprocessableEntity)
@@ -162,13 +162,13 @@ func (c *Config) Start() {
 		renderFeatures(w, request, c.Overleash)
 	})
 
-	s.HandleFunc("POST /unpause", func(w http.ResponseWriter, request *http.Request) {
+	s.HandleFunc("POST /dashboard/unpause", func(w http.ResponseWriter, request *http.Request) {
 		c.Overleash.SetPaused(false)
 
 		renderFeatures(w, request, c.Overleash)
 	})
 
-	s.HandleFunc("GET /feature/{key}", func(w http.ResponseWriter, request *http.Request) {
+	s.HandleFunc("GET /dashboard/feature/{key}", func(w http.ResponseWriter, request *http.Request) {
 		key := request.PathValue("key")
 
 		flag, err := c.Overleash.FeatureFile().Features.Get(key)
@@ -183,7 +183,7 @@ func (c *Config) Start() {
 		templ.Handler(feature(flag, c.Overleash, showDetails)).ServeHTTP(w, request)
 	})
 
-	s.HandleFunc("GET /lastSync", func(w http.ResponseWriter, request *http.Request) {
+	s.HandleFunc("GET /dashboard/lastSync", func(w http.ResponseWriter, request *http.Request) {
 		templ.Handler(lastSync(c.Overleash.LastSync())).ServeHTTP(w, request)
 	})
 

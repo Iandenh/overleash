@@ -154,9 +154,9 @@ templ feature(flag overleash.Feature, o *overleash.OverleashContext, showDetail 
         <buton class="btn white" hx-post={"/override/" + flag.Name + "/false"} hx-target="closest .flag" hx-swap="innerHTML" hx-trigger="click, disable-flag from:closest .flag">Disable <span class="shortcuts">(d)</span></buton>
 
         if showDetail {
-           <buton class="list muted" hx-get={"/feature/" + flag.Name} hx-target="closest .flag" hx-swap="innerHTML" hx-trigger="click, toggle-detail from:closest .flag"><img src="/static/icons/list.svg"/></buton>
+           <buton class="list muted" hx-get={"/dashboard/feature/" + flag.Name} hx-target="closest .flag" hx-swap="innerHTML" hx-trigger="click, toggle-detail from:closest .flag"><img src="/static/icons/list.svg"/></buton>
         } else {
-            <buton class="list" hx-get={"/feature/" + flag.Name + "?details=true"} hx-target="closest .flag" hx-swap="innerHTML" hx-trigger="click, toggle-detail from:closest .flag"><img src="/static/icons/list.svg"/></buton>
+            <buton class="list" hx-get={"/dashboard/feature/" + flag.Name + "?details=true"} hx-target="closest .flag" hx-swap="innerHTML" hx-trigger="click, toggle-detail from:closest .flag"><img src="/static/icons/list.svg"/></buton>
         }
     </div>
 
@@ -187,7 +187,7 @@ templ remoteSelector(o *overleash.OverleashContext) {
         <select name="remote"
                 class="remote-select"
                 hx-trigger="input changed, remote"
-                hx-post="/changeRemote"
+                hx-post="/dashboard/changeRemote"
                 hx-swap="innerHTML"
                 hx-target="body">
             for idx, remote := range o.GetRemotes() {
@@ -208,15 +208,15 @@ templ features(list featureList, o *overleash.OverleashContext) {
                 <div class="actions">
                     <buton class="btn small black" hx-delete={"/"} hx-swap="innerHTML" hx-target="body">Remove all overrides</buton>
                     if o.IsPaused() {
-                        <buton class="btn small white pause-btn" hx-post={"/unpause"} hx-swap="innerHTML" hx-target="body" hx-trigger="click, toggle-pause">Unpause overrides</buton>
+                        <buton class="btn small white pause-btn" hx-post={"/dashboard/unpause"} hx-swap="innerHTML" hx-target="body" hx-trigger="click, toggle-pause">Unpause overrides</buton>
                     } else {
-                       <buton class="btn small white pause-btn" hx-post={"/pause"} hx-swap="innerHTML" hx-target="body" hx-trigger="click, toggle-pause">Pause overrides</buton>
+                       <buton class="btn small white pause-btn" hx-post={"/dashboard/pause"} hx-swap="innerHTML" hx-target="body" hx-trigger="click, toggle-pause">Pause overrides</buton>
                     }
                     @remoteSelector(o)
                 </div>
                 <div class="sync">
                     @lastSync(o.LastSync())
-                    <buton class="sync-btn" hx-post={"/refresh"} hx-swap="innerHTML" hx-target="body" hx-trigger="click, refresh"><img src="/static/icons/sync.svg" alt="Sync" /></buton>
+                    <buton class="sync-btn" hx-post={"/dashboard/refresh"} hx-swap="innerHTML" hx-target="body" hx-trigger="click, refresh"><img src="/static/icons/sync.svg" alt="Sync" /></buton>
                 </div>
             </div>
             <div class="search">
@@ -225,7 +225,7 @@ templ features(list featureList, o *overleash.OverleashContext) {
                        autocomplete="off"
                        autofocus
                        value={list.searchTerm}
-                       hx-post="/search"
+                       hx-post="/dashboard/search"
                        hx-trigger="input changed delay:100ms, search"
                        hx-target=".features"
                        hx-swap="outerHTML" />
@@ -271,7 +271,7 @@ templ featureDetail(strategies []unleash.Strategy, segments map[int][]unleash.Co
 
 
 templ lastSync(t time.Time) {
-    <span hx-get="/lastSync" hx-trigger="every 15s" id="last-sync" hx-swap="outerHTML">Last sync: <strong>{ t.Format("15:04:05") }</strong></span>
+    <span hx-get="/dashboard/lastSync" hx-trigger="every 15s" id="last-sync" hx-swap="outerHTML">Last sync: <strong>{ t.Format("15:04:05") }</strong></span>
 }
 
 templ help() {
