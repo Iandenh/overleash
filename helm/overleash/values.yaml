@@ -2,9 +2,6 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
-# This will set the replicaset count more information can be found here: https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/
-replicaCount: 1
-
 # This sets the container image more information can be found here: https://kubernetes.io/docs/concepts/containers/images/
 image:
   repository: iandenh/overleash
@@ -38,16 +35,19 @@ podAnnotations: {}
 # For more information checkout: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
 podLabels: {}
 
-podSecurityContext: {}
-  # fsGroup: 2000
+podSecurityContext:
+  fsGroup: 1001
 
-securityContext: {}
-  # capabilities:
-  #   drop:
-  #   - ALL
-  # readOnlyRootFilesystem: true
-  # runAsNonRoot: true
-  # runAsUser: 1000
+securityContext:
+  fsGroup: 1001
+  fsGroupChangePolicy: Always
+  allowPrivilegeEscalation: false
+  runAsNonRoot: true
+  seccompProfile:
+    type: RuntimeDefault
+  capabilities:
+    drop:
+      - ALL
 
 service:
   # This sets the service type more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types
@@ -58,32 +58,17 @@ service:
 # This block is for setting up the ingress for more information can be found here: https://kubernetes.io/docs/concepts/services-networking/ingress/
 ingress:
   enabled: false
-  className: ""
-  annotations: {}
-    # kubernetes.io/ingress.class: nginx
-    # kubernetes.io/tls-acme: "true"
-  hosts:
-    - host: chart-example.local
-      paths:
-        - path: /
-          pathType: ImplementationSpecific
-  tls: []
-  #  - secretName: chart-example-tls
-  #    hosts:
-  #      - chart-example.local
 
-# This can be used as the part can be public /api/frontend
-secondaryIngress:
-  enabled: false
+  enableDashboard: true
+  enableClientApi: true
+  enableFrontedApi: true
+
   className: ""
   annotations: {}
     # kubernetes.io/ingress.class: nginx
     # kubernetes.io/tls-acme: "true"
   hosts:
-    - host: chart-example.local
-      paths:
-        - path: /api/frontend
-          pathType: ImplementationSpecific
+    - host: overleash.local
   tls: []
   #  - secretName: chart-example-tls
   #    hosts:
@@ -117,15 +102,6 @@ tolerations: []
 
 affinity: {}
 
-# adds environmentvars for existing secrets to the container via tpl function
-existingSecrets:
-  ""
-  # - name: OVERLEASH_TOKEN
-  #   valueFrom:
-  #     secretKeyRef:
-  #       name: secretname
-#       key: secretkey
-
 persistence:
   ## @param persistence.enabled Enable persistence using Persistent Volume Claims
   ##
@@ -153,10 +129,20 @@ persistence:
   ##
   annotations: {}
 
-overleash:
-  upstreamUrl: "http://unleash.unleash:4242"
-  reload: 5
-  timezone: Europe/Amsterdam
-  proxyMetrics: false
-  verbose: false
+extraEnv:
+  OVERLEASH_URL: "http://unleash.unleash:4242"
+  OVERLEASH_TOKEN: ""
+  OVERLEASH_DYNAMIC_MODE: "false"
+  OVERLEASH_RELOAD: "1"
+  OVERLEASH_VERBOSE: "false"
+  OVERLEASH_PROXY_METRICS: "false"
+  TZ: "Europe/Amsterdam"
 
+# adds environmentvars for existing secrets to the container via tpl function
+existingSecrets:
+  ""
+  # - name: OVERLEASH_TOKEN
+  #   valueFrom:
+  #     secretKeyRef:
+#       name: secretname
+#       key: secretkey

@@ -28,16 +28,63 @@ spec:
     - host: {{ .host | quote }}
       http:
         paths:
-          {{- range .paths }}
-          - path: {{ .path }}
-            {{- with .pathType }}
-            pathType: {{ . }}
-            {{- end }}
+          {{- if and $.Values.ingress.enableDashboard $.Values.ingress.enableClientApi $.Values.ingress.enableFrontedApi }}
+          - path: "/"
+            pathType: ImplementationSpecific
             backend:
               service:
                 name: {{ include "overleash.fullname" $ }}
                 port:
                   number: {{ $.Values.service.port }}
+          {{ else }}
+          {{ if and $.Values.ingress.enableDashboard }}
+          - path: "/"
+            pathType: Exact
+            backend:
+              service:
+                name: {{ include "overleash.fullname" $ }}
+                port:
+                  number: {{ $.Values.service.port }}
+          - path: "/dashboard"
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "overleash.fullname" $ }}
+                port:
+                  number: {{ $.Values.service.port }}
+          - path: "/override"
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "overleash.fullname" $ }}
+                port:
+                  number: {{ $.Values.service.port }}
+          - path: "/static"
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "overleash.fullname" $ }}
+                port:
+                  number: {{ $.Values.service.port }}
+          {{- end }}
+          {{ if and $.Values.ingress.enableClientApi }}
+          - path: "/api/client"
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "overleash.fullname" $ }}
+                port:
+                  number: {{ $.Values.service.port }}
+          {{- end }}
+          {{ if and $.Values.ingress.enableFrontedApi }}
+          - path: "/api/frontend"
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "overleash.fullname" $ }}
+                port:
+                  number: {{ $.Values.service.port }}
+          {{- end }}
           {{- end }}
     {{- end }}
 {{- end }}

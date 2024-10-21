@@ -1,4 +1,3 @@
-{{- if .Values.persistence.enabled }}
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
@@ -6,7 +5,7 @@ metadata:
   labels:
     {{- include "overleash.labels" . | nindent 4 }}
 spec:
-  replicas: {{ .Values.replicaCount }}
+  replicas: 1
   selector:
     matchLabels:
       {{- include "overleash.selectorLabels" . | nindent 6 }}
@@ -35,18 +34,13 @@ spec:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          envFrom:
+          - configMapRef:
+              name: {{ include "overleash.fullname" . }}-configmap
           env:
             {{- if .Values.existingSecrets }}
               {{- toYaml .Values.existingSecrets | nindent 12 }}
             {{- end }}
-            - name: OVERLEASH_URL
-              value: "{{.Values.overleash.upstreamUrl}}"
-            - name: OVERLEASH_RELOAD
-              value: "{{.Values.overleash.reload}}"
-            - name: OVERLEASH_PROXY_METRICS
-              value: "{{.Values.overleash.proxyMetrics}}"
-            - name: OVERLEASH_VERBOSE
-              value: "{{.Values.overleash.verbose}}"
             - name: OVERLEASH_PORT
               value: "{{.Values.service.port}}"
           ports:
@@ -65,8 +59,12 @@ spec:
               subPath: overleash
       volumes:
         - name: overleash-data
+        {{- if .Values.persistence.enabled }}
           persistentVolumeClaim:
             claimName: {{ .Values.persistence.existingClaim | default (include "overleash.fullname" .) }}
+        {{- else }}
+          emptyDir: {}
+        {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
@@ -79,4 +77,3 @@ spec:
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-{{- end }}
