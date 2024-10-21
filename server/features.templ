@@ -2,6 +2,7 @@ package server
 
 import (
     "time"
+    "github.com/Iandenh/overleash/internal/version"
 	"github.com/Iandenh/overleash/overleash"
 	unleash "github.com/Unleash/unleash-client-go/v4/api"
     "strconv"
@@ -15,9 +16,9 @@ templ layout(name string) {
             <meta charset="utf-8" />
             <title>{ name }</title>
             <script src="/static/htmx.2.0.3.min.js"></script>
-            <link href="/static/style.css" rel="stylesheet" />
-            <link rel="icon" href="/static/overleash.svg" />
-            <script src="/static/overleash.js"></script>
+            <link href={"/static/style.css?version="+version.Version} rel="stylesheet" />
+            <link rel="icon" href={"/static/overleash.svg?version="+version.Version} />
+            <script src={"/static/overleash.js?version="+version.Version}></script>
 		</head>
 		<body>
 			<main>
