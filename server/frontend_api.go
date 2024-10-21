@@ -20,12 +20,12 @@ func (c *Config) registerFrontendApi(s *http.ServeMux, middleware Middleware) {
 
 		ctx := createContextFromGetRequest(r)
 
-		apiResponse, ok := resolveAll(c.Overleash.Engine(), ctx)
+		resolvedToggles, ok := resolveAll(c.Overleash.Engine(), ctx)
 		if !ok {
 			return
 		}
 
-		result := frontendFromYggdrasil(apiResponse.Value, false)
+		result := frontendFromYggdrasil(resolvedToggles, false)
 		resultJson, _ := json.Marshal(result)
 
 		w.Write(resultJson)
@@ -47,12 +47,12 @@ func (c *Config) registerFrontendApi(s *http.ServeMux, middleware Middleware) {
 			return
 		}
 
-		apiResponse, ok := resolveAll(c.Overleash.Engine(), ctx)
+		resolvedToggles, ok := resolveAll(c.Overleash.Engine(), ctx)
 		if !ok {
 			return
 		}
 
-		result := frontendFromYggdrasil(apiResponse.Value, false)
+		result := frontendFromYggdrasil(resolvedToggles, false)
 		resultJson, _ := json.Marshal(result)
 
 		w.Write(resultJson)
@@ -67,12 +67,12 @@ func (c *Config) registerFrontendApi(s *http.ServeMux, middleware Middleware) {
 
 		ctx := createContextFromGetRequest(r)
 
-		apiResponse, ok := resolveAll(c.Overleash.Engine(), ctx)
+		resolvedToggles, ok := resolveAll(c.Overleash.Engine(), ctx)
 		if !ok {
 			return
 		}
 
-		result := frontendFromYggdrasil(apiResponse.Value, true)
+		result := frontendFromYggdrasil(resolvedToggles, true)
 		resultJson, _ := json.Marshal(result)
 
 		w.Write(resultJson)
@@ -135,29 +135,29 @@ func (c *Config) registerFrontendApi(s *http.ServeMux, middleware Middleware) {
 	})))
 }
 
-func resolveAll(engine *unleashengine.UnleashEngine, ctx *unleashengine.Context) (ApiResponse, bool) {
-	var apiResponse ApiResponse
+func resolveAll(engine *unleashengine.UnleashEngine, ctx *unleashengine.Context) (map[string]ResolvedToggle, bool) {
+	var apiResponse apiResponse[map[string]ResolvedToggle]
 	err := json.Unmarshal(engine.ResolveAll(ctx), &apiResponse)
 	if err != nil {
 		log.Errorf("Error unmarshalling JSON: %s", err)
-		return ApiResponse{}, false
+		return map[string]ResolvedToggle{}, false
 	}
-	return apiResponse, true
+	return apiResponse.Value, true
 }
 
 func resolve(engine *unleashengine.UnleashEngine, ctx *unleashengine.Context, featureName string) (ResolvedToggle, bool) {
-	var resolvedToggle ResolvedToggleResult
-	err := json.Unmarshal(engine.Resolve(ctx, featureName), &resolvedToggle)
+	var apiResponse apiResponse[ResolvedToggle]
+	err := json.Unmarshal(engine.Resolve(ctx, featureName), &apiResponse)
 	if err != nil {
 		log.Errorf("Error unmarshalling JSON: %s", err)
 		return ResolvedToggle{}, false
 	}
 
-	if resolvedToggle.StatusCode == "NotFound" {
+	if apiResponse.StatusCode == "NotFound" {
 		return ResolvedToggle{}, false
 	}
 
-	return resolvedToggle.Value, true
+	return apiResponse.Value, true
 }
 
 type FrontendResult struct {
@@ -198,16 +198,10 @@ type Variant struct {
 	Payload        VariantPayload `json:"payload"`
 }
 
-type ApiResponse struct {
-	StatusCode   string                    `json:"status_code"`
-	Value        map[string]ResolvedToggle `json:"value"`
-	ErrorMessage string                    `json:"error_message"`
-}
-
-type ResolvedToggleResult struct {
-	StatusCode   string         `json:"status_code"`
-	Value        ResolvedToggle `json:"value"`
-	ErrorMessage string         `json:"error_message"`
+type apiResponse[T any] struct {
+	StatusCode   string `json:"status_code"`
+	Value        T      `json:"value"`
+	ErrorMessage string `json:"error_message"`
 }
 
 func frontendFromYggdrasil(res map[string]ResolvedToggle, includeAll bool) FrontendResult {
