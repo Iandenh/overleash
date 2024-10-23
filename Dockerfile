@@ -1,5 +1,5 @@
 # Rust Build
-FROM --platform=$BUILDPLATFORM rust:1.80 AS rust-build-stage
+FROM --platform=$BUILDPLATFORM rust:1.82 AS rust-build-stage
 WORKDIR /yggdrasil
 ARG TARGETPLATFORM
 RUN git clone --depth 1 --branch resolve_all https://github.com/Iandenh/yggdrasil.git .
