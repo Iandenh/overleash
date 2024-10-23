@@ -55,6 +55,8 @@
     --paused-background-color: #f8f8f8;
     --card-border: #e5e7eb;
     --box-shadow: 0 0 #0000, 0 0 #0000, 0 1px 3px 0 rgba(0, 0, 0, .1), 0 1px 2px -1px rgba(0, 0, 0, .1);
+    --heading-background: #f8f8f8;
+    --borderColor-muted: rgba(217, 217, 217, 0.7);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -69,6 +71,8 @@
         --override-background-color2: #1b1b1b;
         --box-shadow: 0 0 #0000, 0 0 #0000, 0 2px 10px 0 rgba(0, 0, 0, .6), 0 1px 2px -1px rgba(0, 0, 0, .6);
         --paused-background-color: #000;
+        --heading-background: #212121;
+        --borderColor-muted: rgba(68, 68, 68, 0.7);
     }
 
     .sync-btn {
@@ -84,8 +88,7 @@ body {
 body {
     color: var(--text-color);
     font-family: Archivo;
-    max-width: 800px;
-    margin: 20px auto;
+    margin: 0 auto;
     letter-spacing: .5px;
 }
 
@@ -206,12 +209,19 @@ body {
     font-size: 1.1rem;
 }
 
+.heading {
+    background: var(--heading-background);
+    padding: 20px 0;
+    box-shadow: inset 0 -1px 0 var(--borderColor-muted);
+}
+
 .container {
-    margin: 20px 0;
+    margin: 0 auto;
+    max-width: 800px;
 }
 
 .features {
-    padding: 15px 0;
+    padding: 10px 0;
 }
 
 .feature-bar {
@@ -222,6 +232,11 @@ body {
 
 .feature-count {
     font-size: 0.8rem;
+    color: var(--status-background-color);
+}
+
+.empty-state {
+    color: var(--status-background-color);
 }
 
 .feature-container {
@@ -617,6 +632,11 @@ kbd {
 
 .select-menu-selected {
     font-weight: bolder;
+}
+
+.select-menu summary.select-selected {
+    font-weight: bolder;
+    background: var(--override-background-color2);
 }
 
 .feature-filter{

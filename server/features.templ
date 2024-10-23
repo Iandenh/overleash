@@ -42,7 +42,7 @@ templ featureTemplate(list featureList, o *overleash.OverleashContext) {
             </div>
             <div class="feature-filter">
             <details class="select-menu">
-                <summary>Sort <span class="dropdown-caret"></span></summary>
+                <summary class={templ.KV("select-selected", !list.isSelected("sort", ""))}>Sort <span class="dropdown-caret"></span></summary>
                 <article>
                 <div class="select-menu-modal">
                     <div class="select-menu-list">
@@ -72,7 +72,7 @@ templ featureTemplate(list featureList, o *overleash.OverleashContext) {
 
 
             <details class="select-menu">
-                <summary>Filter <span class="dropdown-caret"></span></summary>
+                <summary class={templ.KV("select-selected", !list.isSelected("filter", ""))}>Filter <span class="dropdown-caret"></span></summary>
                     <article>
                         <div class="select-menu-modal">
                             <div class="select-menu-list">
@@ -110,6 +110,10 @@ templ featureTemplate(list featureList, o *overleash.OverleashContext) {
                 <div class="card flag">
                     @feature(flag, o, false)
                 </div>
+            }
+
+            if len(list.flags) == 0 && list.totalFlags > 0 {
+                <div class="empty-state">No results for "{list.searchTerm}"</div>
             }
         </div>
     </div>
@@ -204,35 +208,40 @@ templ remoteSelector(o *overleash.OverleashContext) {
 
 templ features(list featureList, o *overleash.OverleashContext) {
 	@layout("Overleash") {
-	    <div class="container">
-	        <div class="head">
-                <div class="actions">
-                    <buton class="btn small black" hx-delete={"/"} hx-swap="innerHTML" hx-target="body">Remove all overrides</buton>
-                    if o.IsPaused() {
-                        <buton class="btn small white pause-btn" hx-post={"/dashboard/unpause"} hx-swap="innerHTML" hx-target="body" hx-trigger="click, toggle-pause">Unpause overrides</buton>
-                    } else {
-                       <buton class="btn small white pause-btn" hx-post={"/dashboard/pause"} hx-swap="innerHTML" hx-target="body" hx-trigger="click, toggle-pause">Pause overrides</buton>
-                    }
-                    @remoteSelector(o)
+	    <div class="heading">
+            <div class="container">
+                <div class="head">
+                    <div class="actions">
+                        <buton class="btn small black" hx-delete={"/"} hx-swap="innerHTML" hx-target="body">Remove all overrides</buton>
+                        if o.IsPaused() {
+                            <buton class="btn small white pause-btn" hx-post={"/dashboard/unpause"} hx-swap="innerHTML" hx-target="body" hx-trigger="click, toggle-pause">Unpause overrides</buton>
+                        } else {
+                           <buton class="btn small white pause-btn" hx-post={"/dashboard/pause"} hx-swap="innerHTML" hx-target="body" hx-trigger="click, toggle-pause">Pause overrides</buton>
+                        }
+                        @remoteSelector(o)
+                    </div>
+                    <div class="sync">
+                        @lastSync(o.LastSync())
+                        <buton class="sync-btn" hx-post={"/dashboard/refresh"} hx-swap="innerHTML" hx-target="body" hx-trigger="click, refresh"><img src="/static/icons/sync.svg" alt="Sync" /></buton>
+                    </div>
                 </div>
-                <div class="sync">
-                    @lastSync(o.LastSync())
-                    <buton class="sync-btn" hx-post={"/dashboard/refresh"} hx-swap="innerHTML" hx-target="body" hx-trigger="click, refresh"><img src="/static/icons/sync.svg" alt="Sync" /></buton>
+                <div class="search">
+                    <input class="input" type="search"
+                           name="search" placeholder="Begin Typing To Search Feature Flags..."
+                           autocomplete="off"
+                           autofocus
+                           value={list.searchTerm}
+                           hx-post="/dashboard/search"
+                           hx-trigger="input changed delay:100ms, search"
+                           hx-target=".features"
+                           hx-swap="outerHTML" />
                 </div>
             </div>
-            <div class="search">
-                <input class="input" type="search"
-                       name="search" placeholder="Begin Typing To Search Feature Flags..."
-                       autocomplete="off"
-                       autofocus
-                       value={list.searchTerm}
-                       hx-post="/dashboard/search"
-                       hx-trigger="input changed delay:100ms, search"
-                       hx-target=".features"
-                       hx-swap="outerHTML" />
-            </div>
-		    @featureTemplate(list, o)
 		</div>
+
+	    <div class="container">
+		    @featureTemplate(list, o)
+        </div>
 	}
 }
 
