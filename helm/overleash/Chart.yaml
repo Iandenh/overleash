@@ -1,9 +1,15 @@
 apiVersion: v2
 name: overleash
 description: Override your Unleash feature flags blazing fast
+home: https://github.com/Iandenh/overleash
+sources:
+  - https://github.com/Iandenh/overleash
 
 type: application
 
 version: 0.1.0
 
 appVersion: "0.1.0"
+
+annotations:
+  licenses: MIT
