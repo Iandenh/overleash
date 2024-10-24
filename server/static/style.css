@@ -43,6 +43,14 @@
     font-display: block;
 }
 
+*,
+*::before,
+*::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
 :root {
     color-scheme: light;
     --border-color: #000;
@@ -117,10 +125,10 @@ body {
     font-size: 0.85rem;
     margin-bottom: .5rem;
     color: var(--status-background-color);
-}
 
-.current-status .text {
-    font-weight: 700;
+    .text {
+        font-weight: 700;
+    }
 }
 
 .btn {
@@ -137,25 +145,31 @@ body {
     vertical-align: middle;
     white-space: nowrap;
     cursor: pointer;
-}
 
-.btn.white {
-    background: white;
-    color: black;
-    border: 1px solid black;
-}
+    &.small {
+        font-size: 0.9rem;
+        padding: .3rem 0.6rem;
+        height: 30px;
+    }
 
-.btn.white:hover {
-    background: rgb(235, 235, 235);
-}
+    &.white {
+        background: white;
+        color: black;
+        border: 1px solid black;
 
-.btn.black {
-    background: black;
-    color: white;
-}
+        &:hover {
+            background: #ebebeb;
+        }
+    }
 
-.btn.black:hover {
-    background: rgb(44, 44, 44);
+    &.black {
+        background: black;
+        color: white;
+
+        &:hover {
+            background: #2c2c2c;
+        }
+    }
 }
 
 @media (prefers-color-scheme: dark) {
@@ -166,12 +180,6 @@ body {
     .btn.white {
         border: none;
     }
-}
-
-.btn.small {
-    font-size: 0.9rem;
-    padding: .3rem 0.6rem;
-    height: 30px;
 }
 
 .override {
@@ -186,27 +194,27 @@ body {
     justify-content: space-evenly;
     border-radius: 0 0 .5rem .5rem;
     position: relative;
-}
 
-.override.disabled {
-    background: repeating-linear-gradient(-55deg,
-    var(--override-background-color),
-    var(--override-background-color) 30px,
-    var(--override-background-color2) 10px,
-    var(--override-background-color2) 60px);
-}
+    &.disabled {
+        background: repeating-linear-gradient(-55deg,
+        var(--override-background-color),
+        var(--override-background-color) 30px,
+        var(--override-background-color2) 10px,
+        var(--override-background-color2) 60px);
+    }
 
-.override.paused {
-    background: var(--paused-background-color);
-}
+    &.paused {
+        background: var(--paused-background-color);
 
-.override.paused .status {
-    opacity: 0.4;
-}
+        .status {
+            opacity: 0.4;
+        }
+    }
 
-.override .status {
-    font-weight: 700;
-    font-size: 1.1rem;
+    .status {
+        font-weight: 700;
+        font-size: 1.1rem;
+    }
 }
 
 .heading {
@@ -243,14 +251,6 @@ body {
     padding: 10px 0;
 }
 
-*,
-*::before,
-*::after {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
 .input {
     -webkit-text-size-adjust: 100%;
     -webkit-tap-highlight-color: transparent;
@@ -272,12 +272,12 @@ body {
     padding: .625rem;
     font-size: .875rem;
     line-height: 1.25rem;
-}
 
-.input:focus {
-    border-color: var(--border-color);
-    outline: 1px solid var(--border-color);
-    outline-style: ridge;
+    &:focus {
+        border-color: var(--border-color);
+        outline: 1px solid var(--border-color);
+        outline-style: ridge;
+    }
 }
 
 .search {
@@ -293,13 +293,13 @@ body {
     display: flex;
     align-items: center;
     justify-content: space-between;
-}
 
-.head .actions {
-    display: flex;
-    align-items: center;
-    flex-direction: row;
-    gap: 3px;
+    .actions {
+        display: flex;
+        align-items: center;
+        flex-direction: row;
+        gap: 3px;
+    }
 }
 
 .selected {
@@ -317,21 +317,21 @@ body {
 
 .flag {
     scroll-margin: 80px;
-}
 
-.flag .action {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-}
+    .action {
+        display: flex;
+        align-items: center;
+        gap: 5px;
 
-.flag .action .muted {
-    opacity: 0.8;
-}
+        .muted {
+            opacity: 0.8;
+        }
 
-.flag .action .list {
-    visibility: hidden;
-    cursor: pointer;
+        .list {
+            visibility: hidden;
+            cursor: pointer;
+        }
+    }
 }
 
 .remote-select {
@@ -361,10 +361,10 @@ body {
     height: 20px;
     aspect-ratio: 1 / 1;
     cursor: pointer;
-}
 
-.sync-btn:hover {
-    animation-play-state: running;
+    &:hover {
+        animation-play-state: running;
+    }
 }
 
 .detail-container {
@@ -377,17 +377,17 @@ body {
 .strategy {
     border-radius: 6px;
     background: var(--card-border);
-}
 
-.strategy .title {
-    font-weight: 700;
-    padding: 0.5rem 0.5rem 0;;
-    font-size: 1rem;
-    color: var(--text-color);
-}
+    .title {
+        font-weight: 700;
+        padding: 0.5rem 0.5rem 0;;
+        font-size: 1rem;
+        color: var(--text-color);
 
-.strategy .title .text {
-    font-weight: 500;
+        .text {
+            font-weight: 500;
+        }
+    }
 }
 
 .constraint {
@@ -452,20 +452,20 @@ body {
 
 .verdict {
     color: var(--text-color);
-}
 
-.verdict span {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    padding: 5px 8px;
-    border-radius: 4px;
-    font-size: 0.75rem;
-    font-weight: 700;
-    line-height: 1;
-    background-color: var(--override-background-color);
-    color: var(--text-color);
-    border: 1px solid var(--status-background-color);
+    span {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 5px 8px;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        line-height: 1;
+        background-color: var(--override-background-color);
+        color: var(--text-color);
+        border: 1px solid var(--status-background-color);
+    }
 }
 
 kbd {
@@ -491,10 +491,10 @@ kbd {
     border: 1px solid #ddd;
     border-radius: 5px;
     align-items: center;
-}
 
-.kbd-shortcut .action {
-    font-size: 0.8rem;
+    .action {
+        font-size: 0.8rem;
+    }
 }
 
 .help {
@@ -624,10 +624,10 @@ kbd {
     cursor: pointer;
     border-bottom: 1px solid var(--card-border);
     text-decoration: none;
-}
 
-.select-menu-item:hover {
-    background: var(--override-background-color2);
+    &.select-menu-item:hover {
+        background: var(--override-background-color2);
+    }
 }
 
 .select-menu-selected {
@@ -639,7 +639,7 @@ kbd {
     background: var(--override-background-color2);
 }
 
-.feature-filter{
+.feature-filter {
     display: flex;
     flex-direction: row;
     gap: 5px;
