@@ -302,17 +302,17 @@ body {
     }
 }
 
-.selected {
-    outline: 3px solid var(--border-color);
-    outline-style: ridge;
-}
-
 .shortcuts {
     display: none;
 }
 
-.selected .shortcuts {
-    display: inline;
+.selected {
+    outline: 3px solid var(--border-color);
+    outline-style: ridge;
+
+    .shortcuts {
+        display: inline;
+    }
 }
 
 .flag {
@@ -400,48 +400,48 @@ body {
     border-radius: 8px;
     box-shadow: none;
     align-items: center;
-}
 
-.name {
-    color: var(--text-color);
-    font-weight: 500;
-    overflow: hidden;
-    max-width: 100px;
-    min-width: 100px;
-    margin-right: 10px;
-    margin-top: auto;
-    margin-bottom: auto;
-    word-break: break-word;
-    font-size: 0.875rem;
-}
+    .name {
+        color: var(--text-color);
+        font-weight: 500;
+        overflow: hidden;
+        max-width: 100px;
+        min-width: 100px;
+        margin-right: 10px;
+        margin-top: auto;
+        margin-bottom: auto;
+        word-break: break-word;
+        font-size: 0.875rem;
+    }
 
-.inverted {
-    color: var(--status-background-color);
-}
+    .inverted {
+        color: var(--status-background-color);
+    }
 
-.operator {
-    display: flex;
-    margin: auto 0;
-    min-width: 100px;
-    position: relative;
-    padding: 4px 12px;
-    border-radius: 4px;
-    background-color: var(--override-background-color);
-    line-height: 1.25;
-    font-size: 0.875rem;
-    color: var(--text-color);
-    justify-content: center;
-}
+    .operator {
+        display: flex;
+        margin: auto 0;
+        min-width: 100px;
+        position: relative;
+        padding: 4px 12px;
+        border-radius: 4px;
+        background-color: var(--override-background-color);
+        line-height: 1.25;
+        font-size: 0.875rem;
+        color: var(--text-color);
+        justify-content: center;
+    }
 
-.values {
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-    word-break: break-word;
-    font-size: 0.875rem;
-    margin: auto 0;
-    color: var(--text-color);
+    .values {
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        word-break: break-word;
+        font-size: 0.875rem;
+        margin: auto 0;
+        color: var(--text-color);
+    }
 }
 
 @keyframes spin {
@@ -494,6 +494,13 @@ kbd {
 
     .action {
         font-size: 0.8rem;
+        flex: 1;
+        text-align: right;
+    }
+
+    .keys {
+        flex: 1;
+        text-align: left;
     }
 }
 
@@ -507,16 +514,6 @@ kbd {
     border: 1px solid var(--card-border);
     box-shadow: var(--box-shadow);
     border-radius: .5rem;
-}
-
-.keys {
-    flex: 1;
-    text-align: left;
-}
-
-.action {
-    flex: 1;
-    text-align: right;
 }
 
 .version {
