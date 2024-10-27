@@ -25,11 +25,6 @@ document.addEventListener('DOMContentLoaded',function () {
      */
     let closeButtonHelpDialog = document.querySelector("dialog button");
 
-    /**
-     * @type {boolean}
-     */
-    let altMode = false
-
     const searchListener = () => {
         moveTo(-1, false);
     };
@@ -63,6 +58,7 @@ document.addEventListener('DOMContentLoaded',function () {
     };
 
     document.addEventListener("keydown", (event) => {
+        const altMode = event.getModifierState('Alt');
         switch (event.key) {
             case 'Escape':
                 clearInput(event);
@@ -107,17 +103,6 @@ document.addEventListener('DOMContentLoaded',function () {
                 return;
             case '/':
                 focusInput(event);
-                return;
-            case 'Alt':
-                altMode = true;
-                return;
-        }
-    });
-
-    document.addEventListener("keyup", (event) => {
-        switch (event.key) {
-            case 'Alt':
-                altMode = false;
                 return;
         }
     });
