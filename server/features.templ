@@ -159,9 +159,9 @@ templ feature(flag overleash.Feature, o *overleash.OverleashContext, showDetail 
         <buton class="btn white" hx-post={"/override/" + flag.Name + "/false"} hx-target="closest .flag" hx-swap="innerHTML" hx-trigger="click, disable-flag from:closest .flag">Disable <span class="shortcuts">(d)</span></buton>
 
         if showDetail {
-           <buton class="list muted" hx-get={"/dashboard/feature/" + flag.Name} hx-target="closest .flag" hx-swap="innerHTML" hx-trigger="click, toggle-detail from:closest .flag"><img src="/static/icons/list.svg"/></buton>
+           <buton class="list muted" hx-get={"/dashboard/feature/" + flag.Name} hx-target="closest .flag" hx-swap="innerHTML" hx-trigger="click, toggle-detail from:closest .flag"></buton>
         } else {
-            <buton class="list" hx-get={"/dashboard/feature/" + flag.Name + "?details=true"} hx-target="closest .flag" hx-swap="innerHTML" hx-trigger="click, toggle-detail from:closest .flag"><img src="/static/icons/list.svg"/></buton>
+            <buton class="list" hx-get={"/dashboard/feature/" + flag.Name + "?details=true"} hx-target="closest .flag" hx-swap="innerHTML" hx-trigger="click, toggle-detail from:closest .flag"></buton>
         }
     </div>
 
