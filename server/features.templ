@@ -41,27 +41,27 @@ templ featureTemplate(list featureList, o *overleash.OverleashContext) {
                 }
             </div>
             <div class="feature-filter">
-            <details class="select-menu">
+            <details class="select-menu" name="search-filter">
                 <summary class={templ.KV("select-selected", !list.isSelected("sort", ""))}>Sort <span class="dropdown-caret"></span></summary>
                 <article>
                 <div class="select-menu-modal">
                     <div class="select-menu-list">
                         <a
                             class={"select-menu-item", templ.KV("select-menu-selected", list.isSelected("sort", ""))}
-                            href="#"
+                            href={templ.URL(list.generateUrl("sort", ""))}
                             hx-get={list.generateUrl("sort", "")}
                             hx-swap="innerHTML"
                             hx-target="body">Default</a>
                         <a
                             class={"select-menu-item", templ.KV("select-menu-selected", list.isSelected("sort", "name-asc"))}
-                            href="#"
+                            href={templ.URL(list.generateUrl("sort", "name-asc"))}
                             hx-get={list.generateUrl("sort", "name-asc")}
                             hx-swap="innerHTML"
                             hx-target="body">Alphabetic ascending</a>
 
                         <a
-                            href="#"
                             class={"select-menu-item", templ.KV("select-menu-selected", list.isSelected("sort", "name-desc"))}
+                            href={templ.URL(list.generateUrl("sort", "name-desc"))}
                             hx-get={list.generateUrl("sort", "name-desc")}
                             hx-swap="innerHTML"
                             hx-target="body">Alphabetic descending</a>
@@ -71,29 +71,29 @@ templ featureTemplate(list featureList, o *overleash.OverleashContext) {
             </details>
 
 
-            <details class="select-menu">
+            <details class="select-menu" name="search-filter">
                 <summary class={templ.KV("select-selected", !list.isSelected("filter", ""))}>Filter <span class="dropdown-caret"></span></summary>
                     <article>
                         <div class="select-menu-modal">
                             <div class="select-menu-list">
                             <a
                                 class={"select-menu-item", templ.KV("select-menu-selected", list.isSelected("filter", ""))}
-                                href="#"
+                                href={templ.URL(list.generateUrl("filter", ""))}
                                 hx-get={list.generateUrl("filter", "")}
                                 hx-params="*"
                                 hx-swap="innerHTML"
                                 hx-target="body">Show all</a>
 
                             <a
-                                href="#"
                                 class={"select-menu-item", templ.KV("select-menu-selected", list.isSelected("filter", "overridden"))}
+                                href={templ.URL(list.generateUrl("filter", "overridden"))}
                                 hx-get={list.generateUrl("filter", "overridden")}
                                 hx-swap="innerHTML"
                                 hx-target="body">Only overridden</a>
 
                             <a
-                                href="#"
                                 class={"select-menu-item", templ.KV("select-menu-selected", list.isSelected("filter", "not-overridden"))}
+                                href={templ.URL(list.generateUrl("filter", "not-overridden"))}
                                 hx-get={list.generateUrl("filter", "not-overridden")}
                                 hx-params="*"
                                 hx-swap="innerHTML"
