@@ -6,7 +6,7 @@ toolchain go1.23.0
 
 require (
 	github.com/Unleash/unleash-client-go/v4 v4.1.4
-	github.com/a-h/templ v0.2.778
+	github.com/a-h/templ v0.2.793
 	github.com/charmbracelet/log v0.4.0
 	github.com/rs/cors v1.11.1
 	github.com/spf13/pflag v1.0.5
@@ -16,9 +16,9 @@ require (
 
 require (
 	github.com/aymanbagabas/go-osc52/v2 v2.0.1 // indirect
-	github.com/charmbracelet/lipgloss v0.13.1 // indirect
-	github.com/charmbracelet/x/ansi v0.4.2 // indirect
-	github.com/fsnotify/fsnotify v1.7.0 // indirect
+	github.com/charmbracelet/lipgloss v1.0.0 // indirect
+	github.com/charmbracelet/x/ansi v0.4.5 // indirect
+	github.com/fsnotify/fsnotify v1.8.0 // indirect
 	github.com/go-logfmt/logfmt v0.6.0 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/lucasb-eyer/go-colorful v1.2.0 // indirect
