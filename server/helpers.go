@@ -86,6 +86,11 @@ func getShortcuts() []shortcut {
 			description: "Pause all overrides",
 			alt:         true,
 		},
+		{
+			character:   "t",
+			description: "Toggle Dark/Light mode",
+			alt:         true,
+		},
 	}
 }
 

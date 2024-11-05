@@ -25,10 +25,14 @@ document.addEventListener('DOMContentLoaded',function () {
      */
     let closeButtonHelpDialog = document.querySelector("dialog button");
 
+    /**
+     * @type {HTMLButtonElement}
+     */
+    let themeToggle = document.querySelector(".theme-btn");
+
     const searchListener = () => {
         moveTo(-1, false);
     };
-
     const closeHelpDialogListener = () => {
         helpDialog.close();
     };
@@ -39,11 +43,14 @@ document.addEventListener('DOMContentLoaded',function () {
         searchBar = document.querySelector('.input');
         closeButtonHelpDialog = document.querySelector("dialog button");
         helpDialog = document.querySelector("#help-dialog");
+        themeToggle = document.querySelector(".theme-btn");
 
         searchBar.removeEventListener('click', searchListener);
         searchBar.addEventListener('click', searchListener);
         closeButtonHelpDialog.removeEventListener('click', closeHelpDialogListener);
         closeButtonHelpDialog.addEventListener('click', closeHelpDialogListener);
+        themeToggle.removeEventListener('click', toggleTheme);
+        themeToggle.addEventListener('click', toggleTheme);
 
         const elementLength = elements.length;
         for (let i = 0; i < elementLength; i++) {
@@ -90,6 +97,11 @@ document.addEventListener('DOMContentLoaded',function () {
             case '?':
                 if (document.activeElement !== searchBar) {
                     toggleHelp(event);
+                }
+                return;
+            case 't':
+                if (altMode) {
+                    toggleTheme();
                 }
                 return;
             case 'd':
@@ -270,6 +282,18 @@ document.addEventListener('DOMContentLoaded',function () {
         } else {
             helpDialog.showModal();
         }
+    }
+
+    const toggleTheme = () => {
+        let nextTheme = 'dark';
+        const theme = document.documentElement.getAttribute('data-theme');
+        if (theme === 'dark') {
+            nextTheme = 'light';
+        } else if (theme === 'light') {
+            nextTheme = 'auto';
+        }
+        document.documentElement.setAttribute('data-theme', nextTheme);
+        document.cookie = `prefers-color-scheme=${nextTheme};path=/;max-age=31536000;`;
     }
 
     load();

@@ -212,5 +212,22 @@ func renderFeatures(w http.ResponseWriter, r *http.Request, o *overleash.Overlea
 
 	w.Header().Set("HX-Replace-Url", list.url)
 
-	templ.Handler(features(list, o)).ServeHTTP(w, r)
+	templ.Handler(features(list, o, getColorScheme(r))).ServeHTTP(w, r)
+}
+
+func getColorScheme(r *http.Request) string {
+	cookie, err := r.Cookie("prefers-color-scheme")
+
+	if err != nil {
+		return "auto"
+	}
+
+	switch cookie.Value {
+	case "light":
+		return "light"
+	case "dark":
+		return "dark"
+	}
+
+	return "auto"
 }

@@ -9,16 +9,16 @@ import (
     "strings"
 )
 
-templ layout(name string) {
+templ layout(name string, colorScheme string) {
     <!doctype html>
-	<html lang="en">
+	<html lang="en" data-theme={colorScheme}>
 		<head>
             <meta charset="utf-8" />
             <title>{ name }</title>
-            <script src="/static/htmx.2.0.3.min.js"></script>
+            <script src="/static/htmx.2.0.3.min.js" defer></script>
             <link href={"/static/style.css?version="+version.Version} rel="stylesheet" />
             <link rel="icon" href={"/static/overleash.svg?version="+version.Version} />
-            <script src={"/static/overleash.js?version="+version.Version}></script>
+            <script src={"/static/overleash.js?version="+version.Version} defer></script>
 		</head>
 		<body>
 			<main>
@@ -206,8 +206,8 @@ templ remoteSelector(o *overleash.OverleashContext) {
     }
 }
 
-templ features(list featureList, o *overleash.OverleashContext) {
-	@layout("Overleash") {
+templ features(list featureList, o *overleash.OverleashContext, colorScheme string) {
+	@layout("Overleash", colorScheme) {
 	    <div class="heading">
             <div class="container">
                 <div class="head">
@@ -288,6 +288,15 @@ templ help() {
     <dialog id="help-dialog">
         <div class="help">
             <button class="btn black">Close</button>
+
+            <div>
+                Current theme:
+                <buton class="theme-btn">
+                    <span  class="auto" >Auto</span>
+                    <span  class="light">Light</span>
+                    <span  class="dark" >Dark</span>
+                </buton>
+            </div>
             <div class="kbd-shortcuts">
 
             for _, shortcut := range getShortcuts() {
