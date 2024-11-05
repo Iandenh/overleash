@@ -47,13 +47,20 @@ func (c *Config) Start() {
 
 	fileServer := http.FileServer(http.FS(htmlContent))
 
-	s.Handle("/", NewFeaturesHandler(c.Overleash))
 	s.Handle("/static/", http.StripPrefix("/static/", fileServer))
 
 	middleware := createNewDynamicModeMiddleware(c.Overleash)
 
 	c.registerClientApi(s, middleware)
 	c.registerFrontendApi(s, middleware)
+
+	s.HandleFunc("/", func(w http.ResponseWriter, request *http.Request) {
+		if request.Method == http.MethodDelete {
+			c.Overleash.DeleteAllOverride()
+		}
+
+		renderFeatures(w, request, c.Overleash)
+	})
 
 	s.HandleFunc("POST /override/constrain/{key}/{enabled}", func(w http.ResponseWriter, request *http.Request) {
 		key := request.PathValue("key")
@@ -198,29 +205,6 @@ func (c *Config) Start() {
 		log.Error(err)
 		panic(err)
 	}
-}
-
-type FeaturesHandler struct {
-	GetContext func() *overleash.OverleashContext
-}
-
-func NewFeaturesHandler(o *overleash.OverleashContext) FeaturesHandler {
-	ContextGetter := func() *overleash.OverleashContext {
-		return o
-	}
-	return FeaturesHandler{
-		GetContext: ContextGetter,
-	}
-}
-
-func (fh FeaturesHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	o := fh.GetContext()
-
-	if r.Method == http.MethodDelete {
-		o.DeleteAllOverride()
-	}
-
-	renderFeatures(w, r, o)
 }
 
 func renderFeatures(w http.ResponseWriter, r *http.Request, o *overleash.OverleashContext) {
