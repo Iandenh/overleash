@@ -41,7 +41,7 @@ RUN case "$TARGETPLATFORM" in \
 esac
 
 # Deploy.
-FROM --platform=$BUILDPLATFORM debian AS release-stage
+FROM --platform=$BUILDPLATFORM debian:bookworm-slim AS release-stage
 ARG TARGETPLATFORM
 ENV OVERLEASH_PORT=8080
 
