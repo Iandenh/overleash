@@ -77,6 +77,11 @@ func getShortcuts() []shortcut {
 			alt:         false,
 		},
 		{
+			character:   "h",
+			description: "Show this help dialog",
+			alt:         true,
+		},
+		{
 			character:   "r",
 			description: "Refresh all flags",
 			alt:         true,

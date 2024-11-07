@@ -155,13 +155,13 @@ templ feature(flag overleash.Feature, o *overleash.OverleashContext, showDetail 
     </div>
 
     <div class="action">
-        <buton class="btn black" hx-post={"/override/" + flag.Name + "/true"} hx-target="closest .flag" hx-swap="innerHTML" hx-trigger="click, enable-flag from:closest .flag">Enable <span class="shortcuts">(e)</span></buton>
-        <buton class="btn white" hx-post={"/override/" + flag.Name + "/false"} hx-target="closest .flag" hx-swap="innerHTML" hx-trigger="click, disable-flag from:closest .flag">Disable <span class="shortcuts">(d)</span></buton>
+        <button class="btn black" hx-post={"/override/" + flag.Name + "/true"} hx-target="closest .flag" hx-swap="innerHTML" hx-trigger="click, enable-flag from:closest .flag">Enable <span class="shortcuts">(e)</span></button>
+        <button class="btn white" hx-post={"/override/" + flag.Name + "/false"} hx-target="closest .flag" hx-swap="innerHTML" hx-trigger="click, disable-flag from:closest .flag">Disable <span class="shortcuts">(d)</span></button>
 
         if showDetail {
-           <buton class="list muted" hx-get={"/dashboard/feature/" + flag.Name} hx-target="closest .flag" hx-swap="innerHTML" hx-trigger="click, toggle-detail from:closest .flag"></buton>
+           <button class="list muted" hx-get={"/dashboard/feature/" + flag.Name} hx-target="closest .flag" hx-swap="innerHTML" hx-trigger="click, toggle-detail from:closest .flag"></button>
         } else {
-            <buton class="list" hx-get={"/dashboard/feature/" + flag.Name + "?details=true"} hx-target="closest .flag" hx-swap="innerHTML" hx-trigger="click, toggle-detail from:closest .flag"></buton>
+            <button class="list" hx-get={"/dashboard/feature/" + flag.Name + "?details=true"} hx-target="closest .flag" hx-swap="innerHTML" hx-trigger="click, toggle-detail from:closest .flag"></button>
         }
     </div>
 
@@ -182,7 +182,7 @@ templ feature(flag overleash.Feature, o *overleash.OverleashContext, showDetail 
             }
             </div>
 
-            <buton class="btn white" hx-delete={"/override/" + flag.Name} hx-target="closest .flag" hx-swap="innerHTML" hx-trigger="click, remove-flag from:closest .flag">Remove Override <span class="shortcuts">(q)</span></buton>
+            <button class="btn white" hx-delete={"/override/" + flag.Name} hx-target="closest .flag" hx-swap="innerHTML" hx-trigger="click, remove-flag from:closest .flag">Remove Override <span class="shortcuts">(q)</span></button>
         </div>
      }
 }
@@ -208,21 +208,22 @@ templ remoteSelector(o *overleash.OverleashContext) {
 
 templ features(list featureList, o *overleash.OverleashContext, colorScheme string) {
 	@layout("Overleash", colorScheme) {
+	    @header()
 	    <div class="heading">
             <div class="container">
                 <div class="head">
                     <div class="actions">
-                        <buton class="btn small black" hx-delete={"/"} hx-swap="innerHTML" hx-target="body">Remove all overrides</buton>
+                        <button class="btn small black" hx-delete={"/"} hx-swap="innerHTML" hx-target="body">Remove all overrides</button>
                         if o.IsPaused() {
-                            <buton class="btn small white pause-btn" hx-post={"/dashboard/unpause"} hx-swap="innerHTML" hx-target="body" hx-trigger="click, toggle-pause">Unpause overrides</buton>
+                            <button class="btn small white pause-btn" hx-post={"/dashboard/unpause"} hx-swap="innerHTML" hx-target="body" hx-trigger="click, toggle-pause">Unpause overrides</button>
                         } else {
-                           <buton class="btn small white pause-btn" hx-post={"/dashboard/pause"} hx-swap="innerHTML" hx-target="body" hx-trigger="click, toggle-pause">Pause overrides</buton>
+                           <button class="btn small white pause-btn" hx-post={"/dashboard/pause"} hx-swap="innerHTML" hx-target="body" hx-trigger="click, toggle-pause">Pause overrides</button>
                         }
                         @remoteSelector(o)
                     </div>
                     <div class="sync">
                         @lastSync(o.LastSync())
-                        <buton class="sync-btn" hx-post={"/dashboard/refresh"} hx-swap="innerHTML" hx-target="body" hx-trigger="click, refresh"><img src="/static/icons/sync.svg" alt="Sync" /></buton>
+                        <button class="sync-btn" hx-post={"/dashboard/refresh"} hx-swap="innerHTML" hx-target="body" hx-trigger="click, refresh"><img src="/static/icons/sync.svg" alt="Sync" /></button>
                     </div>
                 </div>
                 <div class="search">
@@ -291,11 +292,11 @@ templ help() {
 
             <div>
                 Current theme:
-                <buton class="theme-btn">
+                <button class="theme-btn">
                     <span  class="auto" >Auto</span>
                     <span  class="light">Light</span>
                     <span  class="dark" >Dark</span>
-                </buton>
+                </button>
             </div>
             <div class="kbd-shortcuts">
 
@@ -319,4 +320,32 @@ templ help() {
             </div>
         </div>
     </dialog>
+}
+
+templ header() {
+    <header>
+        <div class="header">
+            <div><img class="logo" src="/static/overleash.svg"/></div>
+
+            <div class="header-actions">
+                <div class="header-action">
+                    <button class="theme-btn">
+                        <img class="auto" src="/static/icons/auto.svg"/>
+                        <img class="light" src="/static/icons/light.svg"/>
+                        <img class="dark" src="/static/icons/dark.svg"/>
+                    </button>
+                </div>
+
+                 <div class="header-action">
+                    <div class="separator"></div>
+                 </div>
+
+                 <div class="header-action">
+                    <button class="search-btn">
+                        <img src="/static/icons/help.svg"/>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
 }

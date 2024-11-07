@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded',function () {
+const overleash = function() {
     "use strict";
 
     /**
@@ -23,12 +23,17 @@ document.addEventListener('DOMContentLoaded',function () {
     /**
      * @type {HTMLButtonElement}
      */
-    let closeButtonHelpDialog = document.querySelector("dialog button");
+    let helpDialogBtn = document.querySelector(".search-btn");
 
     /**
      * @type {HTMLButtonElement}
      */
-    let themeToggle = document.querySelector(".theme-btn");
+    let closeButtonHelpDialog = document.querySelector("dialog button");
+
+    /**
+     * @type {NodeListOf<HTMLButtonElement>}
+     */
+    let themeToggles = document.querySelectorAll(".theme-btn");
 
     const searchListener = () => {
         moveTo(-1, false);
@@ -43,19 +48,24 @@ document.addEventListener('DOMContentLoaded',function () {
         searchBar = document.querySelector('.input');
         closeButtonHelpDialog = document.querySelector("dialog button");
         helpDialog = document.querySelector("#help-dialog");
-        themeToggle = document.querySelector(".theme-btn");
+        themeToggles = document.querySelectorAll(".theme-btn");
+        helpDialogBtn = document.querySelector(".search-btn");
 
         searchBar.removeEventListener('click', searchListener);
         searchBar.addEventListener('click', searchListener);
         closeButtonHelpDialog.removeEventListener('click', closeHelpDialogListener);
         closeButtonHelpDialog.addEventListener('click', closeHelpDialogListener);
-        themeToggle.removeEventListener('click', toggleTheme);
-        themeToggle.addEventListener('click', toggleTheme);
+        themeToggles.forEach(themeToggle => {
+            themeToggle.removeEventListener('click', toggleTheme);
+            themeToggle.addEventListener('click', toggleTheme);
+        });
+        helpDialogBtn.removeEventListener('click', toggleHelp);
+        helpDialogBtn.addEventListener('click', toggleHelp);
 
         const elementLength = elements.length;
         for (let i = 0; i < elementLength; i++) {
             elements[i].addEventListener('click', () => {
-                if (currentIdx  === i) {
+                if (currentIdx === i) {
                     return;
                 }
 
@@ -68,6 +78,11 @@ document.addEventListener('DOMContentLoaded',function () {
         const altMode = event.getModifierState('Alt');
         switch (event.key) {
             case 'Escape':
+                if (helpDialog.open) {
+                    toggleHelp(event)
+                    return;
+                }
+
                 clearInput(event);
                 return
             case 'ArrowDown':
@@ -101,7 +116,7 @@ document.addEventListener('DOMContentLoaded',function () {
                 return;
             case 't':
                 if (altMode) {
-                    toggleTheme();
+                    toggleTheme(event);
                 }
                 return;
             case 'd':
@@ -284,7 +299,12 @@ document.addEventListener('DOMContentLoaded',function () {
         }
     }
 
-    const toggleTheme = () => {
+    /**
+     * @param event {KeyboardEvent}
+     */
+    const toggleTheme = (event) => {
+        event.preventDefault();
+
         let nextTheme = 'dark';
         const theme = document.documentElement.getAttribute('data-theme');
         if (theme === 'dark') {
@@ -298,4 +318,10 @@ document.addEventListener('DOMContentLoaded',function () {
 
     load();
     focus();
-});
+}
+
+if (document.readyState !== 'loading') {
+    overleash();
+} else {
+    document.addEventListener('DOMContentLoaded', overleash);
+}
