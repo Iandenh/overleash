@@ -66,3 +66,5 @@ header. For this mode setting the overrides are available before the feature fla
 be loaded after the first request that has a Client token included in the authorization header. Requesting this before
 sending a Client token will result in an error 401. This includes request with frontend tokens. Only after the first
 request with Client token all the api calls are unlocked.
+
+This mode is discourage.
