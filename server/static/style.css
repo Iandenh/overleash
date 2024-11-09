@@ -88,6 +88,14 @@
     .sync-btn, .header-action button {
         filter: invert(1);
     }
+
+    .btn.black {
+        border: 1px solid white;
+    }
+
+    .btn.white {
+        border: none;
+    }
 }
 
 @media (prefers-color-scheme: dark) {
@@ -107,6 +115,14 @@
 
         .sync-btn, .header-action button {
             filter: invert(1);
+        }
+
+        .btn.black {
+            border: 1px solid white;
+        }
+
+        .btn.white {
+            border: none;
         }
     }
 }
@@ -232,16 +248,6 @@ header {
         &:hover {
             background: #2c2c2c;
         }
-    }
-}
-
-@media (prefers-color-scheme: dark) {
-    .btn.black {
-        border: 1px solid white;
-    }
-
-    .btn.white {
-        border: none;
     }
 }
 
