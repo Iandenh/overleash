@@ -167,3 +167,18 @@ char *get_metrics(void *engine_ptr);
  * An invalid pointer to unleash engine will result in undefined behaviour.
  */
 char *should_emit_impression_event(void *engine_ptr, const char *toggle_name_ptr);
+
+/**
+ * Lists the features currently known by the engine, as set by take_state
+ * This is a reduced definition and only includes metadata for the feature,
+ * not the properties required to calculate the enabled state of the feature.
+ * Returns a JSON encoded response of type `Response`.
+ *
+ * # Safety
+ *
+ * The caller is responsible for ensuring the engine_ptr is a valid pointer to an unleash engine.
+ * An invalid pointer to unleash engine will result in undefined behaviour.
+ * The caller is responsible for freeing the allocated memory, in case the response is not null. This can be done by calling
+ * `free_response` and passing in the pointer returned by this method. Failure to do so will result in a leak.
+ */
+char *list_known_toggles(void *engine_ptr);
