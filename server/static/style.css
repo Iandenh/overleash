@@ -563,10 +563,10 @@ kbd {
     border: 1px solid #ddd;
     border-radius: 5px;
     align-items: center;
+    gap: 1rem;
 
     .action {
         font-size: 0.8rem;
-        flex: 1;
         text-align: right;
     }
 
