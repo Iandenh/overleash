@@ -11,6 +11,7 @@ import (
 	"github.com/rs/cors"
 	"io/fs"
 	"net/http"
+	"net/url"
 	"strconv"
 )
 
@@ -127,6 +128,8 @@ func (c *Config) Start() {
 			return
 		}
 
+		overwriteRequestUrl(w, request)
+
 		renderFeatures(w, request, c.Overleash)
 	})
 
@@ -137,13 +140,6 @@ func (c *Config) Start() {
 
 		templ.Handler(featureTemplate(list, c.Overleash)).ServeHTTP(w, request)
 	})
-
-	s.HandleFunc("POST /dashboard/pause", func(w http.ResponseWriter, request *http.Request) {
-		c.Overleash.SetPaused(true)
-
-		renderFeatures(w, request, c.Overleash)
-	})
-
 	s.HandleFunc("POST /dashboard/changeRemote", func(w http.ResponseWriter, request *http.Request) {
 		err := request.ParseForm()
 		if err != nil {
@@ -166,11 +162,23 @@ func (c *Config) Start() {
 			return
 		}
 
+		overwriteRequestUrl(w, request)
+
+		renderFeatures(w, request, c.Overleash)
+	})
+
+	s.HandleFunc("POST /dashboard/pause", func(w http.ResponseWriter, request *http.Request) {
+		c.Overleash.SetPaused(true)
+
+		overwriteRequestUrl(w, request)
+
 		renderFeatures(w, request, c.Overleash)
 	})
 
 	s.HandleFunc("POST /dashboard/unpause", func(w http.ResponseWriter, request *http.Request) {
 		c.Overleash.SetPaused(false)
+
+		overwriteRequestUrl(w, request)
 
 		renderFeatures(w, request, c.Overleash)
 	})
@@ -204,6 +212,17 @@ func (c *Config) Start() {
 	if err := http.ListenAndServe(fmt.Sprintf(":%d", c.port), handler); err != nil {
 		log.Error(err)
 		panic(err)
+	}
+}
+
+func overwriteRequestUrl(w http.ResponseWriter, request *http.Request) {
+	if u := request.Header.Get("hx-current-url"); u != "" {
+		parsedUrl, err := url.Parse(u)
+		if err != nil {
+			http.Error(w, "Failed to parse url", http.StatusBadRequest)
+		}
+
+		request.URL = parsedUrl
 	}
 }
 
