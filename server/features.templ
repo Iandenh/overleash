@@ -42,7 +42,17 @@ templ featureTemplate(list featureList, o *overleash.OverleashContext) {
             </div>
             <div class="feature-filter">
             <details class="select-menu" name="search-filter">
-                <summary class={templ.KV("select-selected", !list.isSelected("sort", ""))}>Sort <span class="dropdown-caret"></span></summary>
+                <summary>
+                    <div>
+                        if list.isSelected("sort", "") {
+                                Sort <span class="dropdown-caret"></span>
+                        } else if list.isSelected("sort", "name-asc") {
+                                Sort: <span class="way">Ascending</span> <span class="dropdown-caret"></span>
+                        } else {
+                                Sort: <span class="way">Descending</span> <span class="dropdown-caret"></span>
+                        }
+                    </div>
+                </summary>
                 <article>
                 <div class="select-menu-modal">
                     <div class="select-menu-list">
@@ -72,7 +82,18 @@ templ featureTemplate(list featureList, o *overleash.OverleashContext) {
 
 
             <details class="select-menu" name="search-filter">
-                <summary class={templ.KV("select-selected", !list.isSelected("filter", ""))}>Filter <span class="dropdown-caret"></span></summary>
+                <summary>
+                    <div>
+                        if list.isSelected("filter", "") {
+                                Filter <span class="dropdown-caret"></span>
+                        } else if list.isSelected("filter", "overridden") {
+                                Filter: <span class="way">Only overridden</span> <span class="dropdown-caret"></span>
+                        } else {
+                                Filter: <span class="way">Not overridden</span> <span class="dropdown-caret"></span>
+                        }
+                    </div>
+                </summary>
+
                     <article>
                         <div class="select-menu-modal">
                             <div class="select-menu-list">
