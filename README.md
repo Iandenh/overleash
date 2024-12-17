@@ -2,7 +2,7 @@
 
 ## Override your Unleash feature flags blazing fast 🚀
 
-Overleash is a powerful developer tool that allows you to easily **override feature flags** on and off in your environment. It simplifies the process of making and testing changes that rely on feature flags, enabling faster iterations and smoother development without the need for complex configurations.
+Overleash is a powerful developer tool that allows you to easily **override feature flags** on and off in your environment. It simplifies the process of making and testing changes that rely on feature flags, enabling faster iterations and smoother development without interrupting your teammates or the need for complex configurations.
 
 ---
 
