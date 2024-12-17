@@ -1,20 +1,33 @@
 # Overleash
 
-## Override your Unleash feature flags blazing fast
+## Override your Unleash feature flags blazing fast 🚀
+
+Overleash is a powerful developer tool that allows you to easily **override feature flags** on and off in your environment. It simplifies the process of making and testing changes that rely on feature flags, enabling faster iterations and smoother development without the need for complex configurations.
 
 ---
 
-## Usage
+# Features
+- **Dynamic Overrides:** Override feature flags dynamically without modifying upstream configs.
+- **Dashboard:** View and manage feature flags with ease.
+- **Multi-Token Support:** Seamlessly test with multiple Unleash tokens.
+- **Blazing Fast:** Fetch, cache, and reload feature flag configurations efficiently.
+- **Proxy Metrics:** Enable metrics forwarding for your Unleash setup.
 
-The simplest way to get started is with the provided `docker compose` configuration. Copy the `.env.example` to `.env`
-and fill in your options.
+## 🚀 Quick Start
 
-And then run:
-`docker compose up`
+The simplest way to get started is by using the provided `docker-compose` configuration:
+
+1. Copy the `.env.example` to `.env` and fill in your configuration options.
+2. Run:
+   ```bash
+   docker compose up
+   ```
 
 ## Docker image
-
-The docker image of Overleash is also published to Docker Hub under `iandenh/overleash`.
+The Overleash Docker image is published to **Docker Hub**:
+```bash
+docker pull iandenh/overleash
+```
 
 ### Traefik
 
@@ -23,19 +36,21 @@ set the correct `NETWORK_NAME`.
 The default host name for optimizely is `overleash.test`.
 
 ### Using in application
-
-To make use of the overleash in your application you need to change your Unleash host. Instead
-of https://unleash.mysite.com to for example `http://overleash.test`.
+To use Overleash in your application, simply update your Unleash host:
+```plaintext
+From: https://unleash.mysite.com
+To:   http://overleash.test
+```
 
 ## Yggdrasil - Frontend API
 
-This project supports the frontend API. This is build with [yggdrasil](https://github.com/Unleash/yggdrasil) the
-reusable Unleash SDK domain logic.
-Currently, an own fork is used with some extra FFI functions https://github.com/Iandenh/yggdrasil/tree/resolve_all
+Overleash supports the **Frontend API**, powered by [yggdrasil](https://github.com/Unleash/yggdrasil), the reusable Unleash SDK logic.
+
+> Note: This project uses a custom fork of Yggdrasil with additional FFI functions: [resolve_all branch](https://github.com/Iandenh/yggdrasil/tree/resolve_all).
 
 ## Local build
 
-This project is created with golang version 1.22. For templating it also
+This project is created with golang version 1.23. For templating it also
 uses [templ](https://github.com/a-h/templ/tree/main), so make sure that is installed.
 Generating templ templates can be done with `templ generate`
 
@@ -61,10 +76,44 @@ Here are the config options:
 
 ### Dynamic mode
 
-Dynamic mode is an alternative of providing a token. With this mode we are extracting the token from the authorization
-header. For this mode setting the overrides are available before the feature flag are loaded. Feature flag config will
-be loaded after the first request that has a Client token included in the authorization header. Requesting this before
-sending a Client token will result in an error 401. This includes request with frontend tokens. Only after the first
-request with Client token all the api calls are unlocked.
+Dynamic Mode enables Overleash to automatically extract and use **Client tokens** sent in the Authorization header.
 
-This mode is discourage.
+> Note: Dynamic mode is not recommended unless absolutely required.
+
+**How it works:**
+- The first request must include a valid Unleash Client token.
+- Overleash fetches and caches the feature flag configuration.
+- Subsequent API calls unlock all endpoints for that token.
+  ⚠️ Requests made before sending a valid Client token will return a `401 Unauthorized error`.
+
+## API Endpoints
+### Client API
+| Method | Endpoint                | Description                                                                                 |
+|--------|-------------------------|---------------------------------------------------------------------------------------------|
+| GET | /api/client/features    | Fetch all feature flags.                                                                    |
+| GET | /api/client/features/{key} | Fetch a specific feature flag.                                                              |
+| POST | /api/client/metrics     | Proxy metrics to Unleash server when proxy metrics is enabled, otherwise return always 200. |
+| POST | /api/client/register    | Register client. Always returns 200.                                                        |
+
+
+### Frontend API
+| Method | Endpoint                         | Description                                                                                |
+|---------|----------------------------------|--------------------------------------------------------------------------------------------|
+| GET | /api/frontend                    | Fetch evaluated toggles.                                                                   |
+| POST | /api/frontend                    | Fetch toggles with custom context.                                                         |
+| GET | /api/frontend/features/{featureName} | Fetch a specific feature evaluation.                                                       |
+| POST | /api/frontend/client/metrics     | Proxy metrics to Unleash server when proxy metrics is enabled, otherwise return always 200. |
+| POST | /api/frontend/client/register    | Register frontend client. Always returns 200.                                              |
+
+
+### Dashboard Overrides
+These endpoints return html.
+
+| Method | Endpoint                          | Description                                                                        |
+|--------|-----------------------------------|------------------------------------------------------------------------------------|
+| POST | /override/{key}/{enabled}         | Override a feature flag `true` for enabled and `false` for disabled. |
+| POST | /override/constrain/{key}/{enabled} | Add a constraint override.                                                         |
+| DELETE | /override/{key}                   | Remove an override.                                                                |
+| POST | /dashboard/refresh                | Refresh feature flag data.                                                         |
+| POST | /dashboard/pause                  | Pause Overleash updates.                                                           |
+| POST | /dashboard/unpause                | Resume Overleash updates.                                                          |
