@@ -42,6 +42,16 @@ const overleash = function() {
         helpDialog.close();
     };
 
+    /**
+     * @param event {MouseEvent}
+     */
+    const outsideDialogClickListener = event => {
+        console.log(event);
+        if (event.target === event.currentTarget) {
+            event.currentTarget.close()
+        }
+    }
+
     const load = () => {
         currentIdx = -1;
         elements = document.querySelectorAll('.flag');
@@ -61,6 +71,8 @@ const overleash = function() {
         });
         helpDialogBtn.removeEventListener('click', toggleHelp);
         helpDialogBtn.addEventListener('click', toggleHelp);
+        helpDialog.removeEventListener('mousedown', outsideDialogClickListener);
+        helpDialog.addEventListener('mousedown', outsideDialogClickListener);
 
         const elementLength = elements.length;
         for (let i = 0; i < elementLength; i++) {
