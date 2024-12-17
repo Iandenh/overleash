@@ -76,6 +76,7 @@
 [data-theme='dark'] {
     color-scheme: dark;
     --text-color: #fff;
+    --status-background-color: #888888;
     --border-color: #fff;
     --background-color: #171717;
     --card-background: #252525;
@@ -107,6 +108,7 @@
         color-scheme: dark;
         --text-color: #fff;
         --border-color: #fff;
+        --status-background-color: #888888;
         --background-color: #171717;
         --card-background: #252525;
         --card-border: none;

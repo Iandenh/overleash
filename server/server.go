@@ -140,6 +140,7 @@ func (c *Config) Start() {
 
 		templ.Handler(featureTemplate(list, c.Overleash)).ServeHTTP(w, request)
 	})
+
 	s.HandleFunc("POST /dashboard/changeRemote", func(w http.ResponseWriter, request *http.Request) {
 		err := request.ParseForm()
 		if err != nil {
