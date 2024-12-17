@@ -349,8 +349,8 @@ func (o *OverleashContext) featureFileWithOverwrites() FeatureFile {
 		for idx, flag := range featureFile.Features {
 			if flag.Name == override.FeatureFlag {
 				if override.Enabled {
+					featureFile.Features[idx].Strategies = mapOverrideToStrategies(override, featureFile.Features[idx])
 					featureFile.Features[idx].Enabled = true
-					featureFile.Features[idx].Strategies = mapOverrideToStrategies(override, featureFile.Features[idx].Strategies)
 				} else {
 					featureFile.Features[idx].Enabled = false
 				}
@@ -363,13 +363,19 @@ func (o *OverleashContext) featureFileWithOverwrites() FeatureFile {
 	return featureFile
 }
 
-func mapOverrideToStrategies(override *Override, currentStrategies []unleash.Strategy) []unleash.Strategy {
+func mapOverrideToStrategies(override *Override, feature Feature) []unleash.Strategy {
 	if override.IsGlobal {
 		return []unleash.Strategy{forceEnable}
 	}
 
-	strategies := make([]unleash.Strategy, len(currentStrategies))
-	copy(strategies, currentStrategies)
+	var strategies []unleash.Strategy
+
+	if feature.Enabled {
+		strategies = make([]unleash.Strategy, len(feature.Strategies))
+		copy(strategies, feature.Strategies)
+	} else {
+		strategies = []unleash.Strategy{}
+	}
 
 	var enabledConstraints []unleash.Constraint
 	var disabledConstraints []unleash.Constraint
