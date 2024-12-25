@@ -1,6 +1,7 @@
 package server
 
 import (
+	"context"
 	"embed"
 	"encoding/json"
 	"fmt"
@@ -13,6 +14,8 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
+	"sync"
+	"time"
 )
 
 var (
@@ -26,13 +29,15 @@ type Config struct {
 	Overleash    *overleash.OverleashContext
 	port         int
 	proxyMetrics bool
+	ctx          context.Context
 }
 
-func New(config *overleash.OverleashContext, port int, proxyMetrics bool) *Config {
+func New(config *overleash.OverleashContext, port int, proxyMetrics bool, ctx context.Context) *Config {
 	return &Config{
 		Overleash:    config,
 		port:         port,
 		proxyMetrics: proxyMetrics,
+		ctx:          ctx,
 	}
 }
 
@@ -209,11 +214,34 @@ func (c *Config) Start() {
 	})
 
 	handler := cors.AllowAll().Handler(s)
-	log.Debugf("Starting server on port: %d", c.port)
-	if err := http.ListenAndServe(fmt.Sprintf(":%d", c.port), handler); err != nil {
-		log.Error(err)
-		panic(err)
+
+	httpServer := &http.Server{
+		Addr:    fmt.Sprintf(":%d", c.port),
+		Handler: handler,
 	}
+
+	go func() {
+		log.Debugf("Starting server on port: %d", c.port)
+		if err := httpServer.ListenAndServe(); err != nil {
+			log.Error(err)
+			panic(err)
+		}
+	}()
+
+	var wg sync.WaitGroup
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		<-c.ctx.Done()
+		shutdownCtx := context.Background()
+		shutdownCtx, cancel := context.WithTimeout(shutdownCtx, 10*time.Second)
+		defer cancel()
+		log.Debug("Shutting down server")
+		if err := httpServer.Shutdown(shutdownCtx); err != nil {
+			log.Errorf("error shutting down http server: %s\n", err)
+		}
+	}()
+	wg.Wait()
 }
 
 func overwriteRequestUrl(w http.ResponseWriter, request *http.Request) {

@@ -1,13 +1,32 @@
 package main
 
 import (
+	"context"
 	"github.com/Iandenh/overleash/overleash"
 	"github.com/Iandenh/overleash/server"
 	"github.com/charmbracelet/log"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
+	"os"
+	"os/signal"
 	"strings"
 )
+
+func run(ctx context.Context) {
+	ctx, cancel := signal.NotifyContext(ctx, os.Interrupt)
+	defer cancel()
+
+	tokens := strings.Split(viper.GetString("token"), ",")
+	reload := viper.GetInt("reload")
+	port := viper.GetInt("port")
+	proxyMetrics := viper.GetBool("proxy_metrics")
+	dynamicMode := viper.GetBool("dynamic_mode")
+
+	o := overleash.NewOverleash(viper.GetString("url"), tokens, dynamicMode)
+	o.Start(reload, ctx)
+
+	server.New(o, port, proxyMetrics, ctx).Start()
+}
 
 func main() {
 	log.Info("Starting Overleash")
@@ -19,16 +38,7 @@ func main() {
 		log.Debug(viper.AllSettings())
 	}
 
-	tokens := strings.Split(viper.GetString("token"), ",")
-	reload := viper.GetInt("reload")
-	port := viper.GetInt("port")
-	proxyMetrics := viper.GetBool("proxy_metrics")
-	dynamicMode := viper.GetBool("dynamic_mode")
-
-	o := overleash.NewOverleash(viper.GetString("url"), tokens, dynamicMode)
-	o.Start(reload)
-
-	server.New(o, port, proxyMetrics).Start()
+	run(context.Background())
 }
 
 func initConfig() {

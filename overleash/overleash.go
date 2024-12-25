@@ -2,6 +2,7 @@ package overleash
 
 import (
 	"bytes"
+	"context"
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
@@ -90,7 +91,7 @@ func NewOverleash(url string, tokens []string, dynamicMode bool) *OverleashConte
 	return o
 }
 
-func (o *OverleashContext) Start(reload int) {
+func (o *OverleashContext) Start(reload int, ctx context.Context) {
 	err := o.loadRemotesWithLock()
 
 	if err != nil {
@@ -110,8 +111,13 @@ func (o *OverleashContext) Start(reload int) {
 		defer o.ticker.ticker.Stop()
 		log.Info("Reloading remotes")
 
-		for range o.ticker.ticker.C {
-			o.loadRemotesWithLock()
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case <-o.ticker.ticker.C:
+				o.loadRemotesWithLock()
+			}
 		}
 	}()
 }
