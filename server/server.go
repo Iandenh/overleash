@@ -233,8 +233,7 @@ func (c *Config) Start() {
 	go func() {
 		defer wg.Done()
 		<-c.ctx.Done()
-		shutdownCtx := context.Background()
-		shutdownCtx, cancel := context.WithTimeout(shutdownCtx, 10*time.Second)
+		shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
 		log.Debug("Shutting down server")
 		if err := httpServer.Shutdown(shutdownCtx); err != nil {
