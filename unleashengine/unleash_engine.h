@@ -90,6 +90,14 @@ const char *check_variant(void *engine_ptr,
 const char *built_in_strategies(void);
 
 /**
+ * Returns the version of the Yggdrasil library, in a semantic version format
+ *
+ * # Safety
+ * This returns a constant string, you should not call free on the result of this
+ */
+const char *get_core_version(void);
+
+/**
  * Frees the memory allocated for a response message created by `check_enabled` or `check_variant`.
  *
  * # Safety
@@ -121,7 +129,7 @@ void free_response(char *response_ptr);
  */
 const char *count_toggle(void *engine_ptr,
                          const char *toggle_name_ptr,
-                         bool enabled);
+                         uint8_t enabled);
 
 /**
  * Marks a variant as being counted for purposes of metrics. This function needs to be paired with a call
