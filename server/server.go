@@ -5,6 +5,7 @@ import (
 	"embed"
 	"encoding/json"
 	"fmt"
+	"github.com/CAFxX/httpcompression"
 	"github.com/Iandenh/overleash/overleash"
 	unleash "github.com/Unleash/unleash-client-go/v4/api"
 	"github.com/a-h/templ"
@@ -214,10 +215,11 @@ func (c *Config) Start() {
 	})
 
 	handler := cors.AllowAll().Handler(s)
+	compress, _ := httpcompression.DefaultAdapter()
 
 	httpServer := &http.Server{
 		Addr:    fmt.Sprintf(":%d", c.port),
-		Handler: handler,
+		Handler: compress(handler),
 	}
 
 	go func() {
