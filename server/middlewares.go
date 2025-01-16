@@ -27,7 +27,6 @@ func createNewDynamicModeMiddleware(o *overleash.OverleashContext) Middleware {
 func cacheControlMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if !version.IsDevelopMode() {
-			println(version.Version)
 			w.Header().Set("Cache-Control", "max-age=31536000")
 		}
 
