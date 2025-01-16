@@ -54,7 +54,7 @@ func (c *Config) Start() {
 
 	fileServer := http.FileServer(http.FS(htmlContent))
 
-	s.Handle("/static/", http.StripPrefix("/static/", fileServer))
+	s.Handle("/static/", cacheControlMiddleware(http.StripPrefix("/static/", fileServer)))
 
 	middleware := createNewDynamicModeMiddleware(c.Overleash)
 

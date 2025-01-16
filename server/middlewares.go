@@ -1,6 +1,7 @@
 package server
 
 import (
+	"github.com/Iandenh/overleash/internal/version"
 	"github.com/Iandenh/overleash/overleash"
 	"net/http"
 )
@@ -21,4 +22,15 @@ func createNewDynamicModeMiddleware(o *overleash.OverleashContext) Middleware {
 			next.ServeHTTP(w, r)
 		})
 	}
+}
+
+func cacheControlMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if !version.IsDevelopMode() {
+			println(version.Version)
+			w.Header().Set("Cache-Control", "max-age=31536000")
+		}
+
+		next.ServeHTTP(w, r)
+	})
 }
