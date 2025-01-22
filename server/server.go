@@ -134,7 +134,7 @@ func (c *Config) Start() {
 			return
 		}
 
-		overwriteRequestUrl(w, request)
+		updateRequestUrlFromHeader(w, request)
 
 		renderFeatures(w, request, c.Overleash)
 	})
@@ -169,7 +169,7 @@ func (c *Config) Start() {
 			return
 		}
 
-		overwriteRequestUrl(w, request)
+		updateRequestUrlFromHeader(w, request)
 
 		renderFeatures(w, request, c.Overleash)
 	})
@@ -177,7 +177,7 @@ func (c *Config) Start() {
 	s.HandleFunc("POST /dashboard/pause", func(w http.ResponseWriter, request *http.Request) {
 		c.Overleash.SetPaused(true)
 
-		overwriteRequestUrl(w, request)
+		updateRequestUrlFromHeader(w, request)
 
 		renderFeatures(w, request, c.Overleash)
 	})
@@ -185,7 +185,7 @@ func (c *Config) Start() {
 	s.HandleFunc("POST /dashboard/unpause", func(w http.ResponseWriter, request *http.Request) {
 		c.Overleash.SetPaused(false)
 
-		overwriteRequestUrl(w, request)
+		updateRequestUrlFromHeader(w, request)
 
 		renderFeatures(w, request, c.Overleash)
 	})
@@ -210,8 +210,9 @@ func (c *Config) Start() {
 	})
 
 	s.HandleFunc("GET /health", func(w http.ResponseWriter, request *http.Request) {
-		w.Header().Set("Content-Type", "text/plain")
-		w.Write([]byte("ok"))
+		w.Header().Set("Content-Type", "application/json")
+		status := map[string]string{"status": "ok"}
+		json.NewEncoder(w).Encode(status)
 	})
 
 	handler := cors.AllowAll().Handler(s)
@@ -245,7 +246,7 @@ func (c *Config) Start() {
 	wg.Wait()
 }
 
-func overwriteRequestUrl(w http.ResponseWriter, request *http.Request) {
+func updateRequestUrlFromHeader(w http.ResponseWriter, request *http.Request) {
 	if u := request.Header.Get("hx-current-url"); u != "" {
 		parsedUrl, err := url.Parse(u)
 		if err != nil {
