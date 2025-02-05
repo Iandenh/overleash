@@ -5,6 +5,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"path"
 	"time"
 )
 
@@ -34,13 +35,13 @@ func New(upstream string) *Proxy {
 }
 
 func (p *Proxy) ProxyRequest(w http.ResponseWriter, req *http.Request) error {
-	newUrl, _ := url.Parse(p.upstream)
+	newUrl, err := url.Parse(p.upstream)
 
-	concatPath := req.URL.Path
-	if concatPath != "" {
-		newUrl.Path = newUrl.Path + concatPath
+	if err != nil {
+		return err
 	}
 
+	newUrl.Path = path.Join(newUrl.Path, req.URL.Path)
 	newQuery := newUrl.Query()
 
 	for name, values := range req.URL.Query() {
