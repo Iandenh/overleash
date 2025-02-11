@@ -25,18 +25,18 @@ func (fr FeatureFile) FeatureFlagStatus(featureFlag string) []FeatureFlagStatus 
 	for i, strategy := range flag.Strategies {
 		name, status := parseFromStrategy(strategy)
 
-		suffix := ""
+		sb := strings.Builder{}
 		if len(strategy.Segments) > 0 {
-			suffix += " (with segments)"
+			sb.WriteString(" (with segments)")
 		}
 
 		if len(strategy.Constraints) > 0 {
-			suffix += " (with constraints)"
+			sb.WriteString(" (with constraints)")
 		}
 
 		statuses[i] = FeatureFlagStatus{
 			Strategy: name,
-			Status:   status + suffix,
+			Status:   status + sb.String(),
 		}
 	}
 
