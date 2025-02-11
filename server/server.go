@@ -219,8 +219,12 @@ func (c *Config) Start() {
 	compress, _ := httpcompression.DefaultAdapter()
 
 	httpServer := &http.Server{
-		Addr:    fmt.Sprintf(":%d", c.port),
-		Handler: compress(handler),
+		Addr:              fmt.Sprintf(":%d", c.port),
+		ReadTimeout:       5 * time.Second,
+		WriteTimeout:      10 * time.Second,
+		IdleTimeout:       120 * time.Second,
+		ReadHeaderTimeout: 2 * time.Second,
+		Handler:           compress(handler),
 	}
 
 	go func() {
