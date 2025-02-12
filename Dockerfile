@@ -17,7 +17,7 @@ RUN cargo build --release --target $(cat /rust_target.txt)
 RUN cp target/$(cat /rust_target.txt)/release/libyggdrasilffi.so libyggdrasilffi.so
 
 # Go Build
-FROM --platform=$BUILDPLATFORM golang:1.23 AS build-stage
+FROM --platform=$BUILDPLATFORM golang:1.24 AS build-stage
 ARG VERSION
 ARG TARGETPLATFORM
 ARG BUILDPLATFORM
