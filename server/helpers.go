@@ -3,16 +3,16 @@ package server
 import (
 	"fmt"
 	"github.com/Iandenh/overleash/internal/version"
-	unleash "github.com/Unleash/unleash-client-go/v4/api"
+	"github.com/Iandenh/overleash/overleash"
 	"net/url"
 )
 
-func constraintsOfStrategy(strategy unleash.Strategy, segments map[int][]unleash.Constraint) []unleash.Constraint {
+func constraintsOfStrategy(strategy overleash.Strategy, segments map[int][]overleash.Constraint) []overleash.Constraint {
 	if len(strategy.Segments) == 0 {
 		return strategy.Constraints
 	}
 
-	var constraints []unleash.Constraint
+	var constraints []overleash.Constraint
 
 	copy(constraints, strategy.Constraints)
 

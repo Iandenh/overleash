@@ -2,7 +2,6 @@ package overleash
 
 import (
 	"fmt"
-	unleash "github.com/Unleash/unleash-client-go/v4/api"
 	"slices"
 	"strings"
 )
@@ -55,7 +54,7 @@ func (fr FeatureFile) FeatureFlagEnabled(featureFlag string) bool {
 	return flag.Enabled
 }
 
-func parseFromStrategy(strategy unleash.Strategy) (string, string) {
+func parseFromStrategy(strategy Strategy) (string, string) {
 	switch strategy.Name {
 	case "default":
 		return "Standard", "On"
@@ -85,7 +84,7 @@ func parseFromStrategy(strategy unleash.Strategy) (string, string) {
 	return "", ""
 }
 
-func ToStrategyName(strategy unleash.Strategy) string {
+func ToStrategyName(strategy Strategy) string {
 	switch strategy.Name {
 	case "default":
 		return "Standard"
@@ -115,7 +114,7 @@ func ToStrategyName(strategy unleash.Strategy) string {
 	return ""
 }
 
-func ToLabelText(strategy unleash.Strategy) string {
+func ToLabelText(strategy Strategy) string {
 	switch strategy.Name {
 	case "default":
 		return "The standard strategy is <span>ON</span> for all users."
@@ -136,22 +135,22 @@ func ToLabelText(strategy unleash.Strategy) string {
 	return ""
 }
 
-func rollout(parameterMap unleash.ParameterMap) string {
+func rollout(parameterMap ParameterMap) string {
 	return parameterMap["rollout"].(string)
 }
 
-func ips(parameterMap unleash.ParameterMap) string {
+func ips(parameterMap ParameterMap) string {
 	return parameterMap["IPs"].(string)
 }
 
-func hostNames(parameterMap unleash.ParameterMap) string {
+func hostNames(parameterMap ParameterMap) string {
 	return parameterMap["hostNames"].(string)
 }
 
-func percentage(parameterMap unleash.ParameterMap) string {
+func percentage(parameterMap ParameterMap) string {
 	return parameterMap["percentage"].(string)
 }
 
-func userIds(parameterMap unleash.ParameterMap) string {
+func userIds(parameterMap ParameterMap) string {
 	return parameterMap["userIds"].(string)
 }

@@ -4,7 +4,6 @@ import (
     "time"
     "github.com/Iandenh/overleash/internal/version"
 	"github.com/Iandenh/overleash/overleash"
-	unleash "github.com/Unleash/unleash-client-go/v4/api"
     "strconv"
     "strings"
 )
@@ -267,7 +266,7 @@ templ features(list featureList, o *overleash.OverleashContext, colorScheme stri
 	}
 }
 
-templ featureDetail(strategies []unleash.Strategy, segments map[int][]unleash.Constraint) {
+templ featureDetail(strategies []overleash.Strategy, segments map[int][]overleash.Constraint) {
         <div class="detail-container">
          for _, strategy := range strategies {
             <div class="strategy">

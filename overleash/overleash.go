@@ -10,20 +10,18 @@ import (
 	"fmt"
 	"github.com/Iandenh/overleash/internal/storage"
 	"github.com/Iandenh/overleash/unleashengine"
-	unleash "github.com/Unleash/unleash-client-go/v4/api"
 	"github.com/charmbracelet/log"
 	"strings"
 	"sync"
 	"time"
 )
 
-var forceEnable = unleash.Strategy{
-	Id:          123,
+var forceEnable = Strategy{
 	Name:        "default",
-	Constraints: make([]unleash.Constraint, 0),
+	Constraints: make([]Constraint, 0),
 	Parameters:  make(map[string]interface{}),
 	Segments:    make([]int, 0),
-	Variants:    make([]unleash.VariantInternal, 0),
+	Variants:    make([]StrategyVariant, 0),
 }
 
 type OverleashContext struct {
@@ -56,7 +54,7 @@ func (o *OverleashContext) Engine() *unleashengine.UnleashEngine {
 
 type OverrideConstraint struct {
 	Enabled    bool
-	Constraint unleash.Constraint
+	Constraint Constraint
 }
 
 type Override struct {
@@ -190,7 +188,7 @@ func (o *OverleashContext) AddOverride(featureFlag string, enabled bool) {
 	o.writeOverrides(o.overrides)
 }
 
-func (o *OverleashContext) AddOverrideConstraint(featureFlag string, enabled bool, constraint unleash.Constraint) {
+func (o *OverleashContext) AddOverrideConstraint(featureFlag string, enabled bool, constraint Constraint) {
 	o.LockMutex.Lock()
 	defer o.LockMutex.Unlock()
 
@@ -369,22 +367,22 @@ func (o *OverleashContext) featureFileWithOverwrites() FeatureFile {
 	return featureFile
 }
 
-func mapOverrideToStrategies(override *Override, feature Feature) []unleash.Strategy {
+func mapOverrideToStrategies(override *Override, feature Feature) []Strategy {
 	if override.IsGlobal {
-		return []unleash.Strategy{forceEnable}
+		return []Strategy{forceEnable}
 	}
 
-	var strategies []unleash.Strategy
+	var strategies []Strategy
 
 	if feature.Enabled {
-		strategies = make([]unleash.Strategy, len(feature.Strategies))
+		strategies = make([]Strategy, len(feature.Strategies))
 		copy(strategies, feature.Strategies)
 	} else {
-		strategies = []unleash.Strategy{}
+		strategies = []Strategy{}
 	}
 
-	var enabledConstraints []unleash.Constraint
-	var disabledConstraints []unleash.Constraint
+	var enabledConstraints []Constraint
+	var disabledConstraints []Constraint
 
 	for _, constraint := range override.Constraints {
 		if constraint.Enabled {
@@ -404,17 +402,16 @@ func mapOverrideToStrategies(override *Override, feature Feature) []unleash.Stra
 
 	if len(enabledConstraints) > 0 {
 		for _, constraint := range enabledConstraints {
-			strategies = append(strategies, unleash.Strategy{
-				Id:   0,
+			strategies = append(strategies, Strategy{
 				Name: "flexibleRollout",
 				Parameters: map[string]interface{}{
 					"groupId":    override.FeatureFlag,
 					"rollout":    "100",
 					"stickiness": "default",
 				},
-				Constraints: []unleash.Constraint{constraint},
+				Constraints: []Constraint{constraint},
 				Segments:    nil,
-				Variants:    make([]unleash.VariantInternal, 0),
+				Variants:    make([]StrategyVariant, 0),
 			})
 		}
 	}
