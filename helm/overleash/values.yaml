@@ -132,7 +132,6 @@ persistence:
 extraEnv:
   OVERLEASH_URL: "http://unleash.unleash:4242"
   OVERLEASH_TOKEN: ""
-  OVERLEASH_DYNAMIC_MODE: "false"
   OVERLEASH_RELOAD: "1"
   OVERLEASH_VERBOSE: "false"
   OVERLEASH_PROXY_METRICS: "false"
