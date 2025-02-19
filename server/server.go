@@ -55,10 +55,8 @@ func (c *Config) Start() {
 
 	s.Handle("/static/", cacheControlMiddleware(http.StripPrefix("/static/", fileServer)))
 
-	middleware := createNewDynamicModeMiddleware(c.Overleash)
-
-	c.registerClientApi(s, middleware)
-	c.registerFrontendApi(s, middleware)
+	c.registerClientApi(s)
+	c.registerFrontendApi(s)
 
 	s.HandleFunc("/", func(w http.ResponseWriter, request *http.Request) {
 		if request.Method == http.MethodDelete {
@@ -73,7 +71,7 @@ func (c *Config) Start() {
 		enabled := request.PathValue("enabled")
 		flag, err := c.Overleash.FeatureFile().Features.Get(key)
 
-		if err != nil && !c.Overleash.IsDynamicMode() {
+		if err != nil {
 			http.Error(w, "Feature not found", http.StatusNotFound)
 			return
 		}
@@ -100,7 +98,7 @@ func (c *Config) Start() {
 		enabled := request.PathValue("enabled")
 		flag, err := c.Overleash.FeatureFile().Features.Get(key)
 
-		if err != nil && !c.Overleash.IsDynamicMode() {
+		if err != nil {
 			http.Error(w, "Feature not found", http.StatusNotFound)
 			return
 		}
@@ -115,7 +113,7 @@ func (c *Config) Start() {
 
 		flag, err := c.Overleash.FeatureFile().Features.Get(key)
 
-		if err != nil && !c.Overleash.IsDynamicMode() {
+		if err != nil {
 			http.Error(w, "Feature not found", http.StatusNotFound)
 			return
 		}

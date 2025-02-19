@@ -10,8 +10,8 @@ import (
 	"strings"
 )
 
-func (c *Config) registerFrontendApi(s *http.ServeMux, middleware Middleware) {
-	s.Handle("GET /api/frontend", middleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+func (c *Config) registerFrontendApi(s *http.ServeMux) {
+	s.Handle("GET /api/frontend", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		c.Overleash.LockMutex.RLock()
 		defer c.Overleash.LockMutex.RUnlock()
 
@@ -29,9 +29,9 @@ func (c *Config) registerFrontendApi(s *http.ServeMux, middleware Middleware) {
 		resultJson, _ := json.Marshal(result)
 
 		w.Write(resultJson)
-	})))
+	}))
 
-	s.Handle("POST /api/frontend", middleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	s.Handle("POST /api/frontend", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		c.Overleash.LockMutex.RLock()
 		defer c.Overleash.LockMutex.RUnlock()
 
@@ -56,9 +56,9 @@ func (c *Config) registerFrontendApi(s *http.ServeMux, middleware Middleware) {
 		resultJson, _ := json.Marshal(result)
 
 		w.Write(resultJson)
-	})))
+	}))
 
-	s.Handle("GET /api/frontend/all", middleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	s.Handle("GET /api/frontend/all", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		c.Overleash.LockMutex.RLock()
 		defer c.Overleash.LockMutex.RUnlock()
 
@@ -76,9 +76,9 @@ func (c *Config) registerFrontendApi(s *http.ServeMux, middleware Middleware) {
 		resultJson, _ := json.Marshal(result)
 
 		w.Write(resultJson)
-	})))
+	}))
 
-	s.Handle("GET /api/frontend/features/{featureName}", middleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	s.Handle("GET /api/frontend/features/{featureName}", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		c.Overleash.LockMutex.RLock()
 		defer c.Overleash.LockMutex.RUnlock()
 
@@ -113,9 +113,9 @@ func (c *Config) registerFrontendApi(s *http.ServeMux, middleware Middleware) {
 		resultJson, _ := json.Marshal(evaluated)
 
 		w.Write(resultJson)
-	})))
+	}))
 
-	s.Handle("POST /api/frontend/client/metrics", middleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	s.Handle("POST /api/frontend/client/metrics", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if c.proxyMetrics == false {
 			w.WriteHeader(http.StatusOK)
 
@@ -128,11 +128,11 @@ func (c *Config) registerFrontendApi(s *http.ServeMux, middleware Middleware) {
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
-	})))
+	}))
 
-	s.Handle("POST /api/frontend/client/register", middleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	s.Handle("POST /api/frontend/client/register", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
-	})))
+	}))
 }
 
 func resolveAll(engine *unleashengine.UnleashEngine, ctx *unleashengine.Context) (map[string]ResolvedToggle, bool) {

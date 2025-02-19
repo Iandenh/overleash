@@ -70,21 +70,8 @@ Here are the config options:
 | Reload frequency	             | 	  default: `0`, example: `1`, value is in minutes, `0` is no reload                                                                                                     | `OVERLEASH_RELOAD`	       | `--reload`	        |
 | Server port	                  | default: `5433`                                                                                                                                                          | `OVERLEASH_PORT`	         | `--port`	          |
 | Unleash token (Client token)	 | example:  `*:development.a2a6261d38fe4f9c86aceddce09a00df6c348fd0feeab3c24a9547f2` Token or tokens that are used to fetch the feature flag config from upstream unleash. | `OVERLEASH_TOKEN`	        | `--token`	         |
-| Dynamic mode	                 | default:  `false` If it's needs to start in Dynamic mode. We recommend providing the token as the config option above.                                                   | `OVERLEASH_DYNAMIC_MODE`	 | `--dynamic-mode`	  |
 | Verbose	                      | default:  `false` Logs a bit more information for diagnose issues                                                                                                        | `OVERLEASH_VERBOSE`	      | `--verbose`	       |
 | Proxy metrics to upstream	    | default:  `false` Proxy the metric calls to the upstream. Make sure the correct token are in the authorization header.                                                   | `OVERLEASH_PROXY_METRICS`	      | `--proxy-metrics`	 |
-
-### Dynamic mode
-
-Dynamic Mode enables Overleash to automatically extract and use **Client tokens** sent in the Authorization header.
-
-> Note: Dynamic mode is not recommended unless absolutely required.
-
-**How it works:**
-- The first request must include a valid Unleash Client token.
-- Overleash fetches and caches the feature flag configuration.
-- Subsequent API calls unlock all endpoints for that token.
-  ⚠️ Requests made before sending a valid Client token will return a `401 Unauthorized error`.
 
 ## API Endpoints
 ### Client API

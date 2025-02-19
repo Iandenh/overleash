@@ -8,8 +8,8 @@ import (
 	"strings"
 )
 
-func (c *Config) registerClientApi(s *http.ServeMux, middleware Middleware) {
-	s.Handle("GET /api/client/features", middleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+func (c *Config) registerClientApi(s *http.ServeMux) {
+	s.Handle("GET /api/client/features", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ifNoneMatch := strings.Trim(strings.TrimPrefix(r.Header.Get("If-None-Match"), "W/"), "\"")
 
 		if ifNoneMatch != "" && ifNoneMatch == c.Overleash.EtagOfCachedJson() {
@@ -22,9 +22,9 @@ func (c *Config) registerClientApi(s *http.ServeMux, middleware Middleware) {
 		w.WriteHeader(http.StatusOK)
 
 		w.Write(c.Overleash.CachedJson())
-	})))
+	}))
 
-	s.Handle("GET /api/client/features/{key}", middleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	s.Handle("GET /api/client/features/{key}", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		key := r.PathValue("key")
 
 		w.Header().Add("Content-Type", "application/json")
@@ -35,9 +35,9 @@ func (c *Config) registerClientApi(s *http.ServeMux, middleware Middleware) {
 		writer := json.NewEncoder(w)
 
 		writer.Encode(flag)
-	})))
+	}))
 
-	s.Handle("POST /api/client/metrics", middleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	s.Handle("POST /api/client/metrics", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if c.proxyMetrics == false {
 			w.WriteHeader(http.StatusOK)
 
@@ -50,9 +50,9 @@ func (c *Config) registerClientApi(s *http.ServeMux, middleware Middleware) {
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
-	})))
+	}))
 
-	s.Handle("POST /api/client/register", middleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	s.Handle("POST /api/client/register", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
-	})))
+	}))
 }

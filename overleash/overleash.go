@@ -26,8 +26,6 @@ var forceEnable = Strategy{
 
 type OverleashContext struct {
 	url               string
-	dynamicMode       bool
-	dynamicToken      *EdgeToken
 	tokens            []string
 	featureFiles      []FeatureFile
 	featureIdx        int
@@ -64,11 +62,9 @@ type Override struct {
 	Constraints []OverrideConstraint
 }
 
-func NewOverleash(url string, tokens []string, dynamicMode bool) *OverleashContext {
+func NewOverleash(url string, tokens []string) *OverleashContext {
 	o := &OverleashContext{
 		url:          url,
-		dynamicMode:  dynamicMode,
-		dynamicToken: nil,
 		tokens:       tokens,
 		featureFiles: make([]FeatureFile, len(tokens)),
 		featureIdx:   0,
@@ -265,42 +261,8 @@ func (o *OverleashContext) GetRemotes() []string {
 	return remotes
 }
 
-func (o *OverleashContext) IsDynamicMode() bool {
-	return o.dynamicMode
-}
-
 func (o *OverleashContext) Url() string {
 	return o.url
-}
-
-func (o *OverleashContext) ShouldDoDynamicCheck() bool {
-	if o.dynamicMode == false {
-		return false
-	}
-
-	return o.dynamicToken == nil
-}
-
-func (o *OverleashContext) AddDynamicToken(token string) bool {
-	o.LockMutex.Lock()
-	defer o.LockMutex.Unlock()
-
-	edgeToken, err := validateToken(o.url, token)
-
-	if err != nil {
-		return false
-	}
-
-	if edgeToken.TokenType != Client {
-		return false
-	}
-
-	o.dynamicToken = edgeToken
-	o.tokens = []string{edgeToken.Token}
-
-	o.loadRemotes()
-
-	return true
 }
 
 func (o *OverleashContext) CachedJson() []byte {
