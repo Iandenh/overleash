@@ -357,9 +357,15 @@ header {
     }
 }
 
-.search {
-    display: block;
+.search-container {
+    display: flex;
+    gap: 4px;
     margin-top: 1rem;
+}
+
+.search {
+    flex-grow: 1;
+    display: block;
 }
 
 .key strong {
@@ -617,18 +623,19 @@ kbd {
 }
 
 .select-menu summary {
+    height: 100%;
     font-size: 0.75rem;
     list-style: none;
     display: inline-flex;
     align-items: center;
-    padding: 10px;
+    padding-inline: 1rem;
 
     cursor: pointer;
 
     background-color: var(--summary-background);
     color: var(--text-color);
     border: 1px solid var(--summary-border);
-    border-radius: 5px;
+    border-radius: .5rem;
 
     .way {
         font-weight: bolder;
