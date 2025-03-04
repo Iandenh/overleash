@@ -40,6 +40,7 @@ type OverleashContext struct {
 	ticker            ticker
 	engine            *unleashengine.UnleashEngine
 	store             storage.Store
+	client            *OverleashClient
 }
 
 func (o *OverleashContext) EtagOfCachedJson() string {
@@ -86,6 +87,8 @@ func NewOverleash(url string, tokens []string) *OverleashContext {
 }
 
 func (o *OverleashContext) Start(reload int, ctx context.Context) {
+	o.client = NewClient(o.url, reload)
+
 	err := o.loadRemotesWithLock()
 
 	if err != nil {
@@ -127,7 +130,7 @@ func (o *OverleashContext) loadRemotes() error {
 	e := error(nil)
 
 	for idx, token := range o.tokens {
-		featureFile, err := getFeatures(o.url, token)
+		featureFile, err := o.client.getFeatures(token)
 
 		if err != nil {
 			log.Errorf("Error loading features: %s", err.Error())

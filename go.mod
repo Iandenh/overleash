@@ -8,6 +8,7 @@ require (
 	github.com/CAFxX/httpcompression v0.0.9
 	github.com/a-h/templ v0.3.833
 	github.com/charmbracelet/log v0.4.0
+	github.com/google/uuid v1.6.0
 	github.com/rs/cors v1.11.1
 	github.com/spf13/pflag v1.0.6
 	github.com/spf13/viper v1.19.0
