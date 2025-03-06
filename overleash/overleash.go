@@ -25,7 +25,7 @@ var forceEnable = Strategy{
 }
 
 type OverleashContext struct {
-	url               string
+	upstream          string
 	tokens            []string
 	featureFiles      []FeatureFile
 	featureIdx        int
@@ -63,9 +63,9 @@ type Override struct {
 	Constraints []OverrideConstraint
 }
 
-func NewOverleash(url string, tokens []string) *OverleashContext {
+func NewOverleash(upstream string, tokens []string) *OverleashContext {
 	o := &OverleashContext{
-		url:          url,
+		upstream:     upstream,
 		tokens:       tokens,
 		featureFiles: make([]FeatureFile, len(tokens)),
 		featureIdx:   0,
@@ -87,7 +87,7 @@ func NewOverleash(url string, tokens []string) *OverleashContext {
 }
 
 func (o *OverleashContext) Start(reload int, ctx context.Context) {
-	o.client = NewClient(o.url, reload)
+	o.client = NewClient(o.upstream, reload)
 
 	err := o.loadRemotesWithLock()
 
@@ -264,8 +264,8 @@ func (o *OverleashContext) GetRemotes() []string {
 	return remotes
 }
 
-func (o *OverleashContext) Url() string {
-	return o.url
+func (o *OverleashContext) Upstream() string {
+	return o.upstream
 }
 
 func (o *OverleashContext) CachedJson() []byte {

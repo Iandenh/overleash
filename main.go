@@ -45,7 +45,7 @@ func initConfig() {
 	viper.AutomaticEnv()
 	viper.SetEnvKeyReplacer(strings.NewReplacer("-", "_"))
 
-	pflag.String("url", "", "Url to load")
+	pflag.String("url", "", "Upstream to load")
 	pflag.String("token", "", "Token to load")
 	pflag.String("port", "5433", "Port")
 	pflag.Int("reload", 0, "Reload")

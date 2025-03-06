@@ -121,7 +121,7 @@ func (c *Config) registerFrontendApi(s *http.ServeMux) {
 
 			return
 		}
-		p := proxy.New(c.Overleash.Url())
+		p := proxy.New(c.Overleash.Upstream())
 
 		err := p.ProxyRequest(w, r)
 

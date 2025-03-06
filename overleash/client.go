@@ -25,15 +25,15 @@ const (
 )
 
 type OverleashClient struct {
-	url          string
+	upstream     string
 	httpClient   *http.Client
 	connectionId string
 	interval     int
 }
 
-func NewClient(url string, interval int) *OverleashClient {
+func NewClient(upstream string, interval int) *OverleashClient {
 	return &OverleashClient{
-		url:          url,
+		upstream:     upstream,
 		interval:     interval * 60,
 		connectionId: uuid.New().String(),
 		httpClient: &http.Client{
@@ -66,7 +66,7 @@ type validationResponse struct {
 }
 
 func (c *OverleashClient) getFeatures(token string) (*FeatureFile, error) {
-	req, err := http.NewRequest(http.MethodGet, c.url+"/api/client/features", nil)
+	req, err := http.NewRequest(http.MethodGet, c.upstream+"/api/client/features", nil)
 
 	if err != nil {
 		return nil, err
@@ -106,7 +106,7 @@ func (c *OverleashClient) getFeatures(token string) (*FeatureFile, error) {
 }
 
 func (c *OverleashClient) validateToken(token string) (*EdgeToken, error) {
-	req, err := http.NewRequest(http.MethodPost, c.url+"/edge/validate", nil)
+	req, err := http.NewRequest(http.MethodPost, c.upstream+"/edge/validate", nil)
 
 	if err != nil {
 		return nil, err
@@ -161,7 +161,7 @@ func (c *OverleashClient) validateToken(token string) (*EdgeToken, error) {
 }
 
 func (c *OverleashClient) registerClient(token *EdgeToken) error {
-	req, err := http.NewRequest(http.MethodPost, c.url+"/api/client/register", nil)
+	req, err := http.NewRequest(http.MethodPost, c.upstream+"/api/client/register", nil)
 
 	if err != nil {
 		return err
