@@ -53,6 +53,18 @@ func (c *Config) registerClientApi(s *http.ServeMux) {
 	}))
 
 	s.Handle("POST /api/client/register", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusOK)
+		if c.proxyMetrics == false {
+			w.WriteHeader(http.StatusOK)
+
+			return
+		}
+
+		p := proxy.New(c.Overleash.Upstream())
+
+		err := p.ProxyRequest(w, r)
+
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
 	}))
 }
