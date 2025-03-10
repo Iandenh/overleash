@@ -24,15 +24,20 @@ const (
 	supportedSpecVersion string = "5.1.0"
 )
 
-type OverleashClient struct {
+type client interface {
+	getFeatures(token string) (*FeatureFile, error)
+	validateToken(token string) (*EdgeToken, error)
+	registerClient(token *EdgeToken) error
+}
+type overleashclient struct {
 	upstream     string
 	httpClient   *http.Client
 	connectionId string
 	interval     int
 }
 
-func NewClient(upstream string, interval int) *OverleashClient {
-	return &OverleashClient{
+func newClient(upstream string, interval int) *overleashclient {
+	return &overleashclient{
 		upstream:     upstream,
 		interval:     interval * 60,
 		connectionId: uuid.New().String(),
@@ -65,7 +70,7 @@ type validationResponse struct {
 	Tokens []*EdgeToken `json:"tokens"`
 }
 
-func (c *OverleashClient) getFeatures(token string) (*FeatureFile, error) {
+func (c *overleashclient) getFeatures(token string) (*FeatureFile, error) {
 	req, err := http.NewRequest(http.MethodGet, c.upstream+"/api/client/features", nil)
 
 	if err != nil {
@@ -105,7 +110,7 @@ func (c *OverleashClient) getFeatures(token string) (*FeatureFile, error) {
 	return features, nil
 }
 
-func (c *OverleashClient) validateToken(token string) (*EdgeToken, error) {
+func (c *overleashclient) validateToken(token string) (*EdgeToken, error) {
 	req, err := http.NewRequest(http.MethodPost, c.upstream+"/edge/validate", nil)
 
 	if err != nil {
@@ -160,7 +165,7 @@ func (c *OverleashClient) validateToken(token string) (*EdgeToken, error) {
 	return tokens[0], nil
 }
 
-func (c *OverleashClient) registerClient(token *EdgeToken) error {
+func (c *overleashclient) registerClient(token *EdgeToken) error {
 	req, err := http.NewRequest(http.MethodPost, c.upstream+"/api/client/register", nil)
 
 	if err != nil {

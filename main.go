@@ -21,8 +21,8 @@ func run(ctx context.Context) {
 	port := viper.GetInt("port")
 	proxyMetrics := viper.GetBool("proxy_metrics")
 
-	o := overleash.NewOverleash(viper.GetString("url"), tokens)
-	o.Start(reload, ctx)
+	o := overleash.NewOverleash(viper.GetString("url"), tokens, reload)
+	o.Start(ctx)
 
 	server.New(o, port, proxyMetrics, ctx).Start()
 }

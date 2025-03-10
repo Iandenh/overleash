@@ -37,16 +37,17 @@ type OverleashContext struct {
 	lastSync          time.Time
 	paused            bool
 	ticker            ticker
-	engine            *unleashengine.UnleashEngine
+	engine            unleashengine.Engine
 	store             storage.Store
-	client            *OverleashClient
+	client            client
+	reload            int
 }
 
 func (o *OverleashContext) EtagOfCachedJson() string {
 	return o.etagOfCachedJson
 }
 
-func (o *OverleashContext) Engine() *unleashengine.UnleashEngine {
+func (o *OverleashContext) Engine() unleashengine.Engine {
 	return o.engine
 }
 
@@ -62,7 +63,7 @@ type Override struct {
 	Constraints []OverrideConstraint
 }
 
-func NewOverleash(upstream string, tokens []string) *OverleashContext {
+func NewOverleash(upstream string, tokens []string, reload int) *OverleashContext {
 	o := &OverleashContext{
 		upstream:     upstream,
 		tokens:       tokens,
@@ -73,20 +74,17 @@ func NewOverleash(upstream string, tokens []string) *OverleashContext {
 		paused:       false,
 		engine:       unleashengine.NewUnleashEngine(),
 		store:        storage.NewFileStore(),
+		client:       newClient(upstream, reload),
+		reload:       reload,
 	}
-
-	overrides, err := o.readOverrides()
-	if err == nil {
-		o.overrides = overrides
-	}
-
-	o.compileFeatureFile()
 
 	return o
 }
 
-func (o *OverleashContext) Start(reload int, ctx context.Context) {
-	o.client = NewClient(o.upstream, reload)
+func (o *OverleashContext) Start(ctx context.Context) {
+	if overrides, err := o.readOverrides(); err == nil {
+		o.overrides = overrides
+	}
 
 	err := o.loadRemotesWithLock()
 
@@ -94,14 +92,14 @@ func (o *OverleashContext) Start(reload int, ctx context.Context) {
 		panic(err)
 	}
 
-	if reload == 0 {
+	if o.reload == 0 {
 		log.Info("Start without reloading")
 		return
 	}
 
-	o.ticker = createTicker(time.Duration(reload) * time.Minute)
+	o.ticker = createTicker(time.Duration(o.reload) * time.Minute)
 
-	log.Infof("Start with reloading with %d", reload)
+	log.Infof("Start with reloading with %d", o.reload)
 
 	go func() {
 		defer o.ticker.ticker.Stop()
@@ -161,7 +159,7 @@ func (o *OverleashContext) SetFeatureFileIdx(idx int) error {
 	o.LockMutex.Lock()
 	defer o.LockMutex.Unlock()
 
-	if idx < 0 && idx >= len(o.featureFiles) {
+	if idx < 0 || idx >= len(o.featureFiles) {
 		return fmt.Errorf("invalid data file index: %d", idx)
 	}
 

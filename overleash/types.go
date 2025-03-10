@@ -45,7 +45,7 @@ type Feature struct {
 
 	Stale *bool `json:"stale,omitempty"`
 
-	// Strategies is a list of names of the strategies supported by the client.
+	// Strategies is a list of names of the strategies supported by the overleashclient.
 	Strategies []Strategy `json:"strategies"`
 
 	CreatedAt  *time.Time `json:"createdAt,omitzero"`
@@ -62,7 +62,7 @@ type Feature struct {
 	// Dependencies is a list of feature toggle dependency objects
 	Dependencies *[]Dependency `json:"dependencies,omitempty"`
 
-	// ImpressionData indicates whether the client SDK should emit an impression event
+	// ImpressionData indicates whether the overleashclient SDK should emit an impression event
 	ImpressionData bool `json:"impressionData"`
 
 	SearchTerm string `json:"-"`

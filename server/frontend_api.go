@@ -135,7 +135,7 @@ func (c *Config) registerFrontendApi(s *http.ServeMux) {
 	}))
 }
 
-func resolveAll(engine *unleashengine.UnleashEngine, ctx *unleashengine.Context) (map[string]ResolvedToggle, bool) {
+func resolveAll(engine unleashengine.Engine, ctx *unleashengine.Context) (map[string]ResolvedToggle, bool) {
 	var apiResponse apiResponse[map[string]ResolvedToggle]
 	err := json.Unmarshal(engine.ResolveAll(ctx), &apiResponse)
 	if err != nil {
@@ -145,7 +145,7 @@ func resolveAll(engine *unleashengine.UnleashEngine, ctx *unleashengine.Context)
 	return apiResponse.Value, true
 }
 
-func resolve(engine *unleashengine.UnleashEngine, ctx *unleashengine.Context, featureName string) (ResolvedToggle, bool) {
+func resolve(engine unleashengine.Engine, ctx *unleashengine.Context, featureName string) (ResolvedToggle, bool) {
 	var apiResponse apiResponse[ResolvedToggle]
 	err := json.Unmarshal(engine.Resolve(ctx, featureName), &apiResponse)
 	if err != nil {

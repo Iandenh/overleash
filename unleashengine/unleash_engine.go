@@ -10,6 +10,12 @@ import (
 // #include "unleash_engine.h"
 import "C"
 
+type Engine interface {
+	TakeState(json string)
+	Resolve(context *Context, featureName string) []byte
+	ResolveAll(context *Context) []byte
+}
+
 type UnleashEngine struct {
 	ptr unsafe.Pointer
 }
@@ -40,7 +46,7 @@ func (e *UnleashEngine) Resolve(context *Context, featureName string) []byte {
 
 	if err != nil {
 		log.Fatalf("Failed to serialize context: %v", err)
-		return []byte{}
+		return nil
 	}
 
 	cfeatureName := C.CString(featureName)
@@ -62,7 +68,7 @@ func (e *UnleashEngine) ResolveAll(context *Context) []byte {
 
 	if err != nil {
 		log.Fatalf("Failed to serialize context: %v", err)
-		return []byte{}
+		return nil
 	}
 	cjsonContext := C.CString(string(jsonContext))
 
