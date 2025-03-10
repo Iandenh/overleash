@@ -32,7 +32,6 @@ type OverleashContext struct {
 	cachedFeatureFile FeatureFile
 	cachedJson        []byte
 	etagOfCachedJson  string
-	cachedBuf         bytes.Buffer
 	overrides         map[string]*Override
 	LockMutex         sync.RWMutex
 	lastSync          time.Time
@@ -191,7 +190,7 @@ func (o *OverleashContext) AddOverrideConstraint(featureFlag string, enabled boo
 	o.LockMutex.Lock()
 	defer o.LockMutex.Unlock()
 
-	if o.overrides[featureFlag] == nil || o.overrides[featureFlag].IsGlobal == true {
+	if o.overrides[featureFlag] == nil || o.overrides[featureFlag].IsGlobal {
 		o.overrides[featureFlag] = &Override{
 			FeatureFlag: featureFlag,
 			Enabled:     true,

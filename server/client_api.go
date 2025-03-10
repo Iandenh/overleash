@@ -38,7 +38,7 @@ func (c *Config) registerClientApi(s *http.ServeMux) {
 	}))
 
 	s.Handle("POST /api/client/metrics", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if c.proxyMetrics == false {
+		if !c.proxyMetrics {
 			w.WriteHeader(http.StatusOK)
 
 			return
@@ -53,7 +53,7 @@ func (c *Config) registerClientApi(s *http.ServeMux) {
 	}))
 
 	s.Handle("POST /api/client/register", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if c.proxyMetrics == false {
+		if !c.proxyMetrics {
 			w.WriteHeader(http.StatusOK)
 
 			return

@@ -116,7 +116,7 @@ func (c *Config) registerFrontendApi(s *http.ServeMux) {
 	}))
 
 	s.Handle("POST /api/frontend/client/metrics", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if c.proxyMetrics == false {
+		if !c.proxyMetrics {
 			w.WriteHeader(http.StatusOK)
 
 			return
@@ -233,7 +233,7 @@ func createContextFromGetRequest(r *http.Request) *unleashengine.Context {
 
 	ctx := &unleashengine.Context{}
 
-	for k, _ := range r.URL.Query() {
+	for k := range r.URL.Query() {
 		switch k {
 		case "userId":
 			ctx.UserID = getQuery(r, "userId")
