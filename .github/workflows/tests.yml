@@ -1,0 +1,34 @@
+name: Go
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    name: Run tests
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: 'Iandenh/yggdrasil'
+          ref: 'resolve_all'
+          path: '${{ github.workspace }}/yggdrasil'
+      - name: Build binaries in "${{ matrix.BUILD_TARGET }}" mode
+        run: |
+          cd ${{ github.workspace }}/yggdrasil 
+          cargo build --release
+          sudo cp target/release/libyggdrasilffi.so /usr/local/lib
+          sudo ldconfig
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.24.x'
+      - name: Install dependencies
+        run: go get .
+      - name: Install dependencies
+        run: |
+          go install github.com/a-h/templ/cmd/templ@latest
+          templ generate
+      - name: Test with the Go CLI
+        run: |
+          go test ./...
