@@ -43,6 +43,12 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: iandenh/overleash
+          tags: |
+            type=schedule
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=ref,event=tag
+            type=sha
 
       - name: Build and push Docker image
         id: push
