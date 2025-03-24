@@ -6,7 +6,7 @@ toolchain go1.24.1
 
 require (
 	github.com/CAFxX/httpcompression v0.0.9
-	github.com/a-h/templ v0.3.833
+	github.com/a-h/templ v0.3.856
 	github.com/charmbracelet/log v0.4.1
 	github.com/google/uuid v1.6.0
 	github.com/rs/cors v1.11.1
@@ -43,6 +43,6 @@ require (
 	golang.org/x/exp v0.0.0-20250305212735-054e65f0b394 // indirect
 	golang.org/x/sys v0.31.0 // indirect
 	golang.org/x/text v0.23.0 // indirect
-	google.golang.org/protobuf v1.36.5 // indirect
+	google.golang.org/protobuf v1.36.6 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
