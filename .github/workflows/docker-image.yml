@@ -17,6 +17,12 @@ jobs:
       attestations: write
       id-token: write
     steps:
+
+      - name: Get Version
+        id: version
+        run: |
+          VERSION=${{ github.ref_name }}
+          echo "VERSION=${VERSION:1}" >> "$GITHUB_OUTPUT"
       - name: Check out the repo
         uses: actions/checkout@v4
 
@@ -49,7 +55,7 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
-            VERSION=${{ github.ref_name }}
+            VERSION=${{ steps.version.outputs.VERSION }}
 
       - name: Generate artifact attestation
         uses: actions/attest-build-provenance@v2
@@ -63,8 +69,8 @@ jobs:
         with:
           name: overleash
           repository: iandenh/charts
-          tag: ${{ github.ref_name }}
-          app_version: ${{ github.ref_name }}
+          tag: ${{ steps.version.outputs.VERSION }}
+          app_version: ${{ steps.version.outputs.VERSION }}
           path: helm/overleash
           registry: ghcr.io
           registry_username: ${{ secrets.REGISTRY_USERNAME }}
