@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.4](https://github.com/Iandenh/overleash/compare/v0.6.3...v0.6.4) (2025-03-24)
+
+
+### Bug Fixes
+
+* set docker tags ([7f4f58e](https://github.com/Iandenh/overleash/commit/7f4f58eb74b1e24b4461d1a1fa107bccb2f20c81))
+
 ## [0.6.3](https://github.com/Iandenh/overleash/compare/v0.6.2...v0.6.3) (2025-03-24)
 
 
