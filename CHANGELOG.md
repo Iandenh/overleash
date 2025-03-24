@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.3](https://github.com/Iandenh/overleash/compare/v0.6.2...v0.6.3) (2025-03-24)
+
+
+### Bug Fixes
+
+* set correct version when building ([b1b1bbc](https://github.com/Iandenh/overleash/commit/b1b1bbcb8b015274750d9ee660520de3299d4f41))
+
 ## [0.6.2](https://github.com/Iandenh/overleash/compare/0.6.1...v0.6.2) (2025-03-24)
 
 
