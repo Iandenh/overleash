@@ -1,5 +1,5 @@
 @font-face {
-    font-family: 'Archivo';
+    font-family: Archivo;
     src: url('/static/fonts/Archivo-Medium.woff2') format('woff2'),
     url('/static/fonts/Archivo-Medium.woff') format('woff');
     font-weight: 500;
@@ -8,7 +8,7 @@
 }
 
 @font-face {
-    font-family: 'Archivo';
+    font-family: Archivo;
     src: url('/static/fonts/Archivo-SemiBold.woff2') format('woff2'),
     url('/static/fonts/Archivo-SemiBold.woff') format('woff');
     font-weight: 600;
@@ -17,7 +17,7 @@
 }
 
 @font-face {
-    font-family: 'Archivo';
+    font-family: Archivo;
     src: url('/static/fonts/Archivo-ExtraBold.woff2') format('woff2'),
     url('/static/fonts/Archivo-ExtraBold.woff') format('woff');
     font-weight: 900;
@@ -26,7 +26,7 @@
 }
 
 @font-face {
-    font-family: 'Archivo';
+    font-family: Archivo;
     src: url('/static/fonts/Archivo-Bold.woff2') format('woff2'),
     url('/static/fonts/Archivo-Bold.woff') format('woff');
     font-weight: 700;
@@ -35,7 +35,7 @@
 }
 
 @font-face {
-    font-family: 'Archivo';
+    font-family: Archivo;
     src: url('/static/fonts/Archivo-Regular.woff2') format('woff2'),
     url('/static/fonts/Archivo-Regular.woff') format('woff');
     font-weight: normal;
@@ -57,38 +57,40 @@
 
 :root {
     color-scheme: light;
+
     --border-color: #000;
     --card-background: #fff;
     --background-color: #fff;
     --text-color: #000;
-    --status-background-color: #888888;
+    --status-background-color: #888;
     --override-background-color: #e0e0e0;
     --override-background-color2: #e7e7e7;
     --paused-background-color: #f8f8f8;
     --card-border: #e5e7eb;
-    --box-shadow: 0 0 #0000, 0 0 #0000, 0 1px 3px 0 rgba(0, 0, 0, .1), 0 1px 2px -1px rgba(0, 0, 0, .1);
+    --box-shadow: 0 0 #0000, 0 0 #0000, 0 1px 3px 0 rgb(0 0 0 / 10%), 0 1px 2px -1px rgb(0 0 0 / 10%);
     --heading-background: #f8f8f8;
     --summary-background: #f0f0f0;
     --summary-border: #d9d9d9;
-    --borderColor-muted: rgba(217, 217, 217, 0.7);
+    --borderColor-muted: rgb(217 217 217 / 70%);
 }
 
 [data-theme='dark'] {
     color-scheme: dark;
+
     --text-color: #fff;
-    --status-background-color: #888888;
+    --status-background-color: #888;
     --border-color: #fff;
     --background-color: #171717;
     --card-background: #252525;
     --card-border: none;
     --override-background-color: #3c3c3c;
     --override-background-color2: #1b1b1b;
-    --box-shadow: 0 0 #0000, 0 0 #0000, 0 2px 10px 0 rgba(0, 0, 0, .6), 0 1px 2px -1px rgba(0, 0, 0, .6);
+    --box-shadow: 0 0 #0000, 0 0 #0000, 0 2px 10px 0 rgb(0 0 0 / 60%), 0 1px 2px -1px rgb(0 0 0 / 60%);
     --paused-background-color: #000;
     --heading-background: #212121;
     --summary-background: #282828;
     --summary-border: #646464;
-    --borderColor-muted: rgba(68, 68, 68, 0.7);
+    --borderColor-muted: rgb(68 68 68 / 70%);
 
     .sync-btn, .header-action button {
         filter: invert(1);
@@ -106,20 +108,21 @@
 @media (prefers-color-scheme: dark) {
     :root:not([data-theme='light']) {
         color-scheme: dark;
+
         --text-color: #fff;
         --border-color: #fff;
-        --status-background-color: #888888;
+        --status-background-color: #888;
         --background-color: #171717;
         --card-background: #252525;
         --card-border: none;
         --override-background-color: #3c3c3c;
         --override-background-color2: #1b1b1b;
-        --box-shadow: 0 0 #0000, 0 0 #0000, 0 2px 10px 0 rgba(0, 0, 0, .6), 0 1px 2px -1px rgba(0, 0, 0, .6);
+        --box-shadow: 0 0 #0000, 0 0 #0000, 0 2px 10px 0 rgb(0 0 0 / 60%), 0 1px 2px -1px rgb(0 0 0 / 60%);
         --paused-background-color: #000;
         --heading-background: #212121;
         --summary-background: #282828;
         --summary-border: #646464;
-        --borderColor-muted: rgba(68, 68, 68, 0.7);
+        --borderColor-muted: rgb(68 68 68 / 70%);
 
         .sync-btn, .header-action button {
             filter: invert(1);
@@ -155,7 +158,6 @@ header {
         display: flex;
         margin: 0 auto;
         max-width: 800px;
-
         align-items: center;
         justify-content: space-between;
 
@@ -329,11 +331,11 @@ header {
 }
 
 .input {
-    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
     -webkit-tap-highlight-color: transparent;
-    tab-size: 4;
     -webkit-font-smoothing: antialiased;
-    border: 0 solid #e5e7eb;
+    tab-size: 4;
+    border: 1px solid rgb(213 213 213);
     box-sizing: border-box;
     font-feature-settings: inherit;
     font-family: inherit;
@@ -344,8 +346,6 @@ header {
     display: block;
     width: 100%;
     border-radius: .5rem;
-    border-width: 1px;
-    border-color: rgb(209 213 219);
     padding: .625rem;
     font-size: .875rem;
     line-height: 1.25rem;
@@ -439,12 +439,10 @@ header {
     animation-duration: 2s;
     animation-timing-function: linear;
     animation-play-state: paused;
-
     display: inline-block;
     height: 20px;
     aspect-ratio: 1 / 1;
     cursor: pointer;
-
     border: none;
     background: none;
 
@@ -482,7 +480,7 @@ header {
     gap: 8px;
     background: var(--card-background);
     padding: 8px;
-    border: 1px solid rgb(225, 225, 227);
+    border: 1px solid rgb(225 225 227);
     border-radius: 8px;
     box-shadow: none;
     align-items: center;
@@ -630,9 +628,7 @@ kbd {
     display: inline-flex;
     align-items: center;
     padding-inline: 1rem;
-
     cursor: pointer;
-
     background-color: var(--summary-background);
     color: var(--text-color);
     border: 1px solid var(--summary-border);
@@ -644,10 +640,7 @@ kbd {
 }
 
 .dropdown-caret {
-    border-bottom-color: #0000;
-    border-left-color: #0000;
-    border-right-color: #0000;
-    border-top-color: var(--text-color);
+    border-color: var(--text-color) #0000 #0000 #0000;
     border-style: solid;
     border-width: max(4px, 0.25rem) max(4px, 0.25rem) 0;
     content: "";
@@ -660,12 +653,8 @@ kbd {
 
 .select-menu article {
     position: absolute;
-    top: auto;
-    right: auto;
-    bottom: auto;
-    left: auto;
+    inset: auto;
     padding: 0;
-
     z-index: 99;
     display: flex;
 }
@@ -674,16 +663,13 @@ kbd {
     position: relative;
     z-index: 99;
     display: flex;
-
     overflow: hidden;
     pointer-events: auto;
     flex-direction: column;
-
     width: 300px;
     height: auto;
     max-height: 480px;
     border-radius: 5px;
-
     border: 1px solid var(--card-border);
     background: var(--card-background);
     box-shadow: var(--box-shadow);
@@ -691,21 +677,17 @@ kbd {
 
 .select-menu-list {
     position: relative;
-
     padding: 0;
     margin: 0 0 -1px;
     flex: auto;
-    overflow-x: hidden;
-    overflow-y: auto;
+    overflow: hidden auto;
 }
 
 .select-menu-item {
     display: flex;
     align-items: center;
-
     font-size: 0.9rem;
     padding: 0.8rem 7px;
-
     width: 100%;
     color: var(--text-color);
     text-align: left;
@@ -731,7 +713,6 @@ kbd {
 .theme-btn {
     border: none;
     background: none;
-
     display: inline-block;
     height: 20px;
     aspect-ratio: 1 / 1;
@@ -747,7 +728,6 @@ kbd {
     border: none;
     background: none;
     cursor: pointer;
-
     height: 20px;
     aspect-ratio: 1 / 1;
 }
