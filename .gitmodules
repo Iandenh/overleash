@@ -1,4 +1,4 @@
 [submodule "yggdrasil"]
 	path = yggdrasil
 	url = https://github.com/Iandenh/yggdrasil.git
-    ranch = resolve_all
+	branch = resolve_all
