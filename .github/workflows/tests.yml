@@ -8,6 +8,8 @@ jobs:
     name: Run tests
     steps:
       - uses: actions/checkout@v4
+        with:
+          submodules: 'true'
       - name: Build binaries in "${{ matrix.BUILD_TARGET }}" mode
         run: |
           cd ${{ github.workspace }}/yggdrasil 
