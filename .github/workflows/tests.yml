@@ -8,11 +8,6 @@ jobs:
     name: Run tests
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/checkout@v4
-        with:
-          repository: 'Iandenh/yggdrasil'
-          ref: 'resolve_all'
-          path: '${{ github.workspace }}/yggdrasil'
       - name: Build binaries in "${{ matrix.BUILD_TARGET }}" mode
         run: |
           cd ${{ github.workspace }}/yggdrasil 

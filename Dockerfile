@@ -2,7 +2,6 @@
 FROM --platform=$BUILDPLATFORM rust:1.85 AS rust-build-stage
 WORKDIR /yggdrasil
 ARG TARGETPLATFORM
-RUN git clone --depth 1 --branch resolve_all https://github.com/Iandenh/yggdrasil.git .
 RUN case "$TARGETPLATFORM" in \
   "linux/arm64") echo aarch64-unknown-linux-gnu > /rust_target.txt ;; \
   "linux/amd64") echo x86_64-unknown-linux-gnu > /rust_target.txt ;; \
@@ -13,6 +12,7 @@ RUN if [ "$TARGETPLATFORM" = "linux/arm64" ]; then \
 fi
 RUN rustup toolchain install stable --profile default
 RUN rustup target add $(cat /rust_target.txt)
+COPY ./yggdrasil /yggdrasil
 RUN cargo build --release --target $(cat /rust_target.txt)
 RUN cp target/$(cat /rust_target.txt)/release/libyggdrasilffi.so libyggdrasilffi.so
 
