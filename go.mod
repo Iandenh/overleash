@@ -2,8 +2,6 @@ module github.com/Iandenh/overleash
 
 go 1.24
 
-toolchain go1.24.2
-
 require (
 	github.com/CAFxX/httpcompression v0.0.9
 	github.com/a-h/templ v0.3.857
