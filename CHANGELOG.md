@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.8.0](https://github.com/Iandenh/overleash/compare/v0.7.0...v0.8.0) (2025-04-08)
+
+
+### Features
+
+* add description to flags ([69dd35d](https://github.com/Iandenh/overleash/commit/69dd35d6457b2dd875494e7775ed914c47c7912f))
+* add stale chip when flag is stale ([c4e7464](https://github.com/Iandenh/overleash/commit/c4e7464ac1d586eb034d036c80e4a14da2e97c63))
+
+
+### Bug Fixes
+
+* git modules branch ([7a392d0](https://github.com/Iandenh/overleash/commit/7a392d0d5bc8237b335de04bb9eba91486eea46b))
+* remove toolchain from go.mod ([6888b02](https://github.com/Iandenh/overleash/commit/6888b0211efd4c681b56a45a783378a14f93117e))
+
 ## [0.7.0](https://github.com/Iandenh/overleash/compare/v0.6.4...v0.7.0) (2025-04-05)
 
 
