@@ -70,6 +70,14 @@ templ feature(flag overleash.Feature, o *overleash.OverleashContext, showDetail 
         }
     </div>
 
+    if flag.Description != "" {
+        <div class="description">
+            @templ.Raw(renderJiraLink(flag.Description))
+        </div>
+    }
+
+    <div class="separator"></div>
+
     <div class="current-status">
         <div>
             <span class="label">Feature flag:</span>

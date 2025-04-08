@@ -4,7 +4,10 @@ import (
 	"fmt"
 	"github.com/Iandenh/overleash/internal/version"
 	"github.com/Iandenh/overleash/overleash"
+	"html"
 	"net/url"
+	"regexp"
+	"strings"
 )
 
 func constraintsOfStrategy(strategy overleash.Strategy, segments map[int][]overleash.Constraint) []overleash.Constraint {
@@ -119,4 +122,19 @@ func (list *featureList) isSelected(key, value string) bool {
 	urlValues.Set("filter", list.filter)
 
 	return urlValues.Get(key) == value
+}
+
+func renderJiraLink(text string) string {
+	text = html.EscapeString(strings.TrimSpace(text))
+
+	re := regexp.MustCompile(`https://[a-zA-Z0-9\-]+\.atlassian\.net/browse/([A-Z]+-\d+)`)
+
+	return re.ReplaceAllStringFunc(text, func(match string) string {
+		subMatch := re.FindStringSubmatch(match)
+		if len(subMatch) < 2 {
+			return match
+		}
+		ticket := subMatch[1]
+		return fmt.Sprintf(`<a target="_black" href="%s">%s</a>`, match, ticket)
+	})
 }
