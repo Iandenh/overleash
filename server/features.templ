@@ -56,11 +56,17 @@ templ featureTemplate(list featureList, o *overleash.OverleashContext) {
 }
 
 templ feature(flag overleash.Feature, o *overleash.OverleashContext, showDetail bool) {
-    <div class="key">
-        if flag.SearchTerm != "" {
-            @templ.Raw(flag.SearchTerm)
-        } else {
-            { flag.Name }
+    <div class="flag-name">
+        <div class="key">
+            if flag.SearchTerm != "" {
+                @templ.Raw(flag.SearchTerm)
+            } else {
+                { flag.Name }
+            }
+        </div>
+
+        if *flag.Stale == true {
+            <div class="stale-status">Stale</div>
         }
     </div>
 
