@@ -11,6 +11,7 @@ require (
 	github.com/spf13/pflag v1.0.6
 	github.com/spf13/viper v1.20.1
 	github.com/teal-finance/fuzzy v0.2.0
+	go.uber.org/automaxprocs v1.6.0
 )
 
 require (

@@ -12,6 +12,8 @@ import (
 	"strings"
 )
 
+import _ "go.uber.org/automaxprocs"
+
 func run(ctx context.Context) {
 	ctx, cancel := signal.NotifyContext(ctx, os.Interrupt)
 	defer cancel()
