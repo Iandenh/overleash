@@ -11,6 +11,7 @@ services:
       - overleash-data:/data
     environment:
       - OVERLEASH_URL=${OVERLEASH_URL}
+      - OVERLEASH_UPSTREAM=${OVERLEASH_UPSTREAM}
       - OVERLEASH_TOKEN=${OVERLEASH_TOKEN}
       - OVERLEASH_RELOAD=${OVERLEASH_RELOAD}
       - TZ=${TZ}

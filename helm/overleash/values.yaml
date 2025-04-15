@@ -131,7 +131,7 @@ persistence:
   annotations: {}
 
 extraEnv:
-  OVERLEASH_URL: "http://unleash.unleash:4242"
+  OVERLEASH_UPSTREAM: ""
   OVERLEASH_TOKEN: ""
   OVERLEASH_RELOAD: "1"
   OVERLEASH_VERBOSE: "false"
