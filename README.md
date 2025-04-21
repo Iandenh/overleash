@@ -50,7 +50,7 @@ Overleash supports the **Frontend API**, powered by [yggdrasil](https://github.c
 
 ## Local build
 
-This project is created with golang version 1.23. For templating it also
+This project is written in golang. For templating it
 uses [templ](https://github.com/a-h/templ/tree/main), so make sure that is installed.
 Generating templ templates can be done with `templ generate`
 
