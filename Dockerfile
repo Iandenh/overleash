@@ -1,5 +1,5 @@
 # Rust Build
-FROM --platform=$BUILDPLATFORM rust:1.85 AS rust-build-stage
+FROM --platform=$BUILDPLATFORM rust:1.86 AS rust-build-stage
 WORKDIR /yggdrasil
 ARG TARGETPLATFORM
 RUN case "$TARGETPLATFORM" in \
