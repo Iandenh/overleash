@@ -35,6 +35,11 @@ const overleash = function() {
      */
     let themeToggles = document.querySelectorAll(".theme-btn");
 
+    /**
+     * @type {HTMLSelectElement}
+     */
+    let remoteSelect = document.querySelectorAll(".remote-select");
+
     const searchListener = () => {
         moveTo(-1, false);
     };
@@ -60,6 +65,7 @@ const overleash = function() {
         helpDialog = document.querySelector("#help-dialog");
         themeToggles = document.querySelectorAll(".theme-btn");
         helpDialogBtn = document.querySelector(".search-btn");
+        remoteSelect = document.querySelector(".remote-select");
 
         searchBar.removeEventListener('click', searchListener);
         searchBar.addEventListener('click', searchListener);
@@ -98,9 +104,18 @@ const overleash = function() {
                 clearInput(event);
                 return
             case 'ArrowDown':
+                if (altMode) {
+                    moveEnvironmentDown(event);
+                    return;
+                }
+
                 moveDown(event);
                 return
             case 'ArrowUp':
+                if (altMode) {
+                    moveEnvironmentUp(event);
+                    return;
+                }
                 moveUp(event);
                 return;
             case 'e':
@@ -326,6 +341,40 @@ const overleash = function() {
         }
         document.documentElement.setAttribute('data-theme', nextTheme);
         document.cookie = `prefers-color-scheme=${nextTheme};path=/;max-age=31536000;`;
+    }
+
+    /**
+     * @param event {KeyboardEvent}
+     */
+    const moveEnvironmentUp = (event) => {
+        event.preventDefault();
+
+        const currentIdx = remoteSelect.options.selectedIndex;
+
+        if (currentIdx <= 0) {
+            return
+        }
+
+        remoteSelect.options.selectedIndex = currentIdx - 1
+        htmx.trigger(remoteSelect, "remote");
+    }
+
+    /**
+     * @param event {KeyboardEvent}
+     */
+    const moveEnvironmentDown = (event) => {
+        event.preventDefault();
+
+        const currentIdx = remoteSelect.options.selectedIndex;
+
+        const count = remoteSelect.options.length
+
+        if (currentIdx >= (count - 1) ) {
+            return
+        }
+
+        remoteSelect.options.selectedIndex = currentIdx + 1
+        htmx.trigger(remoteSelect, "remote");
     }
 
     load();

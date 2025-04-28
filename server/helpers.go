@@ -99,6 +99,16 @@ func getShortcuts() []shortcut {
 			description: "Toggle Dark/Light mode",
 			alt:         true,
 		},
+		{
+			character:   "↓",
+			description: "Move down the remote selection",
+			alt:         true,
+		},
+		{
+			character:   "↑",
+			description: "Move up the remote selection",
+			alt:         true,
+		},
 	}
 }
 
