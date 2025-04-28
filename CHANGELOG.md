@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.9.0](https://github.com/Iandenh/overleash/compare/v0.8.0...v0.9.0) (2025-04-28)
+
+
+### Features
+
+* add automaxprocs ([bc1c109](https://github.com/Iandenh/overleash/commit/bc1c109714b488846baa5a1531000f1a4b3cf5a8))
+* add change remote keyboard shortcuts ([d942476](https://github.com/Iandenh/overleash/commit/d9424766ccef81bcd3ad46caf343d4d0b1216838))
+* add extra deploy to help chart ([f6231af](https://github.com/Iandenh/overleash/commit/f6231afd3c800e0e77164938b912736288cf6ca2))
+* improve empty state ([6a28bb9](https://github.com/Iandenh/overleash/commit/6a28bb9c2ca0b0184d0bbed60b57bba232c3af85))
+* rename url env to upstream ([25e151c](https://github.com/Iandenh/overleash/commit/25e151c11928ecf331a1e19b5a3e1bcf2de1cb6a))
+* small help modal improvements ([5bff270](https://github.com/Iandenh/overleash/commit/5bff270fd589310e1c7ec4e1d2a1355851e3717f))
+
+
+### Bug Fixes
+
+* errors when switching remote when there are no multiple remotes ([1e039fa](https://github.com/Iandenh/overleash/commit/1e039fa142951e44d20bb585dd18b4239284e1e4))
+
 ## [0.8.0](https://github.com/Iandenh/overleash/compare/v0.7.0...v0.8.0) (2025-04-08)
 
 
