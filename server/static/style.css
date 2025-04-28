@@ -792,3 +792,13 @@ kbd {
         display: inline;
     }
 }
+
+.striped-card {
+    border: 2px dashed var(--border-color-muted);
+    border-radius: .5rem;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    padding: 1.25rem;
+    margin-bottom: 1rem;
+}
