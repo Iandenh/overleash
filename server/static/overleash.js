@@ -347,6 +347,10 @@ const overleash = function() {
      * @param event {KeyboardEvent}
      */
     const moveEnvironmentUp = (event) => {
+        // no remote selector (when only one is set)
+        if (remoteSelect === null) {
+            return;
+        }
         event.preventDefault();
 
         const currentIdx = remoteSelect.options.selectedIndex;
@@ -363,6 +367,10 @@ const overleash = function() {
      * @param event {KeyboardEvent}
      */
     const moveEnvironmentDown = (event) => {
+        // no remote selector (when only one is set)
+        if (remoteSelect === null) {
+            return;
+        }
         event.preventDefault();
 
         const currentIdx = remoteSelect.options.selectedIndex;
