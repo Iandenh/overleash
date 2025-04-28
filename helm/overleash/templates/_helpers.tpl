@@ -67,3 +67,28 @@ Allow the release namespace to be overridden for multi-namespace deployments in 
 {{- define "overleash.namespace" -}}
 {{- default .Release.Namespace .Values.namespaceOverride | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
+
+
+{{/*
+Copyright Broadcom, Inc. All Rights Reserved.
+SPDX-License-Identifier: APACHE-2.0
+*/}}
+
+{{/*
+Renders a value that contains template perhaps with scope if the scope is present.
+Usage:
+{{ include "common.tplvalues.render" ( dict "value" .Values.path.to.the.Value "context" $ ) }}
+{{ include "common.tplvalues.render" ( dict "value" .Values.path.to.the.Value "context" $ "scope" $app ) }}
+*/}}
+{{- define "overleash.tplvalues.render" -}}
+{{- $value := typeIs "string" .value | ternary .value (.value | toYaml) }}
+{{- if contains "{{" (toJson .value) }}
+  {{- if .scope }}
+      {{- tpl (cat "{{- with $.RelativeScope -}}" $value "{{- end }}") (merge (dict "RelativeScope" .scope) .context) }}
+  {{- else }}
+    {{- tpl $value .context }}
+  {{- end }}
+{{- else }}
+    {{- $value }}
+{{- end }}
+{{- end -}}

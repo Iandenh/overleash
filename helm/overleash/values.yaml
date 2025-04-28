@@ -130,6 +130,10 @@ persistence:
   ##
   annotations: {}
 
+## @param extraDeploy Array with extra yaml to deploy with the chart. Evaluated as a template
+##
+extraDeploy: []
+
 extraEnv:
   OVERLEASH_UPSTREAM: ""
   OVERLEASH_TOKEN: ""
