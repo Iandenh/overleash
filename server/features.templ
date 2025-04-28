@@ -327,36 +327,27 @@ templ lastSync(t time.Time) {
 templ help() {
     <dialog id="help-dialog">
         <div class="help">
-            <button class="btn black">Close</button>
 
-            <div>
-                Current theme:
-                <button class="theme-btn">
-                    <span class="auto" >Auto</span>
-                    <span class="light">Light</span>
-                    <span class="dark" >Dark</span>
-                </button>
-            </div>
             <div class="kbd-shortcuts">
-
-            for _, shortcut := range getShortcuts() {
-                <div class="kbd-shortcut">
-                    <div class="keys">
-                        if shortcut.alt {
-                            <kbd>Alt</kbd> +
-                        }
-                        <kbd>{ shortcut.character }</kbd>
+                for _, shortcut := range getShortcuts() {
+                    <div class="kbd-shortcut">
+                        <div class="keys">
+                            if shortcut.alt {
+                                <kbd>Alt</kbd> +
+                            }
+                            <kbd>{ shortcut.character }</kbd>
+                        </div>
+                        <div class="action">
+                            { shortcut.description }
+                        </div>
                     </div>
-                    <div class="action">
-                        { shortcut.description }
-                    </div>
-                </div>
-            }
-
+                }
             </div>
             <div class="version">
                 {getVersion()}
             </div>
+
+            <button class="btn black">Close</button>
         </div>
     </dialog>
 }
