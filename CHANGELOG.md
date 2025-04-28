@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.9.0](https://github.com/Iandenh/overleash/compare/v0.8.0...v0.9.0) (2025-04-28)
+
+
+### Features
+
+* add automaxprocs ([bc1c109](https://github.com/Iandenh/overleash/commit/bc1c109714b488846baa5a1531000f1a4b3cf5a8))
+* rename url env to upstream ([25e151c](https://github.com/Iandenh/overleash/commit/25e151c11928ecf331a1e19b5a3e1bcf2de1cb6a))
+
 ## [0.8.0](https://github.com/Iandenh/overleash/compare/v0.7.0...v0.8.0) (2025-04-08)
 
 
