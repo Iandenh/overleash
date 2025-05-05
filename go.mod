@@ -4,7 +4,7 @@ go 1.24
 
 require (
 	github.com/CAFxX/httpcompression v0.0.9
-	github.com/a-h/templ v0.3.857
+	github.com/a-h/templ v0.3.865
 	github.com/charmbracelet/log v0.4.1
 	github.com/google/uuid v1.6.0
 	github.com/rs/cors v1.11.1
