@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.9.1](https://github.com/Iandenh/overleash/compare/v0.9.0...v0.9.1) (2025-05-30)
+
+
+### Bug Fixes
+
+* add autocomplete="off" to remote select ([511a035](https://github.com/Iandenh/overleash/commit/511a035297fd5e9b65629d7f02dfb124f63eea4f))
+
 ## [0.9.0](https://github.com/Iandenh/overleash/compare/v0.8.0...v0.9.0) (2025-04-28)
 
 
