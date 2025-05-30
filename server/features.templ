@@ -147,6 +147,7 @@ templ remoteSelector(o *overleash.OverleashContext) {
     if len(o.GetRemotes()) != 1 {
         <select name="remote"
                 class="remote-select"
+                autocomplete="off"
                 hx-trigger="input changed, remote"
                 hx-post="/dashboard/changeRemote"
                 hx-swap="innerHTML"
