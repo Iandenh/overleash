@@ -1,9 +1,10 @@
+permissions:
+  contents: read
 name: Go
 
 on: [push]
 
 jobs:
-  build:
     runs-on: ubuntu-latest
     name: Run tests
     steps:
