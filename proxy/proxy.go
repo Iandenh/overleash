@@ -24,7 +24,7 @@ func init() {
 			return http.ErrUseLastResponse
 		},
 		Transport: &http.Transport{
-			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+			TLSClientConfig: &tls.Config{}, // Use system's default trusted CA pool
 		},
 		Timeout: 10 * time.Second,
 	}
