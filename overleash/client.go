@@ -46,7 +46,7 @@ func newClient(upstream string, interval int) *overleashclient {
 				return http.ErrUseLastResponse
 			},
 			Transport: &http.Transport{
-				TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+				TLSClientConfig: &tls.Config{},
 			},
 		},
 	}
