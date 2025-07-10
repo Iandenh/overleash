@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.9.2](https://github.com/Iandenh/overleash/compare/v0.9.1...v0.9.2) (2025-07-10)
+
+
+### Bug Fixes
+
+* for code scanning alert no. 1: Workflow does not contain permissions ([#38](https://github.com/Iandenh/overleash/issues/38)) ([c9ab6d9](https://github.com/Iandenh/overleash/commit/c9ab6d9e3a36dfcc2ab068451657b61560ac6ecf))
+* for code scanning alert no. 3: Disabled TLS certificate check ([#36](https://github.com/Iandenh/overleash/issues/36)) ([a3f7da5](https://github.com/Iandenh/overleash/commit/a3f7da5418ff72132346ee7a8bc49687ff2691ea))
+
 ## [0.9.1](https://github.com/Iandenh/overleash/compare/v0.9.0...v0.9.1) (2025-05-30)
 
 
