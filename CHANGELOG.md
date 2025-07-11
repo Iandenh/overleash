@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.9.4](https://github.com/Iandenh/overleash/compare/v0.9.3...v0.9.4) (2025-07-11)
+
+
+### Bug Fixes
+
+* installing ca-certificate ([52d06ef](https://github.com/Iandenh/overleash/commit/52d06efe745272f463021123f52ff690bba00154))
+
 ## [0.9.3](https://github.com/Iandenh/overleash/compare/v0.9.2...v0.9.3) (2025-07-11)
 
 
