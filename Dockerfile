@@ -50,7 +50,7 @@ LABEL org.opencontainers.image.description="Override your Unleash feature flags 
 LABEL org.opencontainers.image.source="https://github.com/Iandenh/overleash"
 LABEL org.opencontainers.image.licenses="MIT"
 
-RUN apt-get update && apt-get install ca-certificates
+RUN apt-get update && apt-get install -y ca-certificates
 RUN if [ "$TARGETPLATFORM" = "linux/arm64" ]; then \
        dpkg --add-architecture arm64 && apt-get update && apt-get install -y gcc-aarch64-linux-gnu libc6:arm64 ; \
 fi
