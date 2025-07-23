@@ -39,6 +39,7 @@ type OverleashContext struct {
 }
 
 type FeatureEnvironment struct {
+	name              string
 	token             string
 	featureFile       FeatureFile
 	cachedFeatureFile FeatureFile
@@ -92,6 +93,7 @@ func makeFeatureEnvironments(tokens []string) []*FeatureEnvironment {
 
 	for i, token := range tokens {
 		features[i] = &FeatureEnvironment{
+			name:   strings.SplitN(token, ".", 2)[0],
 			token:  token,
 			engine: unleashengine.NewUnleashEngine(),
 		}
@@ -271,8 +273,7 @@ func (o *OverleashContext) GetRemotes() []string {
 	remotes := make([]string, len(o.featureEnvironments))
 
 	for idx, featureEnvironment := range o.featureEnvironments {
-		parts := strings.Split(featureEnvironment.token, ".")
-		remotes[idx] = parts[0]
+		remotes[idx] = featureEnvironment.name
 	}
 
 	return remotes
@@ -295,7 +296,7 @@ func (o *OverleashContext) LastSync() time.Time {
 }
 
 func (o *OverleashContext) compileFeatureFiles() {
-	log.Debug("Compiling feature file")
+	log.Debug("Compiling feature files")
 
 	for _, featureEnvironment := range o.featureEnvironments {
 		df := featureEnvironment.featureFileWithOverwrites(o)
