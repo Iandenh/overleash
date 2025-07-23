@@ -97,32 +97,32 @@ func TestCompileFeatureFile(t *testing.T) {
 	tokens := []string{"dummy.token"}
 	o := NewOverleash("http://example.com", tokens, 0)
 	// Set the remote feature file.
-	o.featureFiles[0] = ff
+	o.ActiveFeatureEnvironment().featureFile = ff
 	// Replace the engine with our fakeEngine.
 	fe := &fakeEngine{}
-	o.engine = fe
+	o.ActiveFeatureEnvironment().engine = fe
 
 	// Recompile the feature file.
 	o.compileFeatureFiles()
 
 	// Check that the cached feature file matches.
-	if o.cachedFeatureFile.Version != ff.Version {
-		t.Errorf("Expected version %d, got %d", ff.Version, o.cachedFeatureFile.Version)
+	if o.ActiveFeatureEnvironment().cachedFeatureFile.Version != ff.Version {
+		t.Errorf("Expected version %d, got %d", ff.Version, o.featureEnvironments[0].cachedFeatureFile.Version)
 	}
 
 	// Verify that cachedJson decodes to a valid FeatureFile.
 	var decoded FeatureFile
-	if err := json.Unmarshal(o.cachedJson, &decoded); err != nil {
+	if err := json.Unmarshal(o.ActiveFeatureEnvironment().cachedJson, &decoded); err != nil {
 		t.Errorf("cachedJson is not valid JSON: %v", err)
 	}
 
 	// Check that an ETag was calculated.
-	if o.etagOfCachedJson == "" {
+	if o.ActiveFeatureEnvironment().etagOfCachedJson == "" {
 		t.Error("Expected non-empty etagOfCachedJson")
 	}
 
 	// Check that the engine state was updated.
-	if fe.state != string(o.cachedJson) {
+	if fe.state != string(o.ActiveFeatureEnvironment().cachedJson) {
 		t.Error("Engine state was not updated correctly")
 	}
 }
@@ -146,7 +146,7 @@ func TestOverrideAddAndDelete(t *testing.T) {
 	}
 	tokens := []string{"dummy.token"}
 	o := NewOverleash("http://example.com", tokens, 0)
-	o.featureFiles[0] = ff
+	o.ActiveFeatureEnvironment().featureFile = ff
 	// Use fakeStore to avoid file I/O.
 	fs := &fakeStore{}
 	o.store = fs
@@ -161,7 +161,7 @@ func TestOverrideAddAndDelete(t *testing.T) {
 	}
 
 	// Check that the compiled feature file shows "feature1" as enabled and its strategies replaced.
-	compiled := o.FeatureFile()
+	compiled := o.ActiveFeatureEnvironment().FeatureFile()
 	found := false
 	for _, f := range compiled.Features {
 		if f.Name == "feature1" {
@@ -204,7 +204,7 @@ func TestSetPaused(t *testing.T) {
 	}
 	tokens := []string{"dummy.token"}
 	o := NewOverleash("http://example.com", tokens, 0)
-	o.featureFiles[0] = ff
+	o.ActiveFeatureEnvironment().featureFile = ff
 
 	// Add an override.
 	o.AddOverride("feature1", true)
@@ -213,7 +213,7 @@ func TestSetPaused(t *testing.T) {
 	// Recompile the feature file.
 	o.compileFeatureFiles()
 	// When paused, overrides should not be applied.
-	compiled := o.FeatureFile()
+	compiled := o.ActiveFeatureEnvironment().FeatureFile()
 	for _, f := range compiled.Features {
 		if f.Name == "feature1" {
 			if f.Enabled {
@@ -260,8 +260,8 @@ func TestTokenFunctions(t *testing.T) {
 		t.Errorf("Unexpected remotes: %v", remotes)
 	}
 	// ActiveToken should return the token at index 0 by default.
-	if o.ActiveToken() != tokens[0] {
-		t.Errorf("Expected active token %s, got %s", tokens[0], o.ActiveToken())
+	if o.ActiveFeatureEnvironment().Token() != tokens[0] {
+		t.Errorf("Expected active token %s, got %s", tokens[0], o.ActiveFeatureEnvironment().Token())
 	}
 }
 
@@ -269,12 +269,12 @@ func TestTokenFunctions(t *testing.T) {
 func TestUpstreamAndCachedJson(t *testing.T) {
 	tokens := []string{"dummy.token"}
 	o := NewOverleash("http://example.com", tokens, 0)
-	o.featureFiles[0] = FeatureFile{Version: 1}
+	o.ActiveFeatureEnvironment().featureFile = FeatureFile{Version: 1}
 	o.compileFeatureFiles()
 	if o.Upstream() != "http://example.com" {
 		t.Errorf("Expected upstream to be http://example.com, got %s", o.Upstream())
 	}
-	if len(o.CachedJson()) == 0 {
+	if len(o.ActiveFeatureEnvironment().CachedJson()) == 0 {
 		t.Error("Expected non-empty cachedJson")
 	}
 }
@@ -328,8 +328,8 @@ func TestLoadRemotes(t *testing.T) {
 		t.Errorf("loadRemotesWithLock returned error: %v", err)
 	}
 	// Verify that featureFile[0] is updated.
-	if o.featureFiles[0].Version != 2 {
-		t.Errorf("Expected feature file version 2, got %d", o.featureFiles[0].Version)
+	if o.ActiveFeatureEnvironment().featureFile.Version != 2 {
+		t.Errorf("Expected feature file version 2, got %d", o.ActiveFeatureEnvironment().featureFile.Version)
 	}
 }
 
@@ -360,8 +360,8 @@ func TestRefreshFeatureFiles(t *testing.T) {
 		t.Errorf("RefreshFeatureFiles returned error: %v", err)
 	}
 	// Verify that featureFile[0] is updated.
-	if o.featureFiles[0].Version != 3 {
-		t.Errorf("Expected feature file version 3, got %d", o.featureFiles[0].Version)
+	if o.ActiveFeatureEnvironment().featureFile.Version != 3 {
+		t.Errorf("Expected feature file version 3, got %d", o.ActiveFeatureEnvironment().featureFile.Version)
 	}
 }
 
