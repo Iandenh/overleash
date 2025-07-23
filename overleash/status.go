@@ -124,12 +124,10 @@ func ToLabelText(strategy Strategy) string {
 			extra = "who match constraints "
 		}
 
-		return fmt.Sprintf("<span>%s%%</span> of your base %sis included", rollout(strategy.Parameters), extra)
+		return fmt.Sprintf("<div class='type'>Rollout %%</div><div><span>%s%%</span> of your base %sis included</div>", rollout(strategy.Parameters), extra)
 
 	case "remoteAddress":
-		count := len(strings.Split(ips(strategy.Parameters), ","))
-
-		return fmt.Sprintf("%d IPs will get access: %s", count, ips(strategy.Parameters))
+		return fmt.Sprintf("<div class='type'>IPs</div><div>%s</div>", ips(strategy.Parameters))
 	}
 
 	return ""

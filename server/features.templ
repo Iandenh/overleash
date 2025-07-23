@@ -299,6 +299,7 @@ templ featureDetail(strategies []overleash.Strategy, segments map[int][]overleas
                 <div class="title">{ overleash.ToStrategyName(strategy) }</div>
                 for _, constraint := range constraintsOfStrategy(strategy, segments) {
                     <div class="constraint">
+                        <div class="type">Constraint</div>
                         <div class={"name", templ.KV("inverted", constraint.Inverted)}>
                             { constraint.ContextName }
                             if constraint.Inverted {
@@ -316,6 +317,7 @@ templ featureDetail(strategies []overleash.Strategy, segments map[int][]overleas
                                 {constraint.Value}
                             </div>
                         }
+                        <div class="constrain-separator">and</div>
                     </div>
                 }
                 <div class="constraint verdict">

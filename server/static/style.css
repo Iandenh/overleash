@@ -491,8 +491,14 @@ header {
 .detail-container {
     display: flex;
     gap: 8px;
+    margin-top: 8px;
     align-items: stretch;
     flex-direction: column;
+
+    .type {
+        color: var(--status-background-color);
+        font-weight: bold;
+    }
 }
 
 .strategy {
@@ -512,11 +518,12 @@ header {
 }
 
 .constraint {
+    position: relative;
     margin: 8px;
     display: flex;
-    gap: 8px;
+    gap: 1rem;
     background: var(--card-background);
-    padding: 8px;
+    padding: 12px 16px;
     border: 1px solid rgb(225 225 227);
     border-radius: 8px;
     box-shadow: none;
@@ -526,11 +533,6 @@ header {
         color: var(--text-color);
         font-weight: 500;
         overflow: hidden;
-        max-width: 100px;
-        min-width: 100px;
-        margin-right: 10px;
-        margin-top: auto;
-        margin-bottom: auto;
         word-break: break-word;
         font-size: 0.875rem;
     }
@@ -562,6 +564,19 @@ header {
         font-size: 0.875rem;
         margin: auto 0;
         color: var(--text-color);
+    }
+
+    .constrain-separator {
+        position: absolute;
+        padding: 6px 8px;
+        bottom: -18px;
+        left: 1rem;
+        background-color: var(--summary-border);
+        color: var(--text-color);
+        z-index: 100;
+        text-transform: uppercase;
+        border-radius: 0.5rem;
+        font-size: 0.75rem;
     }
 }
 
