@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.10.0](https://github.com/Iandenh/overleash/compare/v0.9.4...v0.10.0) (2025-07-23)
+
+
+### Features
+
+* improve constrain detail view ([7f74683](https://github.com/Iandenh/overleash/commit/7f74683d17afc81fa27c2e8610b18b415c63c3d3))
+* refactor structure of multiple environments ([1bad421](https://github.com/Iandenh/overleash/commit/1bad421df94707e5bc9c17d8fb4c2671874a7f46))
+* show all environment on constraint detail view ([ca4f7e5](https://github.com/Iandenh/overleash/commit/ca4f7e526b748d55f9dbe23baffb25138fb3c1e6))
+
+
+### Bug Fixes
+
+* overleash tests ([30c2c7c](https://github.com/Iandenh/overleash/commit/30c2c7cf6c4682321a0f236e7a162a8f9b91c3a9))
+
 ## [0.9.4](https://github.com/Iandenh/overleash/compare/v0.9.3...v0.9.4) (2025-07-11)
 
 
