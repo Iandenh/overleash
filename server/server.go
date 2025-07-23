@@ -69,7 +69,7 @@ func (c *Config) Start() {
 	s.HandleFunc("POST /override/constrain/{key}/{enabled}", func(w http.ResponseWriter, request *http.Request) {
 		key := request.PathValue("key")
 		enabled := request.PathValue("enabled")
-		flag, err := c.Overleash.FeatureFile().Features.Get(key)
+		flag, err := c.Overleash.ActiveFeatureEnvironment().FeatureFile().Features.Get(key)
 
 		if err != nil {
 			http.Error(w, "Feature not found", http.StatusNotFound)
@@ -96,7 +96,7 @@ func (c *Config) Start() {
 	s.HandleFunc("POST /override/{key}/{enabled}", func(w http.ResponseWriter, request *http.Request) {
 		key := request.PathValue("key")
 		enabled := request.PathValue("enabled")
-		flag, err := c.Overleash.FeatureFile().Features.Get(key)
+		flag, err := c.Overleash.ActiveFeatureEnvironment().FeatureFile().Features.Get(key)
 
 		if err != nil {
 			http.Error(w, "Feature not found", http.StatusNotFound)
@@ -111,7 +111,7 @@ func (c *Config) Start() {
 	s.HandleFunc("DELETE /override/{key}", func(w http.ResponseWriter, request *http.Request) {
 		key := request.PathValue("key")
 
-		flag, err := c.Overleash.FeatureFile().Features.Get(key)
+		flag, err := c.Overleash.ActiveFeatureEnvironment().FeatureFile().Features.Get(key)
 
 		if err != nil {
 			http.Error(w, "Feature not found", http.StatusNotFound)
@@ -190,7 +190,7 @@ func (c *Config) Start() {
 	s.HandleFunc("GET /dashboard/feature/{key}", func(w http.ResponseWriter, request *http.Request) {
 		key := request.PathValue("key")
 
-		flag, err := c.Overleash.FeatureFile().Features.Get(key)
+		flag, err := c.Overleash.ActiveFeatureEnvironment().FeatureFile().Features.Get(key)
 
 		if err != nil {
 			http.Error(w, "Feature not found", http.StatusNotFound)

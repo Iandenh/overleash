@@ -73,7 +73,7 @@ func search(r *http.Request, o *overleash.OverleashContext) featureList {
 		sort:       sortField,
 		filter:     filterOption,
 		url:        finalURL,
-		totalFlags: o.FeatureFile().Features.Len(),
+		totalFlags: o.ActiveFeatureEnvironment().FeatureFile().Features.Len(),
 	}
 }
 
@@ -81,15 +81,15 @@ func fuzzyFeatureFlags(search string, o *overleash.OverleashContext) overleash.F
 	search = strings.TrimSpace(search)
 
 	if search == "" {
-		return o.FeatureFile().Features
+		return o.ActiveFeatureEnvironment().FeatureFile().Features
 	}
 
-	results := fuzzy.FindFrom(search, o.FeatureFile().Features)
+	results := fuzzy.FindFrom(search, o.ActiveFeatureEnvironment().FeatureFile().Features)
 
 	flags := make(overleash.FeatureFlags, 0, len(results))
 
 	for _, r := range results {
-		flag := o.FeatureFile().Features[r.Index]
+		flag := o.ActiveFeatureEnvironment().FeatureFile().Features[r.Index]
 
 		var nameBuilder strings.Builder
 

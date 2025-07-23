@@ -88,7 +88,7 @@ templ feature(flag overleash.Feature, o *overleash.OverleashContext, showDetail 
         <div>
             <span class="label">Feature flag:</span>
             <span class="text">
-                 if o.RemoteFeatureFile().FeatureFlagEnabled(flag.Name) {
+                 if o.ActiveFeatureEnvironment().RemoteFeatureFile().FeatureFlagEnabled(flag.Name) {
                     enabled
                  } else {
                     disabled
@@ -97,7 +97,7 @@ templ feature(flag overleash.Feature, o *overleash.OverleashContext, showDetail 
         </div>
 
         if !showDetail {
-            for _, status := range o.RemoteFeatureFile().FeatureFlagStatus(flag.Name) {
+            for _, status := range o.ActiveFeatureEnvironment().RemoteFeatureFile().FeatureFlagStatus(flag.Name) {
                 <div>
                     <span class="label">{ status.Strategy }:</span>
                     <span class="text">{ status.Status }</span>
@@ -106,7 +106,7 @@ templ feature(flag overleash.Feature, o *overleash.OverleashContext, showDetail 
         }
 
         if showDetail {
-            @featureDetail(flag.Strategies, o.FeatureFile().SegmentsMap())
+            @featureDetail(flag.Strategies, o.ActiveFeatureEnvironment().FeatureFile().SegmentsMap())
         }
     </div>
 

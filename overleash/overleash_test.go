@@ -76,7 +76,7 @@ func (fc *fakeClient) getFeatures(token string) (*FeatureFile, error) {
 	return &fc.featureFile, fc.err
 }
 
-// TestCompileFeatureFile verifies that compileFeatureFile correctly encodes
+// TestCompileFeatureFile verifies that compileFeatureFiles correctly encodes
 // the remote feature file (with no overrides) and updates the cached JSON, ETag,
 // and engine state.
 func TestCompileFeatureFile(t *testing.T) {
@@ -103,7 +103,7 @@ func TestCompileFeatureFile(t *testing.T) {
 	o.engine = fe
 
 	// Recompile the feature file.
-	o.compileFeatureFile()
+	o.compileFeatureFiles()
 
 	// Check that the cached feature file matches.
 	if o.cachedFeatureFile.Version != ff.Version {
@@ -211,7 +211,7 @@ func TestSetPaused(t *testing.T) {
 	// Set the context to paused.
 	o.SetPaused(true)
 	// Recompile the feature file.
-	o.compileFeatureFile()
+	o.compileFeatureFiles()
 	// When paused, overrides should not be applied.
 	compiled := o.FeatureFile()
 	for _, f := range compiled.Features {
@@ -236,7 +236,7 @@ func TestSetFeatureFileIdx(t *testing.T) {
 		t.Errorf("Expected no error for valid index, got %v", err)
 	}
 	if o.FeatureFileIdx() != 1 {
-		t.Errorf("Expected featureIdx to be 1, got %d", o.FeatureFileIdx())
+		t.Errorf("Expected activeFeatureIdx to be 1, got %d", o.FeatureFileIdx())
 	}
 	// Invalid index: negative.
 	if err := o.SetFeatureFileIdx(-1); err == nil {
@@ -270,7 +270,7 @@ func TestUpstreamAndCachedJson(t *testing.T) {
 	tokens := []string{"dummy.token"}
 	o := NewOverleash("http://example.com", tokens, 0)
 	o.featureFiles[0] = FeatureFile{Version: 1}
-	o.compileFeatureFile()
+	o.compileFeatureFiles()
 	if o.Upstream() != "http://example.com" {
 		t.Errorf("Expected upstream to be http://example.com, got %s", o.Upstream())
 	}
@@ -302,7 +302,7 @@ func TestWriteAndReadOverrides(t *testing.T) {
 	}
 }
 
-// TestLoadRemotes verifies that loadRemotesWithLock updates featureFiles using a fake overleashclient.
+// TestLoadRemotes verifies that loadRemotesWithLock updates featureFile using a fake overleashclient.
 func TestLoadRemotes(t *testing.T) {
 	tokens := []string{"dummy.token"}
 	o := NewOverleash("http://example.com", tokens, 0)
@@ -327,7 +327,7 @@ func TestLoadRemotes(t *testing.T) {
 	if err := o.loadRemotesWithLock(); err != nil {
 		t.Errorf("loadRemotesWithLock returned error: %v", err)
 	}
-	// Verify that featureFiles[0] is updated.
+	// Verify that featureFile[0] is updated.
 	if o.featureFiles[0].Version != 2 {
 		t.Errorf("Expected feature file version 2, got %d", o.featureFiles[0].Version)
 	}
@@ -359,7 +359,7 @@ func TestRefreshFeatureFiles(t *testing.T) {
 	if err := o.RefreshFeatureFiles(); err != nil {
 		t.Errorf("RefreshFeatureFiles returned error: %v", err)
 	}
-	// Verify that featureFiles[0] is updated.
+	// Verify that featureFile[0] is updated.
 	if o.featureFiles[0].Version != 3 {
 		t.Errorf("Expected feature file version 3, got %d", o.featureFiles[0].Version)
 	}

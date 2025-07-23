@@ -20,7 +20,7 @@ func (c *Config) registerFrontendApi(s *http.ServeMux) {
 
 		ctx := createContextFromGetRequest(r)
 
-		resolvedToggles, ok := resolveAll(c.Overleash.Engine(), ctx)
+		resolvedToggles, ok := resolveAll(c.Overleash.ActiveFeatureEnvironment().Engine(), ctx)
 		if !ok {
 			return
 		}
@@ -47,7 +47,7 @@ func (c *Config) registerFrontendApi(s *http.ServeMux) {
 			return
 		}
 
-		resolvedToggles, ok := resolveAll(c.Overleash.Engine(), ctx)
+		resolvedToggles, ok := resolveAll(c.Overleash.ActiveFeatureEnvironment().Engine(), ctx)
 		if !ok {
 			return
 		}
@@ -67,7 +67,7 @@ func (c *Config) registerFrontendApi(s *http.ServeMux) {
 
 		ctx := createContextFromGetRequest(r)
 
-		resolvedToggles, ok := resolveAll(c.Overleash.Engine(), ctx)
+		resolvedToggles, ok := resolveAll(c.Overleash.ActiveFeatureEnvironment().Engine(), ctx)
 		if !ok {
 			return
 		}
@@ -86,7 +86,7 @@ func (c *Config) registerFrontendApi(s *http.ServeMux) {
 
 		ctx := createContextFromGetRequest(r)
 
-		resolved, ok := resolve(c.Overleash.Engine(), ctx, featureName)
+		resolved, ok := resolve(c.Overleash.ActiveFeatureEnvironment().Engine(), ctx, featureName)
 
 		if !ok {
 			w.WriteHeader(http.StatusNotFound)
