@@ -52,12 +52,24 @@ func (o *OverleashContext) ActiveFeatureEnvironment() *FeatureEnvironment {
 	return o.featureEnvironments[o.activeFeatureIdx]
 }
 
+func (o *OverleashContext) HasMultipleEnvironments() bool {
+	return len(o.featureEnvironments) > 1
+}
+
+func (o *OverleashContext) FeatureEnvironments() []*FeatureEnvironment {
+	return o.featureEnvironments
+}
+
 func (fe *FeatureEnvironment) EtagOfCachedJson() string {
 	return fe.etagOfCachedJson
 }
 
 func (fe *FeatureEnvironment) Engine() unleashengine.Engine {
 	return fe.engine
+}
+
+func (fe *FeatureEnvironment) Name() string {
+	return fe.name
 }
 
 type OverrideConstraint struct {

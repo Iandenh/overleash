@@ -85,16 +85,19 @@ templ feature(flag overleash.Feature, o *overleash.OverleashContext, showDetail 
     <div class="separator"></div>
 
     <div class="current-status">
-        <div>
-            <span class="label">Feature flag:</span>
-            <span class="text">
-                 if o.ActiveFeatureEnvironment().RemoteFeatureFile().FeatureFlagEnabled(flag.Name) {
-                    enabled
-                 } else {
-                    disabled
-                 }
-            </span>
-        </div>
+
+        if !showDetail || !o.HasMultipleEnvironments() {
+            <div>
+                <span class="label">Feature flag:</span>
+                <span class="text">
+                     if o.ActiveFeatureEnvironment().RemoteFeatureFile().FeatureFlagEnabled(flag.Name) {
+                        enabled
+                     } else {
+                        disabled
+                     }
+                </span>
+            </div>
+        }
 
         if !showDetail {
             for _, status := range o.ActiveFeatureEnvironment().RemoteFeatureFile().FeatureFlagStatus(flag.Name) {
@@ -106,7 +109,28 @@ templ feature(flag overleash.Feature, o *overleash.OverleashContext, showDetail 
         }
 
         if showDetail {
-            @featureDetail(flag.Strategies, o.ActiveFeatureEnvironment().FeatureFile().SegmentsMap())
+            if o.HasMultipleEnvironments() {
+                for idx, env := range o.FeatureEnvironments() {
+                    <div class={"detail-environment", templ.KV("detail-environment-separator", idx > 0)}>
+                        <div class="detail-environment-container">
+                            <h4>{ env.Name() }</h4>
+                            <div>
+                                <span class="label">Feature flag:</span>
+                                <span class="text">
+                                     if env.RemoteFeatureFile().FeatureFlagEnabled(flag.Name) {
+                                        enabled
+                                     } else {
+                                        disabled
+                                     }
+                                </span>
+                            </div>
+                            @featureDetail(env.RemoteFeatureFile().Get(flag.Name).Strategies, env.RemoteFeatureFile().SegmentsMap())
+                        </div>
+                    </div>
+                }
+            } else {
+                @featureDetail(o.ActiveFeatureEnvironment().RemoteFeatureFile().Get(flag.Name).Strategies, o.ActiveFeatureEnvironment().RemoteFeatureFile().SegmentsMap())
+            }
         }
     </div>
 

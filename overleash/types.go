@@ -2,6 +2,7 @@ package overleash
 
 import (
 	"errors"
+	"slices"
 	"time"
 )
 
@@ -16,6 +17,17 @@ func (fr FeatureFile) SegmentsMap() map[int][]Constraint {
 	}
 
 	return segments
+}
+
+func (fr FeatureFile) Get(featureFlag string) *Feature {
+	idx := slices.IndexFunc(fr.Features, func(f Feature) bool { return f.Name == featureFlag })
+
+	if idx == -1 {
+		return nil
+	}
+
+	return &fr.Features[idx]
+
 }
 
 type FeatureFile struct {
