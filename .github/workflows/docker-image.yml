@@ -24,7 +24,7 @@ jobs:
           VERSION=${{ github.ref_name }}
           echo "VERSION=${VERSION:1}" >> "$GITHUB_OUTPUT"
       - name: Check out the repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           submodules: 'true'
 
