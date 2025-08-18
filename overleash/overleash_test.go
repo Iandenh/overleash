@@ -6,10 +6,11 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"errors"
-	"github.com/Iandenh/overleash/unleashengine"
 	"sync"
 	"testing"
 	"time"
+
+	"github.com/Iandenh/overleash/unleashengine"
 )
 
 // fakeStore implements a simple in-memory store.
@@ -424,7 +425,7 @@ func TestStartWithoutReload(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	// Calling Start with reload==0 should not start any goroutine.
-	o.Start(ctx)
+	o.Start(ctx, false)
 	// Simply check that no panic occurred and that overleashClient was created.
 	if o.client == nil {
 		t.Error("Expected overleashClient to be created in Start")
