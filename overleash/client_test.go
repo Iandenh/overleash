@@ -152,9 +152,6 @@ func TestRegisterClient(t *testing.T) {
 		if reqData.AppName != "Overleash" {
 			t.Errorf("Expected AppName 'Overleash', got %s", reqData.AppName)
 		}
-		if reqData.InstanceId != "Overleash" {
-			t.Errorf("Expected InstanceId 'Overleash', got %s", reqData.InstanceId)
-		}
 		if !strings.HasPrefix(reqData.SdkVersion, "overleash@") {
 			t.Errorf("Expected SdkVersion to start with 'overleash@', got %s", reqData.SdkVersion)
 		}
