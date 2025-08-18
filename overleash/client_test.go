@@ -47,7 +47,7 @@ func TestGetFeatures(t *testing.T) {
 	}))
 	defer ts.Close()
 
-	// Create a new overleashclient with a dummy interval.
+	// Create a new overleashClient with a dummy interval.
 	c := newClient(ts.URL, 1)
 	features, err := c.getFeatures("dummy-token")
 	if err != nil {

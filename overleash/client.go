@@ -30,15 +30,15 @@ type client interface {
 	validateToken(token string) (*EdgeToken, error)
 	registerClient(token *EdgeToken) error
 }
-type overleashclient struct {
+type overleashClient struct {
 	upstream     string
 	httpClient   *http.Client
 	connectionId string
 	interval     int
 }
 
-func newClient(upstream string, interval int) *overleashclient {
-	return &overleashclient{
+func newClient(upstream string, interval int) *overleashClient {
+	return &overleashClient{
 		upstream:     upstream,
 		interval:     interval * 60,
 		connectionId: uuid.New().String(),
@@ -71,7 +71,7 @@ type validationResponse struct {
 	Tokens []*EdgeToken `json:"tokens"`
 }
 
-func (c *overleashclient) getFeatures(token string) (*FeatureFile, error) {
+func (c *overleashClient) getFeatures(token string) (*FeatureFile, error) {
 	req, err := http.NewRequest(http.MethodGet, c.upstream+"/api/client/features", nil)
 
 	if err != nil {
@@ -111,7 +111,7 @@ func (c *overleashclient) getFeatures(token string) (*FeatureFile, error) {
 	return features, nil
 }
 
-func (c *overleashclient) validateToken(token string) (*EdgeToken, error) {
+func (c *overleashClient) validateToken(token string) (*EdgeToken, error) {
 	req, err := http.NewRequest(http.MethodPost, c.upstream+"/edge/validate", nil)
 
 	if err != nil {
@@ -166,13 +166,14 @@ func (c *overleashclient) validateToken(token string) (*EdgeToken, error) {
 	return tokens[0], nil
 }
 
-func (c *overleashclient) registerClient(token *EdgeToken) error {
+func (c *overleashClient) registerClient(token *EdgeToken) error {
 	req, err := http.NewRequest(http.MethodPost, c.upstream+"/api/client/register", nil)
 
 	if err != nil {
 		return err
 	}
 
+	overleashVersion := "overleash@" + version.Version
 	req.Header.Add("Accept", "application/json")
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Authorization", token.Token)
@@ -180,12 +181,12 @@ func (c *overleashclient) registerClient(token *EdgeToken) error {
 	req.Header.Add(unleashAppNameHeader, "Overleash")
 	req.Header.Add(unleashConnectionIdHeader, c.connectionId)
 	req.Header.Add(unleashIntervalHeader, strconv.Itoa(c.interval))
-	req.Header.Add(unleashSdkHeader, "overleash@"+version.Version)
+	req.Header.Add(unleashSdkHeader, overleashVersion)
 
 	requestData := registerRequest{
 		AppName:     "Overleash",
 		InstanceId:  "Overleash",
-		SdkVersion:  "overleash@" + version.Version,
+		SdkVersion:  overleashVersion,
 		Strategies:  make([]string, 0),
 		Started:     time.Now(),
 		Interval:    c.interval * 1000, // in milliseconds

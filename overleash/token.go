@@ -6,7 +6,7 @@ type TokenType string
 
 const (
 	Frontend TokenType = "frontend"
-	Client   TokenType = "overleashclient"
+	Client   TokenType = "overleashClient"
 	Admin    TokenType = "admin"
 	Unknown  TokenType = "unknown"
 )

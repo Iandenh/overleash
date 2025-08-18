@@ -302,7 +302,7 @@ func TestWriteAndReadOverrides(t *testing.T) {
 	}
 }
 
-// TestLoadRemotes verifies that loadRemotesWithLock updates featureFile using a fake overleashclient.
+// TestLoadRemotes verifies that loadRemotesWithLock updates featureFile using a fake overleashClient.
 func TestLoadRemotes(t *testing.T) {
 	tokens := []string{"dummy.token"}
 	o := NewOverleash("http://example.com", tokens, 0)
@@ -425,8 +425,8 @@ func TestStartWithoutReload(t *testing.T) {
 	defer cancel()
 	// Calling Start with reload==0 should not start any goroutine.
 	o.Start(ctx)
-	// Simply check that no panic occurred and that overleashclient was created.
+	// Simply check that no panic occurred and that overleashClient was created.
 	if o.client == nil {
-		t.Error("Expected overleashclient to be created in Start")
+		t.Error("Expected overleashClient to be created in Start")
 	}
 }
