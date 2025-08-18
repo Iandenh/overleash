@@ -6,12 +6,13 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/Iandenh/overleash/internal/version"
-	"github.com/google/uuid"
 	"io"
 	"net/http"
 	"strconv"
 	"time"
+
+	"github.com/Iandenh/overleash/internal/version"
+	"github.com/google/uuid"
 )
 
 const (

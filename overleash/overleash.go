@@ -8,12 +8,13 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/Iandenh/overleash/internal/storage"
-	"github.com/Iandenh/overleash/unleashengine"
-	"github.com/charmbracelet/log"
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/Iandenh/overleash/internal/storage"
+	"github.com/Iandenh/overleash/unleashengine"
+	"github.com/charmbracelet/log"
 )
 
 var forceEnable = Strategy{

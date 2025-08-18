@@ -5,17 +5,18 @@ import (
 	"embed"
 	"encoding/json"
 	"fmt"
-	"github.com/CAFxX/httpcompression"
-	"github.com/Iandenh/overleash/overleash"
-	"github.com/a-h/templ"
-	"github.com/charmbracelet/log"
-	"github.com/rs/cors"
 	"io/fs"
 	"net/http"
 	"net/url"
 	"strconv"
 	"sync"
 	"time"
+
+	"github.com/CAFxX/httpcompression"
+	"github.com/Iandenh/overleash/overleash"
+	"github.com/a-h/templ"
+	"github.com/charmbracelet/log"
+	"github.com/rs/cors"
 )
 
 var (

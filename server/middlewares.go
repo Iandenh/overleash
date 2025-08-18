@@ -1,8 +1,9 @@
 package server
 
 import (
-	"github.com/Iandenh/overleash/internal/version"
 	"net/http"
+
+	"github.com/Iandenh/overleash/internal/version"
 )
 
 type Middleware func(http.Handler) http.Handler

@@ -2,13 +2,14 @@ package server
 
 import (
 	"fmt"
-	"github.com/Iandenh/overleash/overleash"
-	"github.com/teal-finance/fuzzy"
 	"net/http"
 	"net/url"
 	"slices"
 	"sort"
 	"strings"
+
+	"github.com/Iandenh/overleash/overleash"
+	"github.com/teal-finance/fuzzy"
 )
 
 type featureList struct {

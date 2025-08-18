@@ -2,12 +2,13 @@ package server
 
 import (
 	"encoding/json"
-	"github.com/Iandenh/overleash/proxy"
-	"github.com/Iandenh/overleash/unleashengine"
-	"github.com/charmbracelet/log"
 	"net/http"
 	"strconv"
 	"strings"
+
+	"github.com/Iandenh/overleash/proxy"
+	"github.com/Iandenh/overleash/unleashengine"
+	"github.com/charmbracelet/log"
 )
 
 func (c *Config) registerFrontendApi(s *http.ServeMux) {

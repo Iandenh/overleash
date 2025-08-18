@@ -3,9 +3,10 @@ package server
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/Iandenh/overleash/proxy"
 	"net/http"
 	"strings"
+
+	"github.com/Iandenh/overleash/proxy"
 )
 
 func (c *Config) registerClientApi(s *http.ServeMux) {

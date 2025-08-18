@@ -2,8 +2,9 @@ package unleashengine
 
 import (
 	"encoding/json"
-	"github.com/charmbracelet/log"
 	"unsafe"
+
+	"github.com/charmbracelet/log"
 )
 
 // #cgo LDFLAGS: -L. -lyggdrasilffi

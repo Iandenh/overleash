@@ -2,12 +2,13 @@ package server
 
 import (
 	"fmt"
-	"github.com/Iandenh/overleash/internal/version"
-	"github.com/Iandenh/overleash/overleash"
 	"html"
 	"net/url"
 	"regexp"
 	"strings"
+
+	"github.com/Iandenh/overleash/internal/version"
+	"github.com/Iandenh/overleash/overleash"
 )
 
 func constraintsOfStrategy(strategy overleash.Strategy, segments map[int][]overleash.Constraint) []overleash.Constraint {
