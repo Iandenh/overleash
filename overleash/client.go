@@ -58,13 +58,14 @@ type validationRequest struct {
 }
 
 type registerRequest struct {
-	AppName     string    `json:"appName"`
-	InstanceId  string    `json:"instanceId"`
-	SdkVersion  string    `json:"sdkVersion"`
-	Strategies  []string  `json:"strategies"`
-	Started     time.Time `json:"started"`
-	Interval    int       `json:"interval"`
-	Environment string    `json:"environment"`
+	AppName      string    `json:"appName"`
+	InstanceId   string    `json:"instanceId"`
+	ConnectionId string    `json:"connectionId"`
+	SdkVersion   string    `json:"sdkVersion"`
+	Strategies   []string  `json:"strategies"`
+	Started      time.Time `json:"started"`
+	Interval     int       `json:"interval"`
+	Environment  string    `json:"environment"`
 }
 
 type validationResponse struct {
@@ -184,13 +185,14 @@ func (c *overleashClient) registerClient(token *EdgeToken) error {
 	req.Header.Add(unleashSdkHeader, overleashVersion)
 
 	requestData := registerRequest{
-		AppName:     "Overleash",
-		InstanceId:  "Overleash",
-		SdkVersion:  overleashVersion,
-		Strategies:  make([]string, 0),
-		Started:     time.Now(),
-		Interval:    c.interval * 1000, // in milliseconds
-		Environment: token.Environment,
+		AppName:      "Overleash",
+		InstanceId:   c.connectionId,
+		ConnectionId: c.connectionId,
+		SdkVersion:   overleashVersion,
+		Strategies:   make([]string, 0),
+		Started:      time.Now(),
+		Interval:     c.interval * 60,
+		Environment:  token.Environment,
 	}
 
 	requestJson, err := json.Marshal(requestData)

@@ -115,9 +115,13 @@ func makeFeatureEnvironments(tokens []string) []*FeatureEnvironment {
 	return features
 }
 
-func (o *OverleashContext) Start(ctx context.Context) {
+func (o *OverleashContext) Start(ctx context.Context, register bool) {
 	if overrides, err := o.readOverrides(); err == nil {
 		o.overrides = overrides
+	}
+
+	if register {
+		o.registerRemotes()
 	}
 
 	err := o.loadRemotesWithLock()
@@ -148,6 +152,14 @@ func (o *OverleashContext) Start(ctx context.Context) {
 			}
 		}
 	}()
+}
+
+func (o *OverleashContext) registerRemotes() {
+	for _, featureEnvironment := range o.featureEnvironments {
+		if token, ok := fromString(featureEnvironment.token); ok == true {
+			o.client.registerClient(token)
+		}
+	}
 }
 
 func (o *OverleashContext) loadRemotesWithLock() error {

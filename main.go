@@ -21,8 +21,10 @@ func run(ctx context.Context) {
 	reload := viper.GetInt("reload")
 	port := viper.GetInt("port")
 	proxyMetrics := viper.GetBool("proxy_metrics")
+	registerTokens := viper.GetBool("register")
 
 	upstream := viper.GetString("upstream")
+
 	if upstream == "" {
 		upstream = viper.GetString("url")
 		if upstream != "" {
@@ -31,7 +33,7 @@ func run(ctx context.Context) {
 	}
 
 	o := overleash.NewOverleash(upstream, tokens, reload)
-	o.Start(ctx)
+	o.Start(ctx, registerTokens)
 
 	server.New(o, port, proxyMetrics, ctx).Start()
 }
@@ -61,6 +63,7 @@ func initConfig() {
 	pflag.Int("reload", 0, "Reload frequency in minutes for refreshing feature flag configuration (0 disables automatic reloading).")
 	pflag.Bool("verbose", false, "Enable verbose logging to troubleshoot and diagnose issues.")
 	pflag.Bool("proxy_metrics", false, "Proxy metrics requests to the upstream Unleash server (ensure that the correct token is provided in the authorization header).")
+	pflag.Bool("register", false, "Whether to register itself to the connected Unleash server.")
 
 	pflag.Parse()
 
