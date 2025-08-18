@@ -2,14 +2,15 @@ package main
 
 import (
 	"context"
+	"os"
+	"os/signal"
+	"strings"
+
 	"github.com/Iandenh/overleash/overleash"
 	"github.com/Iandenh/overleash/server"
 	"github.com/charmbracelet/log"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
-	"os"
-	"os/signal"
-	"strings"
 )
 
 import _ "go.uber.org/automaxprocs"
