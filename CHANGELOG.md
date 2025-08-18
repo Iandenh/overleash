@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.11.0](https://github.com/Iandenh/overleash/compare/v0.10.0...v0.11.0) (2025-08-18)
+
+
+### Features
+
+* add register to unleash option ([cf4de71](https://github.com/Iandenh/overleash/commit/cf4de7130c5064bb00c3bcbacea31f83aa27340c))
+
+
+### Bug Fixes
+
+* don't shrink constrain name ([517aad6](https://github.com/Iandenh/overleash/commit/517aad66e650d27f515e3c891c20bca5a413238c))
+* interval in register call ([3078ad4](https://github.com/Iandenh/overleash/commit/3078ad4b1fa06ea31730e811117aa69c396aa0b1))
+
 ## [0.10.0](https://github.com/Iandenh/overleash/compare/v0.9.4...v0.10.0) (2025-07-23)
 
 
