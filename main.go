@@ -13,8 +13,6 @@ import (
 	"github.com/spf13/viper"
 )
 
-import _ "go.uber.org/automaxprocs"
-
 func run(ctx context.Context) {
 	ctx, cancel := signal.NotifyContext(ctx, os.Interrupt)
 	defer cancel()
