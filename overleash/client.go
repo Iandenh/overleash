@@ -191,7 +191,7 @@ func (c *overleashClient) registerClient(token *EdgeToken) error {
 		SdkVersion:   overleashVersion,
 		Strategies:   make([]string, 0),
 		Started:      time.Now(),
-		Interval:     c.interval * 60,
+		Interval:     c.interval,
 		Environment:  token.Environment,
 	}
 

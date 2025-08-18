@@ -156,9 +156,7 @@ func TestRegisterClient(t *testing.T) {
 			t.Errorf("Expected SdkVersion to start with 'overleash@', got %s", reqData.SdkVersion)
 		}
 		// Check that the interval is as expected.
-		// newClient multiplies the provided interval (in minutes) by 60.
-		// registerClient then multiplies that value by 1000.
-		expectedInterval := newClient("", 1).interval * 1000
+		expectedInterval := newClient("", 1).interval
 		if reqData.Interval != expectedInterval {
 			t.Errorf("Expected Interval %d, got %d", expectedInterval, reqData.Interval)
 		}
