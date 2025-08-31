@@ -4,7 +4,6 @@ import (
 	"context"
 	"embed"
 	"encoding/json"
-	"fmt"
 	"io/fs"
 	"net/http"
 	"net/url"
@@ -26,20 +25,20 @@ var (
 const maxBodySize = 1 * 1024 * 1024 // 1 MiB
 
 type Config struct {
-	Overleash    *overleash.OverleashContext
-	port         int
-	proxyMetrics bool
-	ctx          context.Context
-	headless     bool
+	Overleash     *overleash.OverleashContext
+	listenAddress string
+	proxyMetrics  bool
+	ctx           context.Context
+	headless      bool
 }
 
-func New(config *overleash.OverleashContext, port int, proxyMetrics bool, ctx context.Context, headless bool) *Config {
+func New(config *overleash.OverleashContext, listenAddress string, proxyMetrics bool, ctx context.Context, headless bool) *Config {
 	return &Config{
-		Overleash:    config,
-		port:         port,
-		proxyMetrics: proxyMetrics,
-		ctx:          ctx,
-		headless:     headless,
+		Overleash:     config,
+		listenAddress: listenAddress,
+		proxyMetrics:  proxyMetrics,
+		ctx:           ctx,
+		headless:      headless,
 	}
 }
 
@@ -74,7 +73,7 @@ func (c *Config) Start() {
 	compress, _ := httpcompression.DefaultAdapter()
 
 	httpServer := &http.Server{
-		Addr:              fmt.Sprintf(":%d", c.port),
+		Addr:              c.listenAddress,
 		ReadTimeout:       5 * time.Second,
 		WriteTimeout:      10 * time.Second,
 		IdleTimeout:       120 * time.Second,
@@ -83,7 +82,7 @@ func (c *Config) Start() {
 	}
 
 	go func() {
-		log.Debugf("Starting server on port: %d", c.port)
+		log.Debugf("Starting server on port: %s", c.listenAddress)
 		if err := httpServer.ListenAndServe(); err != nil {
 			log.Error(err)
 			panic(err)
