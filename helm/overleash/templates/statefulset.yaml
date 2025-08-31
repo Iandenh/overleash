@@ -42,8 +42,8 @@ spec:
             {{- if .Values.existingSecrets }}
               {{- toYaml .Values.existingSecrets | nindent 12 }}
             {{- end }}
-            - name: OVERLEASH_PORT
-              value: "{{.Values.service.port}}"
+            - name: OVERLEASH_LISTEN_ADDRESS
+              value: ":{{.Values.service.port}}"
           ports:
             - name: http
               containerPort: {{ .Values.service.port }}

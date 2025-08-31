@@ -43,7 +43,7 @@ esac
 # Deploy.
 FROM --platform=$BUILDPLATFORM debian:bookworm-slim AS release-stage
 ARG TARGETPLATFORM
-ENV OVERLEASH_PORT=8080
+ENV OVERLEASH_LISTEN_ADDRESS=":8080"
 
 LABEL org.opencontainers.image.title="Overleash"
 LABEL org.opencontainers.image.description="Override your Unleash feature flags blazing fast"
