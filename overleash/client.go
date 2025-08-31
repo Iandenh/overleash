@@ -37,10 +37,10 @@ type overleashClient struct {
 	interval     int
 }
 
-func newClient(upstream string, interval int) *overleashClient {
+func newClient(upstream string, interval time.Duration) *overleashClient {
 	return &overleashClient{
 		upstream:     upstream,
-		interval:     interval * 60,
+		interval:     int(interval.Seconds()),
 		connectionId: uuid.New().String(),
 		httpClient: &http.Client{
 			CheckRedirect: func(req *http.Request, via []*http.Request) error {

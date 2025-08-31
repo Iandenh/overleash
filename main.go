@@ -4,7 +4,9 @@ import (
 	"context"
 	"os"
 	"os/signal"
+	"strconv"
 	"strings"
+	"time"
 
 	"github.com/Iandenh/overleash/overleash"
 	"github.com/Iandenh/overleash/server"
@@ -18,7 +20,7 @@ func run(ctx context.Context) {
 	defer cancel()
 
 	tokens := strings.Split(viper.GetString("token"), ",")
-	reload := viper.GetInt("reload")
+	//reload := viper.GetInt("reload")
 	listenAddress := viper.GetString("listen_address")
 	proxyMetrics := viper.GetBool("proxy_metrics")
 	registerTokens := viper.GetBool("register")
@@ -33,10 +35,26 @@ func run(ctx context.Context) {
 		}
 	}
 
-	o := overleash.NewOverleash(upstream, tokens, reload)
+	o := overleash.NewOverleash(upstream, tokens, parseReload())
 	o.Start(ctx, registerTokens)
 
 	server.New(o, listenAddress, proxyMetrics, ctx, headless).Start()
+}
+
+func parseReload() time.Duration {
+	reloadStr := viper.GetString("reload")
+
+	r, err := time.ParseDuration(reloadStr)
+	if err != nil {
+		// try interpreting as minutes if it's just a number
+		if num, convErr := strconv.Atoi(reloadStr); convErr == nil {
+			r = time.Duration(num) * time.Minute
+		} else {
+			panic(err) // real parse error
+		}
+	}
+
+	return r
 }
 
 func main() {
