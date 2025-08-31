@@ -36,7 +36,7 @@ type OverleashContext struct {
 	ticker              ticker
 	store               storage.Store
 	client              client
-	reload              int
+	reload              time.Duration
 }
 
 type FeatureEnvironment struct {
@@ -85,7 +85,7 @@ type Override struct {
 	Constraints []OverrideConstraint
 }
 
-func NewOverleash(upstream string, tokens []string, reload int) *OverleashContext {
+func NewOverleash(upstream string, tokens []string, reload time.Duration) *OverleashContext {
 	o := &OverleashContext{
 		upstream:            upstream,
 		featureEnvironments: makeFeatureEnvironments(tokens),
@@ -135,9 +135,9 @@ func (o *OverleashContext) Start(ctx context.Context, register bool) {
 		return
 	}
 
-	o.ticker = createTicker(time.Duration(o.reload) * time.Minute)
+	o.ticker = createTicker(o.reload)
 
-	log.Infof("Start with reloading with %d", o.reload)
+	log.Infof("Start with reloading with %d seconds", int(o.reload.Seconds()))
 
 	go func() {
 		defer o.ticker.ticker.Stop()
