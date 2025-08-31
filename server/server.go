@@ -45,16 +45,17 @@ func New(config *overleash.OverleashContext, listenAddress string, proxyMetrics 
 func (c *Config) Start() {
 	s := http.NewServeMux()
 
-	var staticFS = fs.FS(staticFiles)
-	htmlContent, err := fs.Sub(staticFS, "static")
+	if !c.headless {
+		var staticFS = fs.FS(staticFiles)
+		htmlContent, err := fs.Sub(staticFS, "static")
 
-	if err != nil {
-		panic(err)
+		if err != nil {
+			panic(err)
+		}
+
+		fileServer := http.FileServer(http.FS(htmlContent))
+		s.Handle("/static/", cacheControlMiddleware(http.StripPrefix("/static/", fileServer)))
 	}
-
-	fileServer := http.FileServer(http.FS(htmlContent))
-
-	s.Handle("/static/", cacheControlMiddleware(http.StripPrefix("/static/", fileServer)))
 
 	c.registerClientApi(s)
 	c.registerFrontendApi(s)
