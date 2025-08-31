@@ -22,6 +22,7 @@ func run(ctx context.Context) {
 	port := viper.GetInt("port")
 	proxyMetrics := viper.GetBool("proxy_metrics")
 	registerTokens := viper.GetBool("register")
+	headless := viper.GetBool("headless")
 
 	upstream := viper.GetString("upstream")
 
@@ -35,7 +36,7 @@ func run(ctx context.Context) {
 	o := overleash.NewOverleash(upstream, tokens, reload)
 	o.Start(ctx, registerTokens)
 
-	server.New(o, port, proxyMetrics, ctx).Start()
+	server.New(o, port, proxyMetrics, ctx, headless).Start()
 }
 
 func main() {
@@ -64,6 +65,7 @@ func initConfig() {
 	pflag.Bool("verbose", false, "Enable verbose logging to troubleshoot and diagnose issues.")
 	pflag.Bool("proxy_metrics", false, "Proxy metrics requests to the upstream Unleash server (ensure that the correct token is provided in the authorization header).")
 	pflag.Bool("register", false, "Whether to register itself to the connected Unleash server.")
+	pflag.Bool("headless", false, "Whether to not register the dashboard api.")
 
 	pflag.Parse()
 

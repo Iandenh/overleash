@@ -141,6 +141,7 @@ extraEnv:
   OVERLEASH_VERBOSE: "false"
   OVERLEASH_PROXY_METRICS: "false"
   OVERLEASH_REGISTER: "false"
+  OVERLEASH_HEADLESS: "false"
   TZ: "Europe/Amsterdam"
 
 # adds environmentvars for existing secrets to the container via tpl function
