@@ -27,16 +27,14 @@ const maxBodySize = 1 * 1024 * 1024 // 1 MiB
 type Config struct {
 	Overleash     *overleash.OverleashContext
 	listenAddress string
-	proxyMetrics  bool
 	ctx           context.Context
 	headless      bool
 }
 
-func New(config *overleash.OverleashContext, listenAddress string, proxyMetrics bool, ctx context.Context, headless bool) *Config {
+func New(config *overleash.OverleashContext, listenAddress string, ctx context.Context, headless bool) *Config {
 	return &Config{
 		Overleash:     config,
 		listenAddress: listenAddress,
-		proxyMetrics:  proxyMetrics,
 		ctx:           ctx,
 		headless:      headless,
 	}

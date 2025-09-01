@@ -37,6 +37,7 @@ type OverleashContext struct {
 	store               storage.Store
 	client              client
 	reload              time.Duration
+	metrics             *metrics
 }
 
 type FeatureEnvironment struct {
@@ -115,9 +116,13 @@ func makeFeatureEnvironments(tokens []string) []*FeatureEnvironment {
 	return features
 }
 
-func (o *OverleashContext) Start(ctx context.Context, register bool) {
+func (o *OverleashContext) Start(ctx context.Context, registerMetrics bool, register bool) {
 	if overrides, err := o.readOverrides(); err == nil {
 		o.overrides = overrides
+	}
+
+	if registerMetrics {
+		o.startMetrics(ctx)
 	}
 
 	if register {
@@ -425,6 +430,22 @@ func mapOverrideToStrategies(override *Override, feature Feature) []Strategy {
 	}
 
 	return strategies
+}
+
+func (o *OverleashContext) AddMetric(data *MetricsData) {
+	if o.metrics == nil {
+		return
+	}
+
+	o.metrics.metricChannel <- data
+}
+
+func (o *OverleashContext) AddRegistration(data *ClientData) {
+	if o.metrics == nil {
+		return
+	}
+
+	o.metrics.clientDataChannel <- data
 }
 
 func (o *OverleashContext) HasOverride(key string) (bool, bool) {
