@@ -1,3 +1,4 @@
+{{- if not .Values.sidecar.enabled }}
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
@@ -30,34 +31,7 @@ spec:
       securityContext:
           {{- toYaml .Values.securityContext | nindent 12 }}
       containers:
-        - name: {{ .Chart.Name }}
-          securityContext:
-            {{- toYaml .Values.securityContext | nindent 12 }}
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
-          envFrom:
-          - configMapRef:
-              name: {{ include "overleash.fullname" . }}-configmap
-          env:
-            {{- if .Values.existingSecrets }}
-              {{- toYaml .Values.existingSecrets | nindent 12 }}
-            {{- end }}
-            - name: OVERLEASH_LISTEN_ADDRESS
-              value: ":{{.Values.service.port}}"
-          ports:
-            - name: http
-              containerPort: {{ .Values.service.port }}
-              protocol: TCP
-          livenessProbe:
-            {{- toYaml .Values.livenessProbe | nindent 12 }}
-          readinessProbe:
-            {{- toYaml .Values.readinessProbe | nindent 12 }}
-          resources:
-            {{- toYaml .Values.resources | nindent 12 }}
-          volumeMounts:
-            - mountPath: /data
-              name: overleash-data
-              subPath: overleash
+        {{ include "overleash.container" . | nindent 8 }}
       volumes:
         - name: overleash-data
         {{- if .Values.persistence.enabled }}
@@ -78,3 +52,4 @@ spec:
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+{{end}}
