@@ -77,6 +77,10 @@ func (fc *fakeClient) getFeatures(token string) (*FeatureFile, error) {
 	return &fc.featureFile, fc.err
 }
 
+func (fc *fakeClient) bulkMetrics(token string, applications []*ClientData, metrics []*MetricsData) error {
+	return nil
+}
+
 // TestCompileFeatureFile verifies that compileFeatureFiles correctly encodes
 // the remote feature file (with no overrides) and updates the cached JSON, ETag,
 // and engine state.
@@ -425,7 +429,7 @@ func TestStartWithoutReload(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	// Calling Start with reload==0 should not start any goroutine.
-	o.Start(ctx, false)
+	o.Start(ctx, false, false)
 	// Simply check that no panic occurred and that overleashClient was created.
 	if o.client == nil {
 		t.Error("Expected overleashClient to be created in Start")
