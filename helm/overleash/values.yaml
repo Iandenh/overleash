@@ -152,3 +152,6 @@ existingSecrets:
   #     secretKeyRef:
 #       name: secretname
 #       key: secretkey
+
+sidecar:
+  enabled: false
