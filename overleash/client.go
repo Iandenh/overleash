@@ -29,7 +29,9 @@ type client interface {
 	getFeatures(token string) (*FeatureFile, error)
 	validateToken(token string) (*EdgeToken, error)
 	registerClient(token *EdgeToken) error
+	bulkMetrics(token string, applications []*ClientData, metrics []*MetricsData) error
 }
+
 type overleashClient struct {
 	upstream     string
 	httpClient   *http.Client
@@ -66,6 +68,74 @@ type registerRequest struct {
 	Started      time.Time `json:"started"`
 	Interval     int       `json:"interval"`
 	Environment  string    `json:"environment"`
+}
+
+type metricEnv struct {
+	FeatureName string           `json:"featureName"`
+	AppName     string           `json:"appName"`
+	Environment string           `json:"environment"`
+	Timestamp   time.Time        `json:"timestamp"`
+	Yes         int64            `json:"yes"`
+	No          int64            `json:"no"`
+	Variants    map[string]int32 `json:"variants"`
+}
+
+func fromMetricData(data []*MetricsData) []*metricEnv {
+	metrics := make([]*metricEnv, 0)
+
+	for _, m := range data {
+		for f, toggle := range m.Bucket.Toggles {
+			variants := toggle.Variants
+
+			if variants == nil {
+				variants = make(map[string]int32)
+			}
+
+			metrics = append(metrics, &metricEnv{
+				FeatureName: f,
+				AppName:     m.AppName,
+				Environment: m.Environment,
+				Timestamp:   m.Bucket.Start,
+				Yes:         int64(toggle.Yes),
+				No:          int64(toggle.No),
+				Variants:    variants,
+			})
+		}
+	}
+
+	return metrics
+}
+
+type clientEnv struct {
+	ConnectVia   ConnectVia `json:"connectVia"`
+	AppName      string     `json:"appName"`
+	InstanceID   string     `json:"instanceId"`
+	ConnectionId string     `json:"connectionId"`
+	Environment  string     `json:"environment"`
+	SDKVersion   string     `json:"sdkVersion"`
+	Strategies   []string   `json:"strategies"`
+	Started      time.Time  `json:"started"`
+	Interval     int64      `json:"interval"`
+}
+
+func fromClientData(data []*ClientData, via ConnectVia) []*clientEnv {
+	metrics := make([]*clientEnv, 0)
+
+	for _, m := range data {
+		metrics = append(metrics, &clientEnv{
+			ConnectVia:   via,
+			AppName:      m.AppName,
+			InstanceID:   m.InstanceID,
+			ConnectionId: m.ConnectionId,
+			Environment:  m.Environment,
+			SDKVersion:   m.SDKVersion,
+			Strategies:   m.Strategies,
+			Started:      m.Started,
+			Interval:     m.Interval,
+		})
+	}
+
+	return metrics
 }
 
 type validationResponse struct {
@@ -161,7 +231,7 @@ func (c *overleashClient) validateToken(token string) (*EdgeToken, error) {
 	tokens := result.Tokens
 
 	if len(tokens) == 0 {
-		return nil, errors.New("no tokens found")
+		return nil, errors.New("No tokens found")
 	}
 
 	return tokens[0], nil
@@ -210,6 +280,56 @@ func (c *overleashClient) registerClient(token *EdgeToken) error {
 	}
 
 	if res.StatusCode != http.StatusOK {
+		return fmt.Errorf("invalid status code: %d", res.StatusCode)
+	}
+
+	return nil
+}
+
+func (c *overleashClient) bulkMetrics(token string, applications []*ClientData, metrics []*MetricsData) error {
+	req, err := http.NewRequest(http.MethodPost, c.upstream+"/api/client/metrics/bulk", nil)
+	if err != nil {
+		return err
+	}
+
+	overleashVersion := "overleash@" + version.Version
+	req.Header.Add("Accept", "application/json")
+	req.Header.Add("Content-Type", "application/json")
+	req.Header.Add("Authorization", token)
+	req.Header.Add(unleashClientSpecHeader, supportedSpecVersion)
+	req.Header.Add(unleashAppNameHeader, "Overleash")
+	req.Header.Add(unleashConnectionIdHeader, c.connectionId)
+	req.Header.Add(unleashIntervalHeader, strconv.Itoa(c.interval))
+	req.Header.Add(unleashSdkHeader, overleashVersion)
+
+	via := ConnectVia{
+		AppName:    "Overleash",
+		InstanceID: c.connectionId,
+	}
+
+	requestData := struct {
+		Applications []*clientEnv `json:"applications"`
+		Metrics      []*metricEnv `json:"metrics"`
+	}{
+		Applications: fromClientData(applications, via),
+		Metrics:      fromMetricData(metrics),
+	}
+
+	requestJson, err := json.Marshal(requestData)
+
+	if err != nil {
+		return err
+	}
+
+	req.Body = io.NopCloser(bytes.NewReader(requestJson))
+
+	res, err := c.httpClient.Do(req)
+
+	if err != nil {
+		return err
+	}
+
+	if res.StatusCode != http.StatusAccepted {
 		return fmt.Errorf("invalid status code: %d", res.StatusCode)
 	}
 

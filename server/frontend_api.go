@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/Iandenh/overleash/proxy"
+	"github.com/Iandenh/overleash/overleash"
 	"github.com/Iandenh/overleash/unleashengine"
 	"github.com/charmbracelet/log"
 )
@@ -117,18 +117,22 @@ func (c *Config) registerFrontendApi(s *http.ServeMux) {
 	}))
 
 	s.Handle("POST /api/frontend/client/metrics", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if !c.proxyMetrics {
-			w.WriteHeader(http.StatusOK)
+		r.Body = http.MaxBytesReader(w, r.Body, maxBodySize)
 
+		decoder := json.NewDecoder(r.Body)
+
+		var metric *overleash.MetricsData
+		err := decoder.Decode(metric)
+		if err != nil {
+			http.Error(w, "Error parsing json", http.StatusBadRequest)
 			return
 		}
-		p := proxy.New(c.Overleash.Upstream())
 
-		err := p.ProxyRequest(w, r)
+		metric.Environment = strings.SplitN(c.Overleash.ActiveFeatureEnvironment().Name(), ":", 2)[1]
 
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-		}
+		c.Overleash.AddMetric(metric)
+
+		w.WriteHeader(http.StatusOK)
 	}))
 
 	s.Handle("POST /api/frontend/client/register", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

@@ -195,6 +195,94 @@ const (
 	OperatorSemverGt Operator = "SEMVER_GT"
 )
 
+type ConnectVia struct {
+	AppName    string `json:"appName"`
+	InstanceID string `json:"instanceId"`
+}
+
+type MetricsData struct {
+	Environment string
+
+	ConnectVia *ConnectVia `json:"connectVia"`
+
+	// AppName is the name of the application.
+	AppName string `json:"appName"`
+
+	// InstanceID is the instance identifier.
+	InstanceID string `json:"instanceId"`
+
+	// ConnectionId is the connection id for instance.
+	ConnectionId string `json:"connectionId"`
+
+	// Bucket is the payload data sent to the server.
+	Bucket Bucket `json:"bucket"`
+
+	// The runtime version of our Platform
+	PlatformVersion string `json:"platformVersion"`
+
+	// The runtime name of our Platform
+	PlatformName string `json:"platformName"`
+
+	// Which version of Yggdrasil is being used
+	YggdrasilVersion *string `json:"yggdrasilVersion"`
+
+	// Optional field that describes the sdk version (name:version)
+	SDKVersion string `json:"sdkVersion"`
+
+	// Which version of the Unleash-Client-Spec is this SDK validated against
+	SpecVersion string `json:"specVersion"`
+}
+
+// ClientData represents the data sent to the unleash during registration.
+type ClientData struct {
+	Environment string
+
+	ConnectVia *ConnectVia `json:"connectVia"`
+
+	// AppName is the name of the application.
+	AppName string `json:"appName"`
+
+	// InstanceID is the instance identifier.
+	InstanceID string `json:"instanceId"`
+
+	// ConnectionId is the connection id for instance.
+	ConnectionId string `json:"connectionId"`
+
+	// Optional field that describes the sdk version (name:version)
+	SDKVersion string `json:"sdkVersion"`
+
+	// Strategies is a list of names of the strategies supported by the client.
+	Strategies []string `json:"strategies"`
+
+	// Started indicates the time at which the client was created.
+	Started time.Time `json:"started"`
+
+	// Interval specifies the time interval (in ms) that the client is using for refreshing
+	// feature toggles.
+	Interval int64 `json:"interval"`
+
+	PlatformVersion string `json:"platformVersion"`
+
+	PlatformName string `json:"platformName"`
+
+	YggdrasilVersion *string `json:"yggdrasilVersion"`
+
+	// Which version of the Unleash-Client-Spec is this SDK validated against
+	SpecVersion string `json:"specVersion"`
+}
+
+type ToggleCount struct {
+	Yes      int32            `json:"Yes"`
+	No       int32            `json:"No"`
+	Variants map[string]int32 `json:"variants"`
+}
+
+type Bucket struct {
+	Start   time.Time              `json:"start"`
+	Stop    time.Time              `json:"stop"`
+	Toggles map[string]ToggleCount `json:"toggles"`
+}
+
 // Constraint represents a constraint on a particular context value.
 type Constraint struct {
 	// ContextName is the context name of the constraint.

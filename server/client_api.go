@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/Iandenh/overleash/proxy"
+	"github.com/Iandenh/overleash/overleash"
 )
 
 func (c *Config) registerClientApi(s *http.ServeMux) {
@@ -39,33 +39,38 @@ func (c *Config) registerClientApi(s *http.ServeMux) {
 	}))
 
 	s.Handle("POST /api/client/metrics", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if !c.proxyMetrics {
-			w.WriteHeader(http.StatusOK)
+		decoder := json.NewDecoder(r.Body)
 
-			return
-		}
-		p := proxy.New(c.Overleash.Upstream())
-
-		err := p.ProxyRequest(w, r)
+		var metric overleash.MetricsData
+		err := decoder.Decode(&metric)
 
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			http.Error(w, "Error parsing json", http.StatusBadRequest)
+			return
 		}
+
+		metric.Environment = strings.SplitN(c.Overleash.ActiveFeatureEnvironment().Name(), ":", 2)[1]
+
+		c.Overleash.AddMetric(&metric)
+
+		w.WriteHeader(http.StatusOK)
 	}))
 
 	s.Handle("POST /api/client/register", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if !c.proxyMetrics {
-			w.WriteHeader(http.StatusOK)
+		decoder := json.NewDecoder(r.Body)
 
+		var metric overleash.ClientData
+		err := decoder.Decode(&metric)
+
+		if err != nil {
+			http.Error(w, "Error parsing json", http.StatusBadRequest)
 			return
 		}
 
-		p := proxy.New(c.Overleash.Upstream())
+		metric.Environment = strings.SplitN(c.Overleash.ActiveFeatureEnvironment().Name(), ":", 2)[1]
 
-		err := p.ProxyRequest(w, r)
+		c.Overleash.AddRegistration(&metric)
 
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-		}
+		w.WriteHeader(http.StatusOK)
 	}))
 }

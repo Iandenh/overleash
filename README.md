@@ -71,7 +71,7 @@ Here are the config options:
 | Listen address	               | default: `:5433`                                                                                                                                                         | `OVERLEASH_LISTEN_ADDRESS`	          | `--listen-address`	 |
 | Unleash token (Client token)	 | example:  `*:development.a2a6261d38fe4f9c86aceddce09a00df6c348fd0feeab3c24a9547f2` Token or tokens that are used to fetch the feature flag config from upstream unleash. | `OVERLEASH_TOKEN`	         | `--token`	          |
 | Verbose	                      | default:  `false` Logs a bit more information for diagnose issues                                                                                                        | `OVERLEASH_VERBOSE`	       | `--verbose`	        |
-| Proxy metrics to upstream	    | default:  `false` Proxy the metric calls to the upstream. Make sure the correct token are in the authorization header.                                                   | `OVERLEASH_PROXY_METRICS`	 | `--proxy-metrics`	  |
+| Register metrics to upstream	 | default:  `false` Register the metrics to upstream                                                                                                                       | `OVERLEASH_REGISTER_METRICS`	 | `--proxy-metrics`	  |
 
 ## API Endpoints
 ### Client API
