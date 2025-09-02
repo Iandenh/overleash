@@ -2,6 +2,7 @@ package overleash
 
 import (
 	"bytes"
+	"context"
 	"crypto/tls"
 	"encoding/json"
 	"errors"
@@ -12,7 +13,9 @@ import (
 	"time"
 
 	"github.com/Iandenh/overleash/internal/version"
+	"github.com/charmbracelet/log"
 	"github.com/google/uuid"
+	"github.com/launchdarkly/eventsource"
 )
 
 const (
@@ -30,16 +33,18 @@ type client interface {
 	validateToken(token string) (*EdgeToken, error)
 	registerClient(token *EdgeToken) error
 	bulkMetrics(token string, applications []*ClientData, metrics []*MetricsData) error
+	streamFeatures(token string, channel chan eventsource.Event) error
 }
 
 type overleashClient struct {
+	ctx          context.Context
 	upstream     string
 	httpClient   *http.Client
 	connectionId string
 	interval     int
 }
 
-func newClient(upstream string, interval time.Duration) *overleashClient {
+func newClient(upstream string, interval time.Duration, ctx context.Context) *overleashClient {
 	return &overleashClient{
 		upstream:     upstream,
 		interval:     int(interval.Seconds()),
@@ -52,6 +57,7 @@ func newClient(upstream string, interval time.Duration) *overleashClient {
 				TLSClientConfig: &tls.Config{},
 			},
 		},
+		ctx: ctx,
 	}
 }
 
@@ -332,6 +338,56 @@ func (c *overleashClient) bulkMetrics(token string, applications []*ClientData, 
 	if res.StatusCode != http.StatusAccepted {
 		return fmt.Errorf("invalid status code: %d", res.StatusCode)
 	}
+
+	return nil
+}
+
+func (c *overleashClient) streamFeatures(token string, channel chan eventsource.Event) error {
+	req, err := http.NewRequest(http.MethodGet, c.upstream+"/api/client/streaming", nil)
+
+	if err != nil {
+		return nil
+	}
+
+	overleashVersion := "overleash@" + version.Version
+	req.Header.Add("Accept", "application/json")
+	req.Header.Add("Content-Type", "application/json")
+	req.Header.Add("Authorization", token)
+	req.Header.Add(unleashClientSpecHeader, supportedSpecVersion)
+	req.Header.Add(unleashAppNameHeader, "Overleash")
+	req.Header.Add(unleashConnectionIdHeader, c.connectionId)
+	req.Header.Add(unleashIntervalHeader, strconv.Itoa(c.interval))
+	req.Header.Add(unleashSdkHeader, overleashVersion)
+
+	stream, err := eventsource.SubscribeWithRequestAndOptions(req,
+		eventsource.StreamOptionCanRetryFirstConnection(-time.Second*3),
+		eventsource.StreamOptionUseBackoff(5*time.Minute),
+		eventsource.StreamOptionUseJitter(0.5),
+		eventsource.StreamOptionErrorHandler(func(err error) eventsource.StreamErrorHandlerResult {
+			return eventsource.StreamErrorHandlerResult{CloseNow: false}
+		}),
+	)
+
+	go func() {
+		defer func() {
+			if r := recover(); r != nil {
+				err := fmt.Errorf("SSE subscription panic recovered: %v", r)
+				log.Error(err.Error())
+			}
+		}()
+
+		for {
+			select {
+			case event := <-stream.Events:
+				if event != nil {
+					channel <- event
+				}
+			case <-c.ctx.Done():
+				stream.Close()
+				return
+			}
+		}
+	}()
 
 	return nil
 }
