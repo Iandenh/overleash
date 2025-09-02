@@ -15,6 +15,7 @@ import (
 	"github.com/Iandenh/overleash/internal/storage"
 	"github.com/Iandenh/overleash/unleashengine"
 	"github.com/charmbracelet/log"
+	"github.com/launchdarkly/eventsource"
 )
 
 var forceEnable = Strategy{
@@ -98,7 +99,6 @@ func NewOverleash(upstream string, tokens []string, reload time.Duration, stream
 		lastSync:            time.Now(),
 		paused:              false,
 		store:               storage.NewFileStore(),
-		client:              newClient(upstream, reload),
 		reload:              reload,
 		IsStreamer:          streamer,
 		FrontendApiEnabled:  frontendApiEnabled,
@@ -133,7 +133,9 @@ func makeFeatureEnvironments(tokens []string, streamer, frontendApiEnabled bool)
 	return features
 }
 
-func (o *OverleashContext) Start(ctx context.Context, registerMetrics bool, register bool) {
+func (o *OverleashContext) Start(ctx context.Context, registerMetrics, register, useDeltaApi bool) {
+	o.client = newClient(o.upstream, o.reload, ctx)
+
 	if overrides, err := o.readOverrides(); err == nil {
 		o.overrides = overrides
 	}
@@ -157,6 +159,14 @@ func (o *OverleashContext) Start(ctx context.Context, registerMetrics bool, regi
 		return
 	}
 
+	if useDeltaApi {
+		o.startStreamer(ctx)
+	} else {
+		o.startFetcher(ctx)
+	}
+}
+
+func (o *OverleashContext) startFetcher(ctx context.Context) {
 	o.ticker = createTicker(o.reload)
 
 	log.Infof("Start with reloading with %d seconds", int(o.reload.Seconds()))
@@ -174,6 +184,29 @@ func (o *OverleashContext) Start(ctx context.Context, registerMetrics bool, regi
 			}
 		}
 	}()
+}
+
+func (o *OverleashContext) startStreamer(ctx context.Context) {
+	o.ticker = createTicker(o.reload)
+
+	log.Infof("Start with streaming")
+
+	for _, f := range o.FeatureEnvironments() {
+		channel := make(chan eventsource.Event)
+
+		o.client.streamFeatures(f.token, channel)
+
+		go func() {
+			for {
+				select {
+				case <-ctx.Done():
+					return
+				case event := <-channel:
+					f.processSseEvent(event, o)
+				}
+			}
+		}()
+	}
 }
 
 func (o *OverleashContext) registerRemotes() {
@@ -346,31 +379,35 @@ func (o *OverleashContext) compileFeatureFiles() {
 	log.Debug("Compiling feature files")
 
 	for _, featureEnvironment := range o.featureEnvironments {
-		df := featureEnvironment.featureFileWithOverwrites(o)
+		featureEnvironment.complile(o)
+	}
+}
 
-		if featureEnvironment.Streamer != nil {
-			go featureEnvironment.Streamer.process(featureEnvironment.cachedFeatureFile, df)
-		}
+func (fe *FeatureEnvironment) complile(o *OverleashContext) {
+	df := fe.featureFileWithOverwrites(o)
 
-		featureEnvironment.cachedFeatureFile = df
+	if fe.Streamer != nil {
+		go fe.Streamer.process(fe.cachedFeatureFile, df)
+	}
 
-		buf := new(bytes.Buffer)
-		writer := json.NewEncoder(buf)
+	fe.cachedFeatureFile = df
 
-		err := writer.Encode(df)
+	buf := new(bytes.Buffer)
+	writer := json.NewEncoder(buf)
 
-		if err != nil {
-			log.Error(err)
-			panic(err)
-		}
+	err := writer.Encode(df)
 
-		featureEnvironment.cachedJson = buf.Bytes()
+	if err != nil {
+		log.Error(err)
+		panic(err)
+	}
 
-		featureEnvironment.etagOfCachedJson = calculateETag(featureEnvironment.cachedJson)
+	fe.cachedJson = buf.Bytes()
 
-		if featureEnvironment.engine != nil {
-			featureEnvironment.engine.TakeState(string(featureEnvironment.cachedJson))
-		}
+	fe.etagOfCachedJson = calculateETag(fe.cachedJson)
+
+	if fe.engine != nil {
+		fe.engine.TakeState(string(fe.cachedJson))
 	}
 }
 

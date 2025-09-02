@@ -24,7 +24,6 @@ func (h *httpSubscriber) Notify(e overleash.SseEvent) {
 	fmt.Fprintf(h.writer, "data: %s\n\n", e.Data)
 
 	h.flusher.Flush()
-	return
 }
 
 func (c *Config) registerDeltaApi(s *http.ServeMux) {

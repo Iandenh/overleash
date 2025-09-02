@@ -21,38 +21,6 @@ type SseEvent struct {
 	Data  string `json:"data"`
 }
 
-type HydrationEvent struct {
-	Type     string    `json:"type"`
-	EventId  int       `json:"eventId"`
-	Features []Feature `json:"features"`
-	Segments []Segment `json:"segments"`
-}
-
-func (e *HydrationEvent) GetType() string { return e.Type }
-func (e *HydrationEvent) GetEventId() int { return e.EventId }
-
-type SegmentUpdatedEvent struct {
-	Type    string  `json:"type"`
-	EventId int     `json:"eventId"`
-	Segment Segment `json:"segment"`
-}
-
-func (e *SegmentUpdatedEvent) GetType() string { return e.Type }
-func (e *SegmentUpdatedEvent) GetEventId() int { return e.EventId }
-
-type SegmentRemovedEvent struct {
-	Type      string `json:"type"`
-	EventId   int    `json:"eventId"`
-	SegmentId int    `json:"segmentId"`
-}
-
-func (e *SegmentRemovedEvent) GetType() string { return e.Type }
-func (e *SegmentRemovedEvent) GetEventId() int { return e.EventId }
-
-type Events struct {
-	Events []Event `json:"events"`
-}
-
 type Streamer struct {
 	subscribers []StreamSubscriber
 	mutex       sync.RWMutex
@@ -102,6 +70,7 @@ func (fe *FeatureEnvironment) AddStreamerSubscriber(client StreamSubscriber) {
 
 	client.Notify(fe.Streamer.createNewConnectDelta(1, []Event{&h}))
 }
+
 func (fe *FeatureEnvironment) RemoveStreamerSubscriber(client StreamSubscriber) {
 	fe.Streamer.mutex.Lock()
 	defer fe.Streamer.mutex.Unlock()
@@ -227,30 +196,6 @@ func missingSegments(oldMap, newMap map[int]Segment) []Segment {
 	}
 	return missing
 }
-
-type Event interface {
-	GetType() string
-	GetEventId() int
-}
-
-type FeatureUpdatedEvent struct {
-	Type    string  `json:"type"`
-	EventId int     `json:"eventId"`
-	Feature Feature `json:"feature"`
-}
-
-func (e *FeatureUpdatedEvent) GetType() string { return e.Type }
-func (e *FeatureUpdatedEvent) GetEventId() int { return e.EventId }
-
-type FeatureRemovedEvent struct {
-	Type        string `json:"type"`
-	EventId     int    `json:"eventId"`
-	FeatureName string `json:"featureName"`
-	Project     string `json:"project"`
-}
-
-func (e *FeatureRemovedEvent) GetType() string { return e.Type }
-func (e *FeatureRemovedEvent) GetEventId() int { return e.EventId }
 
 func (f Feature) Equal(other Feature) bool {
 	// Compare primitive fields directly
