@@ -8,7 +8,7 @@ require (
 	github.com/charmbracelet/log v0.4.2
 	github.com/google/uuid v1.6.0
 	github.com/rs/cors v1.11.1
-	github.com/spf13/pflag v1.0.7
+	github.com/spf13/pflag v1.0.9
 	github.com/spf13/viper v1.20.1
 	github.com/teal-finance/fuzzy v0.2.0
 )
