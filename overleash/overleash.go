@@ -38,6 +38,7 @@ type OverleashContext struct {
 	client              client
 	reload              time.Duration
 	metrics             *metrics
+	IsStreamer          bool
 }
 
 type FeatureEnvironment struct {
@@ -48,6 +49,7 @@ type FeatureEnvironment struct {
 	cachedJson        []byte
 	etagOfCachedJson  string
 	engine            unleashengine.Engine
+	Streamer          *Streamer
 }
 
 func (o *OverleashContext) ActiveFeatureEnvironment() *FeatureEnvironment {
@@ -86,10 +88,10 @@ type Override struct {
 	Constraints []OverrideConstraint
 }
 
-func NewOverleash(upstream string, tokens []string, reload time.Duration) *OverleashContext {
+func NewOverleash(upstream string, tokens []string, reload time.Duration, streamer bool) *OverleashContext {
 	o := &OverleashContext{
 		upstream:            upstream,
-		featureEnvironments: makeFeatureEnvironments(tokens),
+		featureEnvironments: makeFeatureEnvironments(tokens, streamer),
 		activeFeatureIdx:    0,
 		overrides:           make(map[string]*Override),
 		lastSync:            time.Now(),
@@ -97,19 +99,27 @@ func NewOverleash(upstream string, tokens []string, reload time.Duration) *Overl
 		store:               storage.NewFileStore(),
 		client:              newClient(upstream, reload),
 		reload:              reload,
+		IsStreamer:          streamer,
 	}
 
 	return o
 }
 
-func makeFeatureEnvironments(tokens []string) []*FeatureEnvironment {
+func makeFeatureEnvironments(tokens []string, streamer bool) []*FeatureEnvironment {
 	features := make([]*FeatureEnvironment, len(tokens))
 
 	for i, token := range tokens {
+		var s *Streamer
+
+		if streamer {
+			s = NewStreamer()
+		}
+
 		features[i] = &FeatureEnvironment{
-			name:   strings.SplitN(token, ".", 2)[0],
-			token:  token,
-			engine: unleashengine.NewUnleashEngine(),
+			name:     strings.SplitN(token, ".", 2)[0],
+			token:    token,
+			engine:   unleashengine.NewUnleashEngine(),
+			Streamer: s,
 		}
 	}
 
@@ -330,6 +340,10 @@ func (o *OverleashContext) compileFeatureFiles() {
 
 	for _, featureEnvironment := range o.featureEnvironments {
 		df := featureEnvironment.featureFileWithOverwrites(o)
+
+		if featureEnvironment.Streamer != nil {
+			go featureEnvironment.Streamer.process(featureEnvironment.cachedFeatureFile, df)
+		}
 
 		featureEnvironment.cachedFeatureFile = df
 

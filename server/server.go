@@ -29,6 +29,7 @@ type Config struct {
 	listenAddress string
 	ctx           context.Context
 	headless      bool
+	streamer      bool
 }
 
 func New(config *overleash.OverleashContext, listenAddress string, ctx context.Context, headless bool) *Config {
@@ -58,6 +59,10 @@ func (c *Config) Start() {
 	c.registerClientApi(s)
 	c.registerFrontendApi(s)
 
+	if c.Overleash.IsStreamer {
+		c.registerDelta(s)
+	}
+
 	if !c.headless {
 		c.registerDashboardApi(s)
 	}
@@ -72,12 +77,8 @@ func (c *Config) Start() {
 	compress, _ := httpcompression.DefaultAdapter()
 
 	httpServer := &http.Server{
-		Addr:              c.listenAddress,
-		ReadTimeout:       5 * time.Second,
-		WriteTimeout:      10 * time.Second,
-		IdleTimeout:       120 * time.Second,
-		ReadHeaderTimeout: 2 * time.Second,
-		Handler:           compress(handler),
+		Addr:    c.listenAddress,
+		Handler: compress(handler),
 	}
 
 	go func() {
