@@ -20,10 +20,10 @@ func run(ctx context.Context) {
 	defer cancel()
 
 	tokens := strings.Split(viper.GetString("token"), ",")
-	//reload := viper.GetInt("reload")
 	listenAddress := viper.GetString("listen_address")
 	registerMetrics := viper.GetBool("register_metrics")
 	registerTokens := viper.GetBool("register")
+	streamer := viper.GetBool("streamer")
 	headless := viper.GetBool("headless")
 
 	upstream := viper.GetString("upstream")
@@ -35,7 +35,7 @@ func run(ctx context.Context) {
 		}
 	}
 
-	o := overleash.NewOverleash(upstream, tokens, parseReload())
+	o := overleash.NewOverleash(upstream, tokens, parseReload(), streamer)
 	o.Start(ctx, registerMetrics, registerTokens)
 
 	server.New(o, listenAddress, ctx, headless).Start()
@@ -84,6 +84,7 @@ func initConfig() {
 	pflag.Bool("register_metrics", false, "Register metrics")
 	pflag.Bool("register", false, "Whether to register itself to the connected Unleash server.")
 	pflag.Bool("headless", false, "Whether to not register the dashboard api.")
+	pflag.Bool("streamer", false, "Whether this instance streams the delta events.")
 
 	pflag.Parse()
 
