@@ -100,7 +100,7 @@ func TestCompileFeatureFile(t *testing.T) {
 		Segments: []Segment{},
 	}
 	tokens := []string{"dummy.token"}
-	o := NewOverleash("http://example.com", tokens, 0)
+	o := NewOverleash("http://example.com", tokens, 0, false)
 	// Set the remote feature file.
 	o.ActiveFeatureEnvironment().featureFile = ff
 	// Replace the engine with our fakeEngine.
@@ -150,7 +150,7 @@ func TestOverrideAddAndDelete(t *testing.T) {
 		Segments: []Segment{},
 	}
 	tokens := []string{"dummy.token"}
-	o := NewOverleash("http://example.com", tokens, 0)
+	o := NewOverleash("http://example.com", tokens, 0, false)
 	o.ActiveFeatureEnvironment().featureFile = ff
 	// Use fakeStore to avoid file I/O.
 	fs := &fakeStore{}
@@ -208,7 +208,7 @@ func TestSetPaused(t *testing.T) {
 		Segments: []Segment{},
 	}
 	tokens := []string{"dummy.token"}
-	o := NewOverleash("http://example.com", tokens, 0)
+	o := NewOverleash("http://example.com", tokens, 0, false)
 	o.ActiveFeatureEnvironment().featureFile = ff
 
 	// Add an override.
@@ -235,7 +235,7 @@ func TestSetPaused(t *testing.T) {
 // TestSetFeatureFileIdx tests setting a valid and invalid feature file index.
 func TestSetFeatureFileIdx(t *testing.T) {
 	tokens := []string{"token1", "token2"}
-	o := NewOverleash("http://example.com", tokens, 0)
+	o := NewOverleash("http://example.com", tokens, 0, false)
 	// Valid index.
 	if err := o.SetFeatureFileIdx(1); err != nil {
 		t.Errorf("Expected no error for valid index, got %v", err)
@@ -256,7 +256,7 @@ func TestSetFeatureFileIdx(t *testing.T) {
 // TestTokenFunctions verifies GetRemotes and ActiveToken.
 func TestTokenFunctions(t *testing.T) {
 	tokens := []string{"remote1.token", "remote2.token"}
-	o := NewOverleash("http://example.com", tokens, 0)
+	o := NewOverleash("http://example.com", tokens, 0, false)
 	remotes := o.GetRemotes()
 	if len(remotes) != 2 {
 		t.Errorf("Expected 2 remotes, got %d", len(remotes))
@@ -273,7 +273,7 @@ func TestTokenFunctions(t *testing.T) {
 // TestUpstreamAndCachedJson verifies the Upstream value and that CachedJson is non-empty.
 func TestUpstreamAndCachedJson(t *testing.T) {
 	tokens := []string{"dummy.token"}
-	o := NewOverleash("http://example.com", tokens, 0)
+	o := NewOverleash("http://example.com", tokens, 0, false)
 	o.ActiveFeatureEnvironment().featureFile = FeatureFile{Version: 1}
 	o.compileFeatureFiles()
 	if o.Upstream() != "http://example.com" {
@@ -288,7 +288,7 @@ func TestUpstreamAndCachedJson(t *testing.T) {
 // can be correctly read back.
 func TestWriteAndReadOverrides(t *testing.T) {
 	tokens := []string{"dummy.token"}
-	o := NewOverleash("http://example.com", tokens, 0)
+	o := NewOverleash("http://example.com", tokens, 0, false)
 	fs := &fakeStore{}
 	o.store = fs
 
@@ -310,7 +310,7 @@ func TestWriteAndReadOverrides(t *testing.T) {
 // TestLoadRemotes verifies that loadRemotesWithLock updates featureFile using a fake overleashClient.
 func TestLoadRemotes(t *testing.T) {
 	tokens := []string{"dummy.token"}
-	o := NewOverleash("http://example.com", tokens, 0)
+	o := NewOverleash("http://example.com", tokens, 0, false)
 	// Create a dummy feature file.
 	ff := FeatureFile{
 		Version: 2,
@@ -341,7 +341,7 @@ func TestLoadRemotes(t *testing.T) {
 // TestRefreshFeatureFiles verifies that RefreshFeatureFiles updates remotes and resets the ticker.
 func TestRefreshFeatureFiles(t *testing.T) {
 	tokens := []string{"dummy.token"}
-	o := NewOverleash("http://example.com", tokens, 0)
+	o := NewOverleash("http://example.com", tokens, 0, false)
 	// Set a fake ticker.
 	o.ticker = ticker{period: time.Minute, ticker: nil}
 
@@ -373,7 +373,7 @@ func TestRefreshFeatureFiles(t *testing.T) {
 // TestHasAndGetOverride verifies the HasOverride and GetOverride functions.
 func TestHasAndGetOverride(t *testing.T) {
 	tokens := []string{"dummy.token"}
-	o := NewOverleash("http://example.com", tokens, 0)
+	o := NewOverleash("http://example.com", tokens, 0, false)
 	// Initially, no override should exist.
 	exists, _ := o.HasOverride("nonexistent")
 	if exists {
@@ -422,7 +422,7 @@ func sha256SumHex(data []byte) string {
 // and verifies that Start returns immediately.
 func TestStartWithoutReload(t *testing.T) {
 	tokens := []string{"dummy.token"}
-	o := NewOverleash("http://example.com", tokens, 0)
+	o := NewOverleash("http://example.com", tokens, 0, false)
 	o.client = &fakeClient{}
 
 	// For this test, set reload to 0.
