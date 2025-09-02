@@ -49,18 +49,18 @@ type SegmentRemovedEvent struct {
 func (e *SegmentRemovedEvent) GetType() string { return e.Type }
 func (e *SegmentRemovedEvent) GetEventId() int { return e.EventId }
 
-type ClientFeaturesDelta struct {
+type Events struct {
 	Events []Event `json:"events"`
 }
 
 type Streamer struct {
 	subscribers []StreamSubscriber
 	mutex       sync.RWMutex
-	i           atomic.Int32
+	i           atomic.Int64
 }
 
 func (s *Streamer) createNewUpdateDelta(id int, events []Event) SseEvent {
-	j, _ := json.Marshal(ClientFeaturesDelta{events})
+	j, _ := json.Marshal(Events{events})
 
 	return SseEvent{
 		Id:    strconv.Itoa(id),
@@ -70,7 +70,7 @@ func (s *Streamer) createNewUpdateDelta(id int, events []Event) SseEvent {
 }
 
 func (s *Streamer) createNewConnectDelta(id int, events []Event) SseEvent {
-	j, _ := json.Marshal(ClientFeaturesDelta{events})
+	j, _ := json.Marshal(Events{events})
 
 	return SseEvent{
 		Id:    strconv.Itoa(id),
@@ -83,30 +83,30 @@ func NewStreamer() *Streamer {
 	return &Streamer{
 		subscribers: make([]StreamSubscriber, 0),
 		mutex:       sync.RWMutex{},
-		i:           atomic.Int32{},
+		i:           atomic.Int64{},
 	}
 }
 
-func (s *Streamer) AddSubscriber(client StreamSubscriber, file FeatureFile) {
-	s.subscribers = append(s.subscribers, client)
+func (fe *FeatureEnvironment) AddStreamerSubscriber(client StreamSubscriber) {
+	fe.Streamer.subscribers = append(fe.Streamer.subscribers, client)
+
 	h := HydrationEvent{
 		Type:     "hydration",
 		EventId:  1,
-		Features: file.Features,
-		Segments: file.Segments,
+		Features: fe.cachedFeatureFile.Features,
+		Segments: fe.cachedFeatureFile.Segments,
 	}
 
-	client.Notify(s.createNewConnectDelta(1, []Event{&h}))
+	client.Notify(fe.Streamer.createNewConnectDelta(1, []Event{&h}))
 }
-
-func (s *Streamer) RemoveSubscriber(client StreamSubscriber) {
-	newSubs := make([]StreamSubscriber, 0, len(s.subscribers))
-	for _, sub := range s.subscribers {
+func (fe *FeatureEnvironment) RemoveStreamerSubscriber(client StreamSubscriber) {
+	newSubs := make([]StreamSubscriber, 0, len(fe.Streamer.subscribers))
+	for _, sub := range fe.Streamer.subscribers {
 		if sub != client {
 			newSubs = append(newSubs, sub)
 		}
 	}
-	s.subscribers = newSubs
+	fe.Streamer.subscribers = newSubs
 }
 
 func (s *Streamer) process(old, new FeatureFile) {

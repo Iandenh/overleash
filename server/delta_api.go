@@ -27,7 +27,7 @@ func (h *httpSubscriber) Notify(e overleash.SseEvent) {
 	return
 }
 
-func (c *Config) registerDelta(s *http.ServeMux) {
+func (c *Config) registerDeltaApi(s *http.ServeMux) {
 	s.HandleFunc("/api/client/streaming", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/event-stream")
 		w.Header().Set("Cache-Control", "no-cache")
@@ -41,7 +41,7 @@ func (c *Config) registerDelta(s *http.ServeMux) {
 
 		subscriber := &httpSubscriber{flusher: flusher, writer: w}
 
-		c.Overleash.ActiveFeatureEnvironment().Streamer.AddSubscriber(subscriber, c.Overleash.ActiveFeatureEnvironment().FeatureFile())
+		c.Overleash.ActiveFeatureEnvironment().AddStreamerSubscriber(subscriber)
 
 		ticker := time.NewTicker(30 * time.Second)
 		defer ticker.Stop()
@@ -49,7 +49,7 @@ func (c *Config) registerDelta(s *http.ServeMux) {
 		for {
 			select {
 			case <-r.Context().Done():
-				c.Overleash.ActiveFeatureEnvironment().Streamer.RemoveSubscriber(subscriber)
+				c.Overleash.ActiveFeatureEnvironment().RemoveStreamerSubscriber(subscriber)
 				return
 			case <-ticker.C:
 				fmt.Fprintf(w, ": keep-alive\n\n") // comment line = SSE heartbeat

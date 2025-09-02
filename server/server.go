@@ -60,7 +60,7 @@ func (c *Config) Start() {
 	c.registerFrontendApi(s)
 
 	if c.Overleash.IsStreamer {
-		c.registerDelta(s)
+		c.registerDeltaApi(s)
 	}
 
 	if !c.headless {
