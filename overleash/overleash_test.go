@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/Iandenh/overleash/unleashengine"
+	"github.com/launchdarkly/eventsource"
 )
 
 // fakeStore implements a simple in-memory store.
@@ -78,6 +79,10 @@ func (fc *fakeClient) getFeatures(token string) (*FeatureFile, error) {
 }
 
 func (fc *fakeClient) bulkMetrics(token string, applications []*ClientData, metrics []*MetricsData) error {
+	return nil
+}
+
+func (fc *fakeClient) streamFeatures(token string, channel chan eventsource.Event) error {
 	return nil
 }
 
@@ -429,7 +434,7 @@ func TestStartWithoutReload(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	// Calling Start with reload==0 should not start any goroutine.
-	o.Start(ctx, false, false)
+	o.Start(ctx, false, false, false)
 	// Simply check that no panic occurred and that overleashClient was created.
 	if o.client == nil {
 		t.Error("Expected overleashClient to be created in Start")
