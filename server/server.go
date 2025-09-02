@@ -57,7 +57,10 @@ func (c *Config) Start() {
 	}
 
 	c.registerClientApi(s)
-	c.registerFrontendApi(s)
+
+	if c.Overleash.FrontendApiEnabled {
+		c.registerFrontendApi(s)
+	}
 
 	if c.Overleash.IsStreamer {
 		c.registerDeltaApi(s)

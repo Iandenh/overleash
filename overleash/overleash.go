@@ -39,6 +39,7 @@ type OverleashContext struct {
 	reload              time.Duration
 	metrics             *metrics
 	IsStreamer          bool
+	FrontendApiEnabled  bool
 }
 
 type FeatureEnvironment struct {
@@ -88,10 +89,10 @@ type Override struct {
 	Constraints []OverrideConstraint
 }
 
-func NewOverleash(upstream string, tokens []string, reload time.Duration, streamer bool) *OverleashContext {
+func NewOverleash(upstream string, tokens []string, reload time.Duration, streamer, frontendApiEnabled bool) *OverleashContext {
 	o := &OverleashContext{
 		upstream:            upstream,
-		featureEnvironments: makeFeatureEnvironments(tokens, streamer),
+		featureEnvironments: makeFeatureEnvironments(tokens, streamer, frontendApiEnabled),
 		activeFeatureIdx:    0,
 		overrides:           make(map[string]*Override),
 		lastSync:            time.Now(),
@@ -100,25 +101,31 @@ func NewOverleash(upstream string, tokens []string, reload time.Duration, stream
 		client:              newClient(upstream, reload),
 		reload:              reload,
 		IsStreamer:          streamer,
+		FrontendApiEnabled:  frontendApiEnabled,
 	}
 
 	return o
 }
 
-func makeFeatureEnvironments(tokens []string, streamer bool) []*FeatureEnvironment {
+func makeFeatureEnvironments(tokens []string, streamer, frontendApiEnabled bool) []*FeatureEnvironment {
 	features := make([]*FeatureEnvironment, len(tokens))
 
 	for i, token := range tokens {
 		var s *Streamer
+		var e unleashengine.Engine
 
 		if streamer {
 			s = NewStreamer()
 		}
 
+		if frontendApiEnabled {
+			e = unleashengine.NewUnleashEngine()
+		}
+
 		features[i] = &FeatureEnvironment{
 			name:     strings.SplitN(token, ".", 2)[0],
 			token:    token,
-			engine:   unleashengine.NewUnleashEngine(),
+			engine:   e,
 			Streamer: s,
 		}
 	}
@@ -361,7 +368,9 @@ func (o *OverleashContext) compileFeatureFiles() {
 
 		featureEnvironment.etagOfCachedJson = calculateETag(featureEnvironment.cachedJson)
 
-		featureEnvironment.engine.TakeState(string(featureEnvironment.cachedJson))
+		if featureEnvironment.engine != nil {
+			featureEnvironment.engine.TakeState(string(featureEnvironment.cachedJson))
+		}
 	}
 }
 
