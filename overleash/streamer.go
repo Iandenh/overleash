@@ -88,6 +88,9 @@ func NewStreamer() *Streamer {
 }
 
 func (fe *FeatureEnvironment) AddStreamerSubscriber(client StreamSubscriber) {
+	fe.Streamer.mutex.Lock()
+	defer fe.Streamer.mutex.Unlock()
+
 	fe.Streamer.subscribers = append(fe.Streamer.subscribers, client)
 
 	h := HydrationEvent{
@@ -100,6 +103,9 @@ func (fe *FeatureEnvironment) AddStreamerSubscriber(client StreamSubscriber) {
 	client.Notify(fe.Streamer.createNewConnectDelta(1, []Event{&h}))
 }
 func (fe *FeatureEnvironment) RemoveStreamerSubscriber(client StreamSubscriber) {
+	fe.Streamer.mutex.Lock()
+	defer fe.Streamer.mutex.Unlock()
+
 	newSubs := make([]StreamSubscriber, 0, len(fe.Streamer.subscribers))
 	for _, sub := range fe.Streamer.subscribers {
 		if sub != client {
@@ -110,9 +116,15 @@ func (fe *FeatureEnvironment) RemoveStreamerSubscriber(client StreamSubscriber) 
 }
 
 func (s *Streamer) process(old, new FeatureFile) {
+	s.mutex.RLock()
+	defer s.mutex.RUnlock()
+
+	if len(s.subscribers) == 0 {
+		log.Debug("No subscribers, skipping processing")
+		return
+	}
+
 	log.Debug("processing feature file")
-	s.mutex.Lock()
-	defer s.mutex.Unlock()
 
 	oldFlagsMap := keyFeatureFlags(old)
 	newFlagsMap := keyFeatureFlags(new)
