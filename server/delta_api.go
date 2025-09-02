@@ -43,7 +43,7 @@ func (c *Config) registerDelta(s *http.ServeMux) {
 
 		c.Overleash.ActiveFeatureEnvironment().Streamer.AddSubscriber(subscriber, c.Overleash.ActiveFeatureEnvironment().FeatureFile())
 
-		ticker := time.NewTicker(5 * time.Second)
+		ticker := time.NewTicker(30 * time.Second)
 		defer ticker.Stop()
 
 		for {
