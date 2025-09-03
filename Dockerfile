@@ -2,14 +2,17 @@
 FROM --platform=$BUILDPLATFORM rust:1.89 AS rust-build-stage
 WORKDIR /yggdrasil
 ARG TARGETPLATFORM
+
 RUN case "$TARGETPLATFORM" in \
   "linux/arm64") echo aarch64-unknown-linux-gnu > /rust_target.txt ;; \
   "linux/amd64") echo x86_64-unknown-linux-gnu > /rust_target.txt ;; \
   *) exit 1 ;; \
 esac
+
 RUN if [ "$TARGETPLATFORM" = "linux/arm64" ]; then \
         apt-get update && apt-get install -y gcc-aarch64-linux-gnu && mkdir -p .cargo && echo '[target.aarch64-unknown-linux-gnu]' >> .cargo/config && echo 'linker = "aarch64-linux-gnu-gcc"' >> .cargo/config ; \
 fi
+
 RUN rustup toolchain install stable --profile default
 RUN rustup target add $(cat /rust_target.txt)
 COPY ./yggdrasil /yggdrasil
@@ -31,7 +34,6 @@ COPY --from=rust-build-stage /yggdrasil/libyggdrasilffi.so /app/unleashengine/li
 RUN go install github.com/a-h/templ/cmd/templ@latest
 COPY go.mod go.sum ./
 RUN go mod download
-RUN mkdir /data
 COPY . /app
 RUN templ generate
 RUN case "$TARGETPLATFORM" in \
@@ -40,7 +42,7 @@ RUN case "$TARGETPLATFORM" in \
   *) exit 1 ;; \
 esac
 
-# Deploy.
+# Final image
 FROM --platform=$BUILDPLATFORM debian:bookworm-slim AS release-stage
 ARG TARGETPLATFORM
 ENV OVERLEASH_LISTEN_ADDRESS=":8080"
@@ -55,11 +57,13 @@ RUN if [ "$TARGETPLATFORM" = "linux/arm64" ]; then \
        dpkg --add-architecture arm64 && apt-get update && apt-get install -y gcc-aarch64-linux-gnu libc6:arm64 ; \
 fi
 WORKDIR /
-RUN useradd -ms /bin/sh -u 1001 1001
+
+RUN useradd -ms /bin/sh -u 1001 1001 && mkdir /data && chown -R 1001:1001 /data
+
 USER 1001
 COPY --from=build-stage /entrypoint /entrypoint
 COPY --from=rust-build-stage /yggdrasil/libyggdrasilffi.so /usr/lib/libyggdrasilffi.so
-VOLUME ["/data"]
+
 ENV DATA_DIR="/data"
 EXPOSE 8080
 ENTRYPOINT ["/entrypoint"]
