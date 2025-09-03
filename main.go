@@ -28,6 +28,8 @@ func run(ctx context.Context) {
 	headless := viper.GetBool("headless")
 	frontendApiEnabled := viper.GetBool("enable_frontend_api")
 	envFromToken := viper.GetBool("env_from_token")
+	prometheusMetrics := viper.GetBool("prometheus_metrics")
+	prometheusMetricsPort := viper.GetInt("prometheus_metrics_port")
 
 	upstream := viper.GetString("upstream")
 
@@ -41,7 +43,7 @@ func run(ctx context.Context) {
 	o := overleash.NewOverleash(upstream, tokens, parseReload(), streamer, frontendApiEnabled)
 	o.Start(ctx, registerMetrics, registerTokens, useDeltaApi)
 
-	server.New(o, listenAddress, ctx, headless, envFromToken).Start()
+	server.New(o, listenAddress, ctx, headless, envFromToken, prometheusMetrics, prometheusMetricsPort).Start()
 }
 
 func parseReload() time.Duration {
@@ -91,6 +93,8 @@ func initConfig() {
 	pflag.Bool("enable_frontend_api", true, "Whether to enable the frontend API.")
 	pflag.Bool("delta", false, "Whether to enable the frontend API.")
 	pflag.Bool("env_from_token", true, "Whether to resolve the environment from the client token in the Authorization header instead of using the configured environment.")
+	pflag.Bool("prometheus_metrics", false, "Whether to collect prometheus metrics from the server.")
+	pflag.Int("prometheus_metrics_port", 9100, "Which port to expose Prometheus metrics.")
 
 	pflag.Parse()
 

@@ -134,6 +134,10 @@ persistence:
 ##
 extraDeploy: []
 
+metrics:
+  enabled: false
+  port: 9100
+
 extraEnv:
   OVERLEASH_UPSTREAM: ""
   OVERLEASH_TOKEN: ""

@@ -16,10 +16,21 @@ Reusable Overleash container spec
     {{- end }}
     - name: OVERLEASH_LISTEN_ADDRESS
       value: ":{{ .Values.service.port }}"
+    {{- if .Values.metrics.enabled }}
+    - name: OVERLEASH_PROMETHEUS_METRICS
+      value: true
+    - name: OVERLEASH_PROMETHEUS_METRICS_PORT
+      value: ":{{ .Values.metrics.port }}"
+    {{- end }}
   ports:
     - name: http
       containerPort: {{ .Values.service.port }}
       protocol: TCP
+    {{- if .Values.metrics.enabled }}
+    - name: metrics
+      containerPort: {{ .Values.metrics.port }}
+      protocol: TCP
+    {{- end }}
   livenessProbe:
     {{- toYaml .Values.livenessProbe | nindent 4 }}
   readinessProbe:
