@@ -1,6 +1,7 @@
 package overleash
 
 import (
+	"context"
 	"encoding/json"
 	"io"
 	"net/http"
@@ -48,7 +49,7 @@ func TestGetFeatures(t *testing.T) {
 	defer ts.Close()
 
 	// Create a new overleashClient with a dummy interval.
-	c := newClient(ts.URL, 1, t.Context())
+	c := newClient(ts.URL, 1, context.Background())
 	features, err := c.getFeatures("dummy-token")
 	if err != nil {
 		t.Fatalf("getFeatures returned error: %v", err)
@@ -112,7 +113,7 @@ func TestValidateToken(t *testing.T) {
 	}))
 	defer ts.Close()
 
-	c := newClient(ts.URL, 1, t.Context())
+	c := newClient(ts.URL, 1, context.Background())
 	token, err := c.validateToken("dummy-token")
 	if err != nil {
 		t.Fatalf("validateToken returned error: %v", err)
@@ -156,7 +157,7 @@ func TestRegisterClient(t *testing.T) {
 			t.Errorf("Expected SdkVersion to start with 'overleash@', got %s", reqData.SdkVersion)
 		}
 		// Check that the interval is as expected.
-		expectedInterval := newClient("", 1, t.Context()).interval
+		expectedInterval := newClient("", 1, context.Background()).interval
 		if reqData.Interval != expectedInterval {
 			t.Errorf("Expected Interval %d, got %d", expectedInterval, reqData.Interval)
 		}
@@ -165,7 +166,7 @@ func TestRegisterClient(t *testing.T) {
 	}))
 	defer ts.Close()
 
-	c := newClient(ts.URL, 1, t.Context())
+	c := newClient(ts.URL, 1, context.Background())
 	dummyToken := &EdgeToken{
 		Token:       "valid-token",
 		Environment: "test",
@@ -182,7 +183,7 @@ func TestRegisterClient(t *testing.T) {
 	}))
 	defer tsFail.Close()
 
-	cFail := newClient(tsFail.URL, 1, t.Context())
+	cFail := newClient(tsFail.URL, 1, context.Background())
 	err := cFail.registerClient(dummyToken)
 	if err == nil {
 		t.Fatalf("Expected error due to non-OK status code, got nil")
