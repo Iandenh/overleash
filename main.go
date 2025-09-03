@@ -27,6 +27,7 @@ func run(ctx context.Context) {
 	streamer := viper.GetBool("streamer")
 	headless := viper.GetBool("headless")
 	frontendApiEnabled := viper.GetBool("enable_frontend_api")
+	envFromToken := viper.GetBool("env_from_token")
 
 	upstream := viper.GetString("upstream")
 
@@ -40,7 +41,7 @@ func run(ctx context.Context) {
 	o := overleash.NewOverleash(upstream, tokens, parseReload(), streamer, frontendApiEnabled)
 	o.Start(ctx, registerMetrics, registerTokens, useDeltaApi)
 
-	server.New(o, listenAddress, ctx, headless).Start()
+	server.New(o, listenAddress, ctx, headless, envFromToken).Start()
 }
 
 func parseReload() time.Duration {
@@ -89,6 +90,7 @@ func initConfig() {
 	pflag.Bool("streamer", false, "Whether this instance streams the delta events.")
 	pflag.Bool("enable_frontend_api", true, "Whether to enable the frontend API.")
 	pflag.Bool("delta", false, "Whether to enable the frontend API.")
+	pflag.Bool("env_from_token", true, "Whether to resolve the environment from the client token in the Authorization header instead of using the configured environment.")
 
 	pflag.Parse()
 

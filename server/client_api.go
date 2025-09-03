@@ -13,16 +13,16 @@ func (c *Config) registerClientApi(s *http.ServeMux) {
 	s.Handle("GET /api/client/features", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ifNoneMatch := strings.Trim(strings.TrimPrefix(r.Header.Get("If-None-Match"), "W/"), "\"")
 
-		if ifNoneMatch != "" && ifNoneMatch == c.Overleash.ActiveFeatureEnvironment().EtagOfCachedJson() {
+		if ifNoneMatch != "" && ifNoneMatch == c.featureEnvironmentFromRequest(r).EtagOfCachedJson() {
 			w.WriteHeader(http.StatusNotModified)
 			return
 		}
 
-		w.Header().Set("ETag", fmt.Sprintf("W/\"%s\"", c.Overleash.ActiveFeatureEnvironment().EtagOfCachedJson()))
+		w.Header().Set("ETag", fmt.Sprintf("W/\"%s\"", c.featureEnvironmentFromRequest(r).EtagOfCachedJson()))
 		w.Header().Add("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 
-		w.Write(c.Overleash.ActiveFeatureEnvironment().CachedJson())
+		w.Write(c.featureEnvironmentFromRequest(r).CachedJson())
 	}))
 
 	s.Handle("GET /api/client/features/{key}", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -31,7 +31,7 @@ func (c *Config) registerClientApi(s *http.ServeMux) {
 		w.Header().Add("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 
-		flag, _ := c.Overleash.ActiveFeatureEnvironment().FeatureFile().Features.Get(key)
+		flag, _ := c.featureEnvironmentFromRequest(r).FeatureFile().Features.Get(key)
 
 		writer := json.NewEncoder(w)
 
@@ -49,7 +49,7 @@ func (c *Config) registerClientApi(s *http.ServeMux) {
 			return
 		}
 
-		metric.Environment = strings.SplitN(c.Overleash.ActiveFeatureEnvironment().Name(), ":", 2)[1]
+		metric.Environment = c.featureEnvironmentFromRequest(r).Environment()
 
 		c.Overleash.AddMetric(&metric)
 
@@ -67,7 +67,7 @@ func (c *Config) registerClientApi(s *http.ServeMux) {
 			return
 		}
 
-		metric.Environment = strings.SplitN(c.Overleash.ActiveFeatureEnvironment().Name(), ":", 2)[1]
+		metric.Environment = c.featureEnvironmentFromRequest(r).Environment()
 
 		c.Overleash.AddRegistration(&metric)
 

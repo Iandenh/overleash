@@ -45,6 +45,7 @@ type OverleashContext struct {
 
 type FeatureEnvironment struct {
 	name              string
+	environment       string
 	token             string
 	featureFile       FeatureFile
 	cachedFeatureFile FeatureFile
@@ -76,6 +77,10 @@ func (fe *FeatureEnvironment) Engine() unleashengine.Engine {
 
 func (fe *FeatureEnvironment) Name() string {
 	return fe.name
+}
+
+func (fe *FeatureEnvironment) Environment() string {
+	return fe.environment
 }
 
 type OverrideConstraint struct {
@@ -111,6 +116,11 @@ func makeFeatureEnvironments(tokens []string, streamer, frontendApiEnabled bool)
 	features := make([]*FeatureEnvironment, len(tokens))
 
 	for i, token := range tokens {
+		env, err := ExtractEnvironment(token)
+		if err != nil {
+			env = "default"
+		}
+
 		var s *Streamer
 		var e unleashengine.Engine
 
@@ -123,10 +133,11 @@ func makeFeatureEnvironments(tokens []string, streamer, frontendApiEnabled bool)
 		}
 
 		features[i] = &FeatureEnvironment{
-			name:     strings.SplitN(token, ".", 2)[0],
-			token:    token,
-			engine:   e,
-			Streamer: s,
+			name:        strings.SplitN(token, ".", 2)[0],
+			token:       token,
+			engine:      e,
+			Streamer:    s,
+			environment: env,
 		}
 	}
 

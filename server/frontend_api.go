@@ -21,7 +21,7 @@ func (c *Config) registerFrontendApi(s *http.ServeMux) {
 
 		ctx := createContextFromGetRequest(r)
 
-		resolvedToggles, ok := resolveAll(c.Overleash.ActiveFeatureEnvironment().Engine(), ctx)
+		resolvedToggles, ok := resolveAll(c.featureEnvironmentFromRequest(r).Engine(), ctx)
 		if !ok {
 			return
 		}
@@ -48,7 +48,7 @@ func (c *Config) registerFrontendApi(s *http.ServeMux) {
 			return
 		}
 
-		resolvedToggles, ok := resolveAll(c.Overleash.ActiveFeatureEnvironment().Engine(), ctx)
+		resolvedToggles, ok := resolveAll(c.featureEnvironmentFromRequest(r).Engine(), ctx)
 		if !ok {
 			return
 		}
@@ -68,7 +68,7 @@ func (c *Config) registerFrontendApi(s *http.ServeMux) {
 
 		ctx := createContextFromGetRequest(r)
 
-		resolvedToggles, ok := resolveAll(c.Overleash.ActiveFeatureEnvironment().Engine(), ctx)
+		resolvedToggles, ok := resolveAll(c.featureEnvironmentFromRequest(r).Engine(), ctx)
 		if !ok {
 			return
 		}
@@ -87,7 +87,7 @@ func (c *Config) registerFrontendApi(s *http.ServeMux) {
 
 		ctx := createContextFromGetRequest(r)
 
-		resolved, ok := resolve(c.Overleash.ActiveFeatureEnvironment().Engine(), ctx, featureName)
+		resolved, ok := resolve(c.featureEnvironmentFromRequest(r).Engine(), ctx, featureName)
 
 		if !ok {
 			w.WriteHeader(http.StatusNotFound)
@@ -128,7 +128,7 @@ func (c *Config) registerFrontendApi(s *http.ServeMux) {
 			return
 		}
 
-		metric.Environment = strings.SplitN(c.Overleash.ActiveFeatureEnvironment().Name(), ":", 2)[1]
+		metric.Environment = c.featureEnvironmentFromRequest(r).Environment()
 
 		c.Overleash.AddMetric(metric)
 
