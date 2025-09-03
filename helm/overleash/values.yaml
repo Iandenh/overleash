@@ -138,6 +138,28 @@ metrics:
   enabled: false
   port: 9100
 
+  service:
+    # -- Create a dedicated metrics service to use with ServiceMonitor
+    enabled: false
+    labels: {}
+    annotations: {}
+
+  serviceMonitor:
+    # -- Enable optional CR for Prometheus Operator. See EXAMPLES.md for more details.
+    enabled: false
+    metricRelabelings: []
+    relabelings: []
+    jobLabel: ""
+    interval: 30s
+    honorLabels: false
+    scrapeTimeout: 10s
+    honorTimestamps: false
+    enableHttp2: false
+    followRedirects: false
+    additionalLabels: {}
+    namespace: ""
+    namespaceSelector: {}
+
 extraEnv:
   OVERLEASH_UPSTREAM: ""
   OVERLEASH_TOKEN: ""
