@@ -353,6 +353,7 @@ func (c *overleashClient) streamFeatures(token string, channel chan eventsource.
 	req.Header.Add("Accept", "application/json")
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Authorization", token)
+	req.Header.Add("X-Overleash", "yes")
 	req.Header.Add(unleashClientSpecHeader, supportedSpecVersion)
 	req.Header.Add(unleashAppNameHeader, "Overleash")
 	req.Header.Add(unleashConnectionIdHeader, c.connectionId)

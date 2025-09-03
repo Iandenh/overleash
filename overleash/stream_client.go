@@ -9,7 +9,7 @@ import (
 	"github.com/launchdarkly/eventsource"
 )
 
-func (fe *FeatureEnvironment) processSseEvent(event eventsource.Event, o *OverleashContext) {
+func (fe *FeatureEnvironment) processSseEvent(event eventsource.Event, o *OverleashContext, main bool) {
 	eventType := event.Event()
 
 	if eventType != "unleash-connected" && eventType != "unleash-updated" {
@@ -29,10 +29,10 @@ func (fe *FeatureEnvironment) processSseEvent(event eventsource.Event, o *Overle
 		return
 	}
 
-	fe.processEvents(events, o)
+	fe.processEvents(events, o, main)
 }
 
-func (fe *FeatureEnvironment) processEvents(events Events, o *OverleashContext) {
+func (fe *FeatureEnvironment) processEvents(events Events, o *OverleashContext, main bool) {
 	o.LockMutex.Lock()
 	defer o.LockMutex.Unlock()
 
@@ -51,8 +51,14 @@ func (fe *FeatureEnvironment) processEvents(events Events, o *OverleashContext) 
 		switch e := event.(type) {
 		case *HydrationEvent:
 			currentFeatures = make(map[string]Feature)
-			for _, feature := range e.Features {
-				currentFeatures[feature.Name] = feature
+			if e.OriginalFeatures != nil {
+				for _, feature := range e.OriginalFeatures {
+					currentFeatures[feature.Name] = feature
+				}
+			} else {
+				for _, feature := range e.Features {
+					currentFeatures[feature.Name] = feature
+				}
 			}
 
 			// Replace segments
@@ -68,11 +74,25 @@ func (fe *FeatureEnvironment) processEvents(events Events, o *OverleashContext) 
 			delete(currentSegments, e.SegmentId)
 
 		case *FeatureUpdatedEvent:
-			currentFeatures[e.Feature.Name] = e.Feature
+			if e.OriginalFeature != nil {
+				currentFeatures[e.Feature.Name] = *e.OriginalFeature
+			} else {
+				currentFeatures[e.Feature.Name] = e.Feature
+			}
 
 		case *FeatureRemovedEvent:
 			delete(currentFeatures, e.FeatureName)
 
+		case *HydrationOverleashEvent:
+			if !main {
+				return
+			}
+
+			o.paused = e.Paused
+			o.overrides = e.Overrides
+
+		default:
+			return
 		}
 	}
 
@@ -91,6 +111,6 @@ func (fe *FeatureEnvironment) processEvents(events Events, o *OverleashContext) 
 	fe.featureFile.Features = featureSlice
 	fe.featureFile.Segments = segmentSlice
 
-	fe.complile(o)
+	fe.compile(o)
 	o.lastSync = time.Now()
 }

@@ -7,10 +7,21 @@ type Event interface {
 	GetEventId() int
 }
 
+type HydrationOverleashEvent struct {
+	Type      string               `json:"type"`
+	EventId   int                  `json:"eventId"`
+	Overrides map[string]*Override `json:"overrides"`
+	Paused    bool                 `json:"paused"`
+}
+
+func (e *HydrationOverleashEvent) GetType() string { return e.Type }
+func (e *HydrationOverleashEvent) GetEventId() int { return e.EventId }
+
 type FeatureUpdatedEvent struct {
-	Type    string  `json:"type"`
-	EventId int     `json:"eventId"`
-	Feature Feature `json:"feature"`
+	Type            string   `json:"type"`
+	EventId         int      `json:"eventId"`
+	Feature         Feature  `json:"feature"`
+	OriginalFeature *Feature `json:"originalFeature"`
 }
 
 func (e *FeatureUpdatedEvent) GetType() string { return e.Type }
@@ -27,10 +38,11 @@ func (e *FeatureRemovedEvent) GetType() string { return e.Type }
 func (e *FeatureRemovedEvent) GetEventId() int { return e.EventId }
 
 type HydrationEvent struct {
-	Type     string    `json:"type"`
-	EventId  int       `json:"eventId"`
-	Features []Feature `json:"features"`
-	Segments []Segment `json:"segments"`
+	Type             string    `json:"type"`
+	EventId          int       `json:"eventId"`
+	Features         []Feature `json:"features"`
+	Segments         []Segment `json:"segments"`
+	OriginalFeatures []Feature `json:"originalFeatures"`
 }
 
 func (e *HydrationEvent) GetType() string { return e.Type }
@@ -110,6 +122,12 @@ func (ev *Events) UnmarshalJSON(data []byte) error {
 
 		case "hydration":
 			var e HydrationEvent
+			if err := json.Unmarshal(rawEvent, &e); err == nil {
+				event = &e
+			}
+
+		case "hydration-overleash":
+			var e HydrationOverleashEvent
 			if err := json.Unmarshal(rawEvent, &e); err == nil {
 				event = &e
 			}
