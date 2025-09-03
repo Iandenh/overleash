@@ -16,9 +16,10 @@ type StreamSubscriber interface {
 }
 
 type SseEvent struct {
-	Id    string `json:"id"`
-	Event string `json:"event"`
-	Data  string `json:"data"`
+	Id             string `json:"id"`
+	Event          string `json:"event"`
+	Data           string `json:"data"`
+	OverleashEvent bool
 }
 
 type Streamer struct {
@@ -27,13 +28,14 @@ type Streamer struct {
 	i           atomic.Int64
 }
 
-func (s *Streamer) createNewUpdateDelta(id int, events []Event) SseEvent {
+func (s *Streamer) createNewUpdateDelta(id int, events []Event, overleashEvent bool) SseEvent {
 	j, _ := json.Marshal(Events{events})
 
 	return SseEvent{
-		Id:    strconv.Itoa(id),
-		Event: "unleash-updated",
-		Data:  string(j),
+		Id:             strconv.Itoa(id),
+		Event:          "unleash-updated",
+		Data:           string(j),
+		OverleashEvent: overleashEvent,
 	}
 }
 
@@ -41,9 +43,10 @@ func (s *Streamer) createNewConnectDelta(id int, events []Event) SseEvent {
 	j, _ := json.Marshal(Events{events})
 
 	return SseEvent{
-		Id:    strconv.Itoa(id),
-		Event: "unleash-connected",
-		Data:  string(j),
+		Id:             strconv.Itoa(id),
+		Event:          "unleash-connected",
+		Data:           string(j),
+		OverleashEvent: false,
 	}
 }
 
@@ -55,20 +58,34 @@ func NewStreamer() *Streamer {
 	}
 }
 
-func (fe *FeatureEnvironment) AddStreamerSubscriber(client StreamSubscriber) {
+func (fe *FeatureEnvironment) AddStreamerSubscriber(client StreamSubscriber, o *OverleashContext, overleashClient bool) {
 	fe.Streamer.mutex.Lock()
 	defer fe.Streamer.mutex.Unlock()
 
 	fe.Streamer.subscribers = append(fe.Streamer.subscribers, client)
 
-	h := HydrationEvent{
-		Type:     "hydration",
-		EventId:  1,
-		Features: fe.cachedFeatureFile.Features,
-		Segments: fe.cachedFeatureFile.Segments,
+	events := []Event{
+		&HydrationEvent{
+			Type:             "hydration",
+			EventId:          1,
+			Features:         fe.cachedFeatureFile.Features,
+			Segments:         fe.cachedFeatureFile.Segments,
+			OriginalFeatures: fe.featureFile.Features,
+		},
 	}
 
-	client.Notify(fe.Streamer.createNewConnectDelta(1, []Event{&h}))
+	if overleashClient {
+		events = append(events,
+			&HydrationOverleashEvent{
+				Type:      "hydration-overleash",
+				EventId:   1,
+				Overrides: o.overrides,
+				Paused:    o.paused,
+			},
+		)
+	}
+
+	client.Notify(fe.Streamer.createNewConnectDelta(1, events))
 }
 
 func (fe *FeatureEnvironment) RemoveStreamerSubscriber(client StreamSubscriber) {
@@ -84,7 +101,35 @@ func (fe *FeatureEnvironment) RemoveStreamerSubscriber(client StreamSubscriber) 
 	fe.Streamer.subscribers = newSubs
 }
 
-func (s *Streamer) process(old, new FeatureFile) {
+func (o *OverleashContext) processOverleashStreaming() {
+	for _, e := range o.featureEnvironments {
+		if e.Streamer != nil {
+			if len(e.Streamer.subscribers) == 0 {
+				continue
+			}
+
+			id := int(e.Streamer.i.Add(1))
+			events := []Event{
+				&HydrationOverleashEvent{
+					Type:      "hydration-overleash",
+					EventId:   int(e.Streamer.i.Add(1)),
+					Overrides: o.overrides,
+					Paused:    o.paused,
+				},
+			}
+
+			if len(events) == 0 {
+				return
+			}
+
+			for _, subscriber := range e.Streamer.subscribers {
+				subscriber.Notify(e.Streamer.createNewUpdateDelta(id, events, true))
+			}
+		}
+	}
+}
+
+func (s *Streamer) processFeature(old, new, remote FeatureFile) {
 	s.mutex.RLock()
 	defer s.mutex.RUnlock()
 
@@ -97,6 +142,7 @@ func (s *Streamer) process(old, new FeatureFile) {
 
 	oldFlagsMap := keyFeatureFlags(old)
 	newFlagsMap := keyFeatureFlags(new)
+	originalFlag := keyFeatureFlags(remote)
 
 	events := make([]Event, 0)
 
@@ -105,10 +151,13 @@ func (s *Streamer) process(old, new FeatureFile) {
 		oldFeature, ok := oldFlagsMap[flagName]
 
 		if !ok || !cmp.Equal(oldFeature, feature) {
+			originalFeature, _ := originalFlag[flagName]
+
 			events = append(events, &FeatureUpdatedEvent{
-				Type:    "feature-updated",
-				EventId: int(s.i.Add(1)),
-				Feature: feature,
+				Type:            "feature-updated",
+				EventId:         int(s.i.Add(1)),
+				Feature:         feature,
+				OriginalFeature: &originalFeature,
 			})
 
 			continue
@@ -154,7 +203,7 @@ func (s *Streamer) process(old, new FeatureFile) {
 	}
 
 	for _, subscriber := range s.subscribers {
-		subscriber.Notify(s.createNewUpdateDelta(id, events))
+		subscriber.Notify(s.createNewUpdateDelta(id, events, false))
 	}
 }
 

@@ -79,15 +79,15 @@ func (fe *FeatureEnvironment) Name() string {
 }
 
 type OverrideConstraint struct {
-	Enabled    bool
-	Constraint Constraint
+	Enabled    bool       `json:"enabled"`
+	Constraint Constraint `json:"constraint"`
 }
 
 type Override struct {
-	FeatureFlag string
-	Enabled     bool
-	IsGlobal    bool
-	Constraints []OverrideConstraint
+	FeatureFlag string               `json:"featureFlag"`
+	Enabled     bool                 `json:"enabled"`
+	IsGlobal    bool                 `json:"isGlobal"`
+	Constraints []OverrideConstraint `json:"constraints"`
 }
 
 func NewOverleash(upstream string, tokens []string, reload time.Duration, streamer, frontendApiEnabled bool) *OverleashContext {
@@ -162,7 +162,7 @@ func (o *OverleashContext) Start(ctx context.Context, registerMetrics, register,
 	}
 
 	if useDeltaApi {
-		o.startStreamer(ctx)
+		o.startStreamListeners(ctx)
 	} else {
 		o.startFetcher(ctx)
 	}
@@ -188,12 +188,12 @@ func (o *OverleashContext) startFetcher(ctx context.Context) {
 	}()
 }
 
-func (o *OverleashContext) startStreamer(ctx context.Context) {
+func (o *OverleashContext) startStreamListeners(ctx context.Context) {
 	o.ticker = createTicker(o.reload)
 
 	log.Infof("Start with streaming")
 
-	for _, f := range o.FeatureEnvironments() {
+	for idx, f := range o.FeatureEnvironments() {
 		channel := make(chan eventsource.Event)
 
 		o.client.streamFeatures(f.token, channel)
@@ -204,7 +204,7 @@ func (o *OverleashContext) startStreamer(ctx context.Context) {
 				case <-ctx.Done():
 					return
 				case event := <-channel:
-					f.processSseEvent(event, o)
+					f.processSseEvent(event, o, idx == 0)
 				}
 			}
 		}()
@@ -333,6 +333,8 @@ func (o *OverleashContext) SetPaused(paused bool) {
 
 	o.paused = paused
 
+	go o.processOverleashStreaming()
+
 	o.compileFeatureFiles()
 }
 
@@ -381,15 +383,15 @@ func (o *OverleashContext) compileFeatureFiles() {
 	log.Debug("Compiling feature files")
 
 	for _, featureEnvironment := range o.featureEnvironments {
-		featureEnvironment.complile(o)
+		featureEnvironment.compile(o)
 	}
 }
 
-func (fe *FeatureEnvironment) complile(o *OverleashContext) {
+func (fe *FeatureEnvironment) compile(o *OverleashContext) {
 	df := fe.featureFileWithOverwrites(o)
 
 	if fe.Streamer != nil {
-		go fe.Streamer.process(fe.cachedFeatureFile, df)
+		go fe.Streamer.processFeature(fe.cachedFeatureFile, df, fe.featureFile)
 	}
 
 	fe.cachedFeatureFile = df
@@ -531,6 +533,8 @@ func (o *OverleashContext) GetOverride(key string) *Override {
 }
 
 func (o *OverleashContext) writeOverrides(overrides map[string]*Override) error {
+	go o.processOverleashStreaming()
+
 	data, err := json.Marshal(overrides)
 
 	if err != nil {

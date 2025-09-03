@@ -3,17 +3,27 @@ package server
 import (
 	"fmt"
 	"net/http"
+	"sync"
 	"time"
 
 	"github.com/Iandenh/overleash/overleash"
 )
 
 type httpSubscriber struct {
-	flusher http.Flusher
-	writer  http.ResponseWriter
+	flusher     http.Flusher
+	writer      http.ResponseWriter
+	lock        sync.Mutex
+	isOverleash bool
 }
 
 func (h *httpSubscriber) Notify(e overleash.SseEvent) {
+	if e.OverleashEvent == true && h.isOverleash == false {
+		return
+	}
+
+	h.lock.Lock()
+	defer h.lock.Unlock()
+
 	if e.Id != "" {
 		fmt.Fprintf(h.writer, "id: %s\n", e.Id)
 	}
@@ -38,9 +48,10 @@ func (c *Config) registerDeltaApi(s *http.ServeMux) {
 			return
 		}
 
-		subscriber := &httpSubscriber{flusher: flusher, writer: w}
+		isOverleash := r.Header.Get("X-Overleash") == "yes"
+		subscriber := &httpSubscriber{flusher: flusher, writer: w, lock: sync.Mutex{}, isOverleash: isOverleash}
 
-		c.Overleash.ActiveFeatureEnvironment().AddStreamerSubscriber(subscriber)
+		c.Overleash.ActiveFeatureEnvironment().AddStreamerSubscriber(subscriber, c.Overleash, isOverleash)
 
 		ticker := time.NewTicker(30 * time.Second)
 		defer ticker.Stop()
@@ -48,6 +59,7 @@ func (c *Config) registerDeltaApi(s *http.ServeMux) {
 		for {
 			select {
 			case <-r.Context().Done():
+				println("Client disconnected")
 				c.Overleash.ActiveFeatureEnvironment().RemoveStreamerSubscriber(subscriber)
 				return
 			case <-ticker.C:
