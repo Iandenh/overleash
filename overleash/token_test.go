@@ -41,3 +41,56 @@ func Test_fromString(t *testing.T) {
 		}
 	})
 }
+
+func TestExtractEnvironment(t *testing.T) {
+	tests := []struct {
+		name      string
+		token     string
+		want      string
+		expectErr bool
+	}{
+		{
+			name:      "valid token with development env",
+			token:     "default:development.unleash-insecure-api-token",
+			want:      "development",
+			expectErr: false,
+		},
+		{
+			name:      "valid token with production env",
+			token:     "proj:production.abcdef123456",
+			want:      "production",
+			expectErr: false,
+		},
+		{
+			name:      "missing colon",
+			token:     "invalidtokenwithoutcolon",
+			want:      "",
+			expectErr: true,
+		},
+		{
+			name:      "missing dot after environment",
+			token:     "proj:staging",
+			want:      "staging",
+			expectErr: false,
+		},
+		{
+			name:      "empty token",
+			token:     "",
+			want:      "",
+			expectErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := ExtractEnvironment(tt.token)
+			if (err != nil) != tt.expectErr {
+				t.Errorf("ExtractEnvironment() error = %v, expectErr %v for test %s", err, tt.expectErr, tt.name)
+				return
+			}
+			if got != tt.want {
+				t.Errorf("ExtractEnvironment() = %v, want %v for test %s", got, tt.want, tt.name)
+			}
+		})
+	}
+}

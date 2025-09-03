@@ -51,7 +51,8 @@ func (c *Config) registerDeltaApi(s *http.ServeMux) {
 		isOverleash := r.Header.Get("X-Overleash") == "yes"
 		subscriber := &httpSubscriber{flusher: flusher, writer: w, lock: sync.Mutex{}, isOverleash: isOverleash}
 
-		c.Overleash.ActiveFeatureEnvironment().AddStreamerSubscriber(subscriber, c.Overleash, isOverleash)
+		env := c.featureEnvironmentFromRequest(r)
+		env.AddStreamerSubscriber(subscriber, c.Overleash, isOverleash)
 
 		ticker := time.NewTicker(30 * time.Second)
 		defer ticker.Stop()
@@ -60,7 +61,7 @@ func (c *Config) registerDeltaApi(s *http.ServeMux) {
 			select {
 			case <-r.Context().Done():
 				println("Client disconnected")
-				c.Overleash.ActiveFeatureEnvironment().RemoveStreamerSubscriber(subscriber)
+				env.RemoveStreamerSubscriber(subscriber)
 				return
 			case <-ticker.C:
 				fmt.Fprintf(w, ": keep-alive\n\n") // comment line = SSE heartbeat

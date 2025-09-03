@@ -1,6 +1,9 @@
 package overleash
 
-import "strings"
+import (
+	"fmt"
+	"strings"
+)
 
 type TokenType string
 
@@ -37,4 +40,20 @@ func fromString(token string) (*EdgeToken, bool) {
 	}
 
 	return nil, false
+}
+
+func ExtractEnvironment(token string) (string, error) {
+	// Split on ":"
+	parts := strings.SplitN(token, ":", 2)
+	if len(parts) != 2 {
+		return "", fmt.Errorf("invalid token format: missing ':'")
+	}
+
+	// The second part looks like "development.unleash-insecure-api-token"
+	subParts := strings.SplitN(parts[1], ".", 2)
+	if len(subParts) < 1 {
+		return "", fmt.Errorf("invalid token format: missing '.'")
+	}
+
+	return subParts[0], nil
 }

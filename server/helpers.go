@@ -3,6 +3,7 @@ package server
 import (
 	"fmt"
 	"html"
+	"net/http"
 	"net/url"
 	"regexp"
 	"strings"
@@ -148,4 +149,30 @@ func renderJiraLink(text string) string {
 		ticket := subMatch[1]
 		return fmt.Sprintf(`<a target="_black" href="%s">%s</a>`, match, ticket)
 	})
+}
+
+func (c *Config) featureEnvironmentFromRequest(r *http.Request) *overleash.FeatureEnvironment {
+	if c.envFromToken == false {
+		return c.Overleash.ActiveFeatureEnvironment()
+	}
+
+	token := r.Header.Get("Authorization")
+
+	if token == "" {
+		return c.Overleash.ActiveFeatureEnvironment()
+	}
+
+	envName, err := overleash.ExtractEnvironment(token)
+
+	if err != nil {
+		return c.Overleash.ActiveFeatureEnvironment()
+	}
+
+	for _, f := range c.Overleash.FeatureEnvironments() {
+		if f.Environment() == envName {
+			return f
+		}
+	}
+
+	return c.Overleash.ActiveFeatureEnvironment()
 }

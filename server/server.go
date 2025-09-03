@@ -30,14 +30,16 @@ type Config struct {
 	ctx           context.Context
 	headless      bool
 	streamer      bool
+	envFromToken  bool
 }
 
-func New(config *overleash.OverleashContext, listenAddress string, ctx context.Context, headless bool) *Config {
+func New(config *overleash.OverleashContext, listenAddress string, ctx context.Context, headless, envFromToken bool) *Config {
 	return &Config{
 		Overleash:     config,
 		listenAddress: listenAddress,
 		ctx:           ctx,
 		headless:      headless,
+		envFromToken:  envFromToken,
 	}
 }
 
