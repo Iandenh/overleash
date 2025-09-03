@@ -134,7 +134,9 @@ func makeFeatureEnvironments(tokens []string, streamer, frontendApiEnabled bool)
 }
 
 func (o *OverleashContext) Start(ctx context.Context, registerMetrics, register, useDeltaApi bool) {
-	o.client = newClient(o.upstream, o.reload, ctx)
+	if o.client == nil {
+		o.client = newClient(o.upstream, o.reload, ctx)
+	}
 
 	if overrides, err := o.readOverrides(); err == nil {
 		o.overrides = overrides
