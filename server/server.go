@@ -57,6 +57,7 @@ func (c *Config) Start() {
 	}
 
 	c.registerClientApi(s)
+	c.registerEdgeApi(s)
 
 	if c.Overleash.FrontendApiEnabled {
 		c.registerFrontendApi(s)
