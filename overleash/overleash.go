@@ -161,6 +161,12 @@ func (o *OverleashContext) Start(ctx context.Context, registerMetrics, register,
 		o.registerRemotes()
 	}
 
+	if useDeltaApi {
+		o.startStreamListeners(ctx)
+
+		return
+	}
+
 	err := o.loadRemotesWithLock()
 
 	if err != nil {
@@ -172,11 +178,7 @@ func (o *OverleashContext) Start(ctx context.Context, registerMetrics, register,
 		return
 	}
 
-	if useDeltaApi {
-		o.startStreamListeners(ctx)
-	} else {
-		o.startFetcher(ctx)
-	}
+	o.startFetcher(ctx)
 }
 
 func (o *OverleashContext) startFetcher(ctx context.Context) {
@@ -294,6 +296,7 @@ func (o *OverleashContext) AddOverride(featureFlag string, enabled bool) {
 
 	o.compileFeatureFiles()
 	o.writeOverrides(o.overrides)
+	go o.processOverleashStreaming()
 }
 
 func (o *OverleashContext) AddOverrideConstraint(featureFlag string, enabled bool, constraint Constraint) {
@@ -316,6 +319,7 @@ func (o *OverleashContext) AddOverrideConstraint(featureFlag string, enabled boo
 
 	o.compileFeatureFiles()
 	o.writeOverrides(o.overrides)
+	go o.processOverleashStreaming()
 }
 
 func (o *OverleashContext) DeleteOverride(featureFlag string) {
@@ -336,6 +340,7 @@ func (o *OverleashContext) DeleteAllOverride() {
 
 	o.compileFeatureFiles()
 	o.writeOverrides(o.overrides)
+	go o.processOverleashStreaming()
 }
 
 func (o *OverleashContext) SetPaused(paused bool) {
@@ -544,8 +549,6 @@ func (o *OverleashContext) GetOverride(key string) *Override {
 }
 
 func (o *OverleashContext) writeOverrides(overrides map[string]*Override) error {
-	go o.processOverleashStreaming()
-
 	data, err := json.Marshal(overrides)
 
 	if err != nil {
