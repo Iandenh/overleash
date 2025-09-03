@@ -1,0 +1,18 @@
+{{- if .Values.metrics.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ include "overleash.fullname" . }}-metrics
+  namespace: {{ include "overleash.namespace" . }}
+  labels:
+    {{- include "overleash.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "overleash.selectorLabels" . | nindent 6 }}
+  endpoints:
+    - port: metrics
+      path: /metrics
+      interval: 30s
+      scrapeTimeout: 10s
+{{- end }}

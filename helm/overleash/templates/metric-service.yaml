@@ -1,0 +1,18 @@
+{{- if .Values.metrics.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "overleash.fullname" . }}-metrics
+  namespace: {{ include "overleash.namespace" . | quote }}
+  labels:
+    {{- include "overleash.labels" . | nindent 4 }}
+spec:
+  type: ClusterIP
+  ports:
+    - name: metrics
+      port: {{ .Values.metrics.port }}
+      targetPort: metrics
+      protocol: TCP
+  selector:
+    {{- include "overleash.selectorLabels" . | nindent 4 }}
+{{- end }}

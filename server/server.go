@@ -4,6 +4,7 @@ import (
 	"context"
 	"embed"
 	"encoding/json"
+	"fmt"
 	"io/fs"
 	"net/http"
 	"net/url"
@@ -14,6 +15,7 @@ import (
 	"github.com/Iandenh/overleash/overleash"
 	"github.com/a-h/templ"
 	"github.com/charmbracelet/log"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/rs/cors"
 )
 
@@ -25,21 +27,25 @@ var (
 const maxBodySize = 1 * 1024 * 1024 // 1 MiB
 
 type Config struct {
-	Overleash     *overleash.OverleashContext
-	listenAddress string
-	ctx           context.Context
-	headless      bool
-	streamer      bool
-	envFromToken  bool
+	Overleash             *overleash.OverleashContext
+	listenAddress         string
+	ctx                   context.Context
+	headless              bool
+	streamer              bool
+	envFromToken          bool
+	prometheusMetrics     bool
+	prometheusMetricsPort int
 }
 
-func New(config *overleash.OverleashContext, listenAddress string, ctx context.Context, headless, envFromToken bool) *Config {
+func New(config *overleash.OverleashContext, listenAddress string, ctx context.Context, headless, envFromToken, prometheusMetrics bool, prometheusMetricsPort int) *Config {
 	return &Config{
-		Overleash:     config,
-		listenAddress: listenAddress,
-		ctx:           ctx,
-		headless:      headless,
-		envFromToken:  envFromToken,
+		Overleash:             config,
+		listenAddress:         listenAddress,
+		ctx:                   ctx,
+		headless:              headless,
+		envFromToken:          envFromToken,
+		prometheusMetrics:     prometheusMetrics,
+		prometheusMetricsPort: prometheusMetricsPort,
 	}
 }
 
@@ -82,9 +88,14 @@ func (c *Config) Start() {
 	handler := cors.AllowAll().Handler(s)
 	compress, _ := httpcompression.DefaultAdapter()
 
+	handler = compress(handler)
+	if c.prometheusMetrics {
+		handler = instrumentHandler(handler)
+	}
+
 	httpServer := &http.Server{
 		Addr:    c.listenAddress,
-		Handler: compress(handler),
+		Handler: handler,
 	}
 
 	go func() {
@@ -94,6 +105,24 @@ func (c *Config) Start() {
 			panic(err)
 		}
 	}()
+
+	var metricsServer *http.Server
+	if c.prometheusMetrics == true {
+		mux := http.NewServeMux()
+		mux.Handle("/metrics", promhttp.Handler())
+
+		metricsServer = &http.Server{
+			Addr:    fmt.Sprintf(":%d", c.prometheusMetricsPort),
+			Handler: mux,
+		}
+
+		go func() {
+			log.Debugf("Starting metrics server on port: %d", c.prometheusMetricsPort)
+			if err := metricsServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+				log.Errorf("metrics server error: %v", err)
+			}
+		}()
+	}
 
 	var wg sync.WaitGroup
 	wg.Add(1)
@@ -105,6 +134,12 @@ func (c *Config) Start() {
 		log.Debug("Shutting down server")
 		if err := httpServer.Shutdown(shutdownCtx); err != nil {
 			log.Errorf("error shutting down http server: %s\n", err)
+		}
+
+		if metricsServer != nil {
+			if err := metricsServer.Shutdown(shutdownCtx); err != nil {
+				log.Errorf("error shutting down metrics server: %s", err)
+			}
 		}
 	}()
 	wg.Wait()
