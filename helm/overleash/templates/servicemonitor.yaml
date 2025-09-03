@@ -1,4 +1,6 @@
 {{- if .Values.metrics.enabled }}
+{{- if .Values.metrics.serviceMonitor }}
+{{- if (.Values.metrics.serviceMonitor).enabled -}}
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
@@ -6,13 +8,51 @@ metadata:
   namespace: {{ include "overleash.namespace" . }}
   labels:
     {{- include "overleash.labels" . | nindent 4 }}
+    {{- with .Values.metrics.serviceMonitor.additionalLabels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
 spec:
+  jobLabel: {{ .Values.metrics.serviceMonitor.jobLabel | default .Release.Name }}
   selector:
     matchLabels:
       {{- include "overleash.selectorLabels" . | nindent 6 }}
   endpoints:
-    - port: metrics
+    - tarrgetPort: metrics
       path: /metrics
-      interval: 30s
-      scrapeTimeout: 10s
+      {{- with .Values.metrics.serviceMonitor.honorLabels }}
+      honorLabels: {{ . }}
+      {{- end }}
+      {{- with .Values.metrics.serviceMonitor.honorTimestamps }}
+      honorTimestamps: {{ . }}
+      {{- end }}
+      {{- with .Values.metrics.serviceMonitor.enableHttp2 }}
+      enableHttp2: {{ . }}
+      {{- end }}
+      {{- with .Values.metrics.serviceMonitor.followRedirects }}
+      followRedirects: {{ . }}
+      {{- end }}
+      {{- with .Values.metrics.serviceMonitor.interval }}
+      interval: {{ . }}
+      {{- end }}
+      {{- with .Values.metrics.serviceMonitor.scrapeTimeout }}
+      scrapeTimeout: {{ . }}
+      {{- end }}
+{{- if .Values.metrics.serviceMonitor.metricRelabelings }}
+      metricRelabelings:
+{{ tpl (toYaml .Values.metrics.serviceMonitor.metricRelabelings | indent 6) . }}
+{{- end }}
+{{- if .Values.metrics.serviceMonitor.relabelings }}
+      relabelings:
+{{ toYaml .Values.metrics.serviceMonitor.relabelings | indent 6 }}
+{{- end }}
+  {{- if .Values.metrics.serviceMonitor.namespaceSelector }}
+  namespaceSelector:
+{{ toYaml .Values.metrics.serviceMonitor.namespaceSelector | indent 4 -}}
+  {{ else }}
+  namespaceSelector:
+    matchNames:
+      - {{ template "overleash.namespace" . }}
+  {{- end }}
+{{- end }}
+{{- end }}
 {{- end }}

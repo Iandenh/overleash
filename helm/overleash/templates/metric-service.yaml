@@ -1,4 +1,6 @@
 {{- if .Values.metrics.enabled }}
+{{- if .Values.metrics.service }}
+{{- if (.Values.metrics.service).enabled -}}
 apiVersion: v1
 kind: Service
 metadata:
@@ -6,6 +8,13 @@ metadata:
   namespace: {{ include "overleash.namespace" . | quote }}
   labels:
     {{- include "overleash.labels" . | nindent 4 }}
+    {{- with .Values.metrics.service.labels }}
+      {{- toYaml . | nindent 4 }}
+    {{- end }}
+  annotations:
+    {{- with .Values.metrics.service.annotations }}
+      {{- toYaml . | nindent 4 }}
+    {{- end }}
 spec:
   type: ClusterIP
   ports:
@@ -15,4 +24,6 @@ spec:
       protocol: TCP
   selector:
     {{- include "overleash.selectorLabels" . | nindent 4 }}
+{{- end }}
+{{- end }}
 {{- end }}
