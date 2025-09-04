@@ -10,7 +10,7 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/launchdarkly/eventsource v1.10.0
 	github.com/rs/cors v1.11.1
-	github.com/spf13/pflag v1.0.9
+	github.com/spf13/pflag v1.0.10
 	github.com/spf13/viper v1.20.1
 	github.com/teal-finance/fuzzy v0.2.0
 )
