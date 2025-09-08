@@ -330,6 +330,7 @@ func (o *OverleashContext) DeleteOverride(featureFlag string) {
 
 	o.compileFeatureFiles()
 	o.writeOverrides(o.overrides)
+	go o.processOverleashStreaming()
 }
 
 func (o *OverleashContext) DeleteAllOverride() {
@@ -349,9 +350,8 @@ func (o *OverleashContext) SetPaused(paused bool) {
 
 	o.paused = paused
 
-	go o.processOverleashStreaming()
-
 	o.compileFeatureFiles()
+	go o.processOverleashStreaming()
 }
 
 func (o *OverleashContext) IsPaused() bool {
