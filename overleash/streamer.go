@@ -58,7 +58,7 @@ func NewStreamer() *Streamer {
 	}
 }
 
-func (fe *FeatureEnvironment) AddStreamerSubscriber(client StreamSubscriber, o *OverleashContext, overleashClient bool) {
+func (fe *FeatureEnvironment) AddStreamerSubscriber(client StreamSubscriber, o *OverleashContext, isOverleashClient bool) {
 	fe.Streamer.mutex.Lock()
 	defer fe.Streamer.mutex.Unlock()
 
@@ -74,7 +74,7 @@ func (fe *FeatureEnvironment) AddStreamerSubscriber(client StreamSubscriber, o *
 		},
 	}
 
-	if overleashClient {
+	if isOverleashClient {
 		events = append(events,
 			&HydrationOverleashEvent{
 				Type:      "hydration-overleash",

@@ -1,39 +1,71 @@
 package server
 
 import (
+	"context"
 	"fmt"
 	"net/http"
-	"sync"
 	"time"
 
 	"github.com/Iandenh/overleash/overleash"
+	"github.com/charmbracelet/log"
 )
 
 type httpSubscriber struct {
-	flusher     http.Flusher
-	writer      http.ResponseWriter
-	lock        sync.Mutex
-	isOverleash bool
+	flusher           http.Flusher
+	writer            http.ResponseWriter
+	isOverleashClient bool
+	send              chan overleash.SseEvent
 }
 
 func (h *httpSubscriber) Notify(e overleash.SseEvent) {
-	if e.OverleashEvent == true && h.isOverleash == false {
-		return
+	select {
+	case h.send <- e:
+	default:
+		log.Printf("dropping event for slow subscriber (overleash=%v)", h.isOverleashClient)
 	}
+}
 
-	h.lock.Lock()
-	defer h.lock.Unlock()
+func (h *httpSubscriber) run(ctx context.Context) {
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case e, ok := <-h.send:
+			if !ok {
+				return
+			}
 
+			// only write Overleash Events when connected to overleash client
+			if e.OverleashEvent && !h.isOverleashClient {
+				continue
+			}
+			if err := h.writeEvent(e); err != nil {
+				log.Printf("subscriber write error: %v", err)
+				return
+			}
+		}
+	}
+}
+
+func (h *httpSubscriber) writeEvent(e overleash.SseEvent) error {
 	if e.Id != "" {
-		fmt.Fprintf(h.writer, "id: %s\n", e.Id)
-	}
-	if e.Event != "" {
-		fmt.Fprintf(h.writer, "event: %s\n", e.Event)
+		if _, err := fmt.Fprintf(h.writer, "id: %s\n", e.Id); err != nil {
+			return err
+		}
 	}
 
-	fmt.Fprintf(h.writer, "data: %s\n\n", e.Data)
+	if e.Event != "" {
+		if _, err := fmt.Fprintf(h.writer, "event: %s\n", e.Event); err != nil {
+			return err
+		}
+	}
+	if _, err := fmt.Fprintf(h.writer, "data: %s\n\n", e.Data); err != nil {
+		return err
+	}
 
 	h.flusher.Flush()
+
+	return nil
 }
 
 func (c *Config) registerDeltaApi(s *http.ServeMux) {
@@ -49,10 +81,14 @@ func (c *Config) registerDeltaApi(s *http.ServeMux) {
 		}
 
 		isOverleash := r.Header.Get("X-Overleash") == "yes"
-		subscriber := &httpSubscriber{flusher: flusher, writer: w, lock: sync.Mutex{}, isOverleash: isOverleash}
+		subscriber := &httpSubscriber{flusher: flusher, writer: w, isOverleashClient: isOverleash, send: make(chan overleash.SseEvent, 32)}
 
 		env := c.featureEnvironmentFromRequest(r)
 		env.AddStreamerSubscriber(subscriber, c.Overleash, isOverleash)
+		defer env.RemoveStreamerSubscriber(subscriber)
+
+		ctx := r.Context()
+		go subscriber.run(ctx)
 
 		ticker := time.NewTicker(30 * time.Second)
 		defer ticker.Stop()
@@ -60,11 +96,13 @@ func (c *Config) registerDeltaApi(s *http.ServeMux) {
 		for {
 			select {
 			case <-r.Context().Done():
-				println("Client disconnected")
-				env.RemoveStreamerSubscriber(subscriber)
+				log.Printf("SSE client disconnected (overleash=%v)", isOverleash)
 				return
 			case <-ticker.C:
-				fmt.Fprintf(w, ": keep-alive\n\n") // comment line = SSE heartbeat
+				if _, err := fmt.Fprintf(w, ": keep-alive\n\n"); err != nil {
+					log.Printf("failed to write heartbeat: %v", err)
+					return
+				}
 				flusher.Flush()
 			}
 		}
