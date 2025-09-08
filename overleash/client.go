@@ -346,7 +346,7 @@ func (c *overleashClient) streamFeatures(token string, channel chan eventsource.
 	req, err := http.NewRequest(http.MethodGet, c.upstream+"/api/client/streaming", nil)
 
 	if err != nil {
-		return nil
+		return err
 	}
 
 	overleashVersion := "overleash@" + version.Version
