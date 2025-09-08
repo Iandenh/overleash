@@ -35,9 +35,10 @@ type Config struct {
 	envFromToken          bool
 	prometheusMetrics     bool
 	prometheusMetricsPort int
+	webhookEnabled        bool
 }
 
-func New(config *overleash.OverleashContext, listenAddress string, ctx context.Context, headless, envFromToken, prometheusMetrics bool, prometheusMetricsPort int) *Config {
+func New(config *overleash.OverleashContext, listenAddress string, ctx context.Context, headless, envFromToken, prometheusMetrics bool, prometheusMetricsPort int, webhookEnabled bool) *Config {
 	return &Config{
 		Overleash:             config,
 		listenAddress:         listenAddress,
@@ -46,6 +47,7 @@ func New(config *overleash.OverleashContext, listenAddress string, ctx context.C
 		envFromToken:          envFromToken,
 		prometheusMetrics:     prometheusMetrics,
 		prometheusMetricsPort: prometheusMetricsPort,
+		webhookEnabled:        webhookEnabled,
 	}
 }
 
@@ -66,6 +68,10 @@ func (c *Config) Start() {
 
 	c.registerClientApi(s)
 	c.registerEdgeApi(s)
+
+	if c.webhookEnabled {
+		c.registerWebhookApi(s)
+	}
 
 	if c.Overleash.FrontendApiEnabled {
 		c.registerFrontendApi(s)
