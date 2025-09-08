@@ -12,6 +12,7 @@ import (
 
 	"github.com/Iandenh/overleash/unleashengine"
 	"github.com/launchdarkly/eventsource"
+	"github.com/spf13/viper"
 )
 
 // fakeStore implements a simple in-memory store.
@@ -90,6 +91,7 @@ func (fc *fakeClient) streamFeatures(token string, channel chan eventsource.Even
 // the remote feature file (with no overrides) and updates the cached JSON, ETag,
 // and engine state.
 func TestCompileFeatureFile(t *testing.T) {
+	viper.Set("storage", "file")
 	// Create a dummy feature file with one feature.
 	ff := FeatureFile{
 		Version: 1,
@@ -140,6 +142,8 @@ func TestCompileFeatureFile(t *testing.T) {
 // TestOverrideAddAndDelete tests adding a global override to enable a feature
 // and then deleting it.
 func TestOverrideAddAndDelete(t *testing.T) {
+	viper.Set("storage", "file")
+
 	// Create a dummy feature file with one feature.
 	ff := FeatureFile{
 		Version: 1,
@@ -199,6 +203,8 @@ func TestOverrideAddAndDelete(t *testing.T) {
 
 // TestSetPaused verifies that when paused, overrides are not applied.
 func TestSetPaused(t *testing.T) {
+	viper.Set("storage", "file")
+
 	ff := FeatureFile{
 		Version: 1,
 		Features: FeatureFlags{
@@ -239,6 +245,8 @@ func TestSetPaused(t *testing.T) {
 
 // TestSetFeatureFileIdx tests setting a valid and invalid feature file index.
 func TestSetFeatureFileIdx(t *testing.T) {
+	viper.Set("storage", "file")
+
 	tokens := []string{"token1", "token2"}
 	o := NewOverleash("http://example.com", tokens, 0, false, true)
 	// Valid index.
@@ -260,6 +268,8 @@ func TestSetFeatureFileIdx(t *testing.T) {
 
 // TestTokenFunctions verifies GetRemotes and ActiveToken.
 func TestTokenFunctions(t *testing.T) {
+	viper.Set("storage", "file")
+
 	tokens := []string{"remote1.token", "remote2.token"}
 	o := NewOverleash("http://example.com", tokens, 0, false, true)
 	remotes := o.GetRemotes()
@@ -277,6 +287,8 @@ func TestTokenFunctions(t *testing.T) {
 
 // TestUpstreamAndCachedJson verifies the Upstream value and that CachedJson is non-empty.
 func TestUpstreamAndCachedJson(t *testing.T) {
+	viper.Set("storage", "file")
+
 	tokens := []string{"dummy.token"}
 	o := NewOverleash("http://example.com", tokens, 0, false, true)
 	o.ActiveFeatureEnvironment().featureFile = FeatureFile{Version: 1}
@@ -292,6 +304,8 @@ func TestUpstreamAndCachedJson(t *testing.T) {
 // TestWriteAndReadOverrides verifies that overrides written to the store
 // can be correctly read back.
 func TestWriteAndReadOverrides(t *testing.T) {
+	viper.Set("storage", "file")
+
 	tokens := []string{"dummy.token"}
 	o := NewOverleash("http://example.com", tokens, 0, false, true)
 	fs := &fakeStore{}
@@ -314,6 +328,8 @@ func TestWriteAndReadOverrides(t *testing.T) {
 
 // TestLoadRemotes verifies that loadRemotesWithLock updates featureFile using a fake overleashClient.
 func TestLoadRemotes(t *testing.T) {
+	viper.Set("storage", "file")
+
 	tokens := []string{"dummy.token"}
 	o := NewOverleash("http://example.com", tokens, 0, false, true)
 	// Create a dummy feature file.
@@ -345,6 +361,8 @@ func TestLoadRemotes(t *testing.T) {
 
 // TestRefreshFeatureFiles verifies that RefreshFeatureFiles updates remotes and resets the ticker.
 func TestRefreshFeatureFiles(t *testing.T) {
+	viper.Set("storage", "file")
+
 	tokens := []string{"dummy.token"}
 	o := NewOverleash("http://example.com", tokens, 0, false, true)
 	// Set a fake ticker.
@@ -377,6 +395,8 @@ func TestRefreshFeatureFiles(t *testing.T) {
 
 // TestHasAndGetOverride verifies the HasOverride and GetOverride functions.
 func TestHasAndGetOverride(t *testing.T) {
+	viper.Set("storage", "file")
+
 	tokens := []string{"dummy.token"}
 	o := NewOverleash("http://example.com", tokens, 0, false, true)
 	// Initially, no override should exist.
@@ -401,6 +421,8 @@ func TestHasAndGetOverride(t *testing.T) {
 
 // TestCalculateETag tests the calculateETag function.
 func TestCalculateETag(t *testing.T) {
+	viper.Set("storage", "file")
+
 	data := []byte("test data")
 	etag := calculateETag(data)
 	if etag == "" {
@@ -426,6 +448,8 @@ func sha256SumHex(data []byte) string {
 // when the context is cancelled. This example sets reload to 0 (which skips reloading)
 // and verifies that Start returns immediately.
 func TestStartWithoutReload(t *testing.T) {
+	viper.Set("storage", "file")
+
 	tokens := []string{"dummy.token"}
 	o := NewOverleash("http://example.com", tokens, 0, false, true)
 	o.client = &fakeClient{}

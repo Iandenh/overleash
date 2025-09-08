@@ -103,7 +103,7 @@ func NewOverleash(upstream string, tokens []string, reload time.Duration, stream
 		overrides:           make(map[string]*Override),
 		lastSync:            time.Now(),
 		paused:              false,
-		store:               storage.NewFileStore(),
+		store:               storage.NewStoreFromConfig(),
 		reload:              reload,
 		IsStreamer:          streamer,
 		FrontendApiEnabled:  frontendApiEnabled,
@@ -153,6 +153,14 @@ func (o *OverleashContext) Start(ctx context.Context, registerMetrics, register,
 		o.overrides = overrides
 	}
 
+	if paused, err := o.readPaused(); err == nil {
+		o.paused = paused
+	}
+
+	if es, ok := o.store.(storage.EventStore); ok {
+		o.registerEventStore(ctx, es)
+	}
+
 	if registerMetrics {
 		o.startMetrics(ctx)
 	}
@@ -179,6 +187,36 @@ func (o *OverleashContext) Start(ctx context.Context, registerMetrics, register,
 	}
 
 	o.startFetcher(ctx)
+}
+
+func (o *OverleashContext) registerEventStore(ctx context.Context, store storage.EventStore) {
+	log.Debug("Start with event store")
+
+	store.Subscribe(ctx, func(key string, data []byte) {
+		if key == "overrides.json" {
+			overrides := &map[string]*Override{}
+			err := json.Unmarshal(data, overrides)
+			if err != nil {
+				log.Errorf("Error unmarshaling overrides: %v", err)
+				return
+			}
+
+			o.overrides = *overrides
+
+			log.Info("Overrides loaded from store")
+			o.compileFeatureFiles()
+		} else if key == "paused.json" {
+
+			var paused bool
+			if err := json.Unmarshal(data, &paused); err != nil {
+				log.Errorf("Error unmarshaling paused: %v", err)
+				return
+			}
+
+			o.paused = paused
+			o.compileFeatureFiles()
+		}
+	})
 }
 
 func (o *OverleashContext) startFetcher(ctx context.Context) {
@@ -351,6 +389,7 @@ func (o *OverleashContext) SetPaused(paused bool) {
 	o.paused = paused
 
 	o.compileFeatureFiles()
+	o.writePaused(paused)
 	go o.processOverleashStreaming()
 }
 
@@ -580,6 +619,37 @@ func (o *OverleashContext) readOverrides() (map[string]*Override, error) {
 	}
 
 	return *overrides, nil
+}
+
+func (o *OverleashContext) writePaused(paused bool) error {
+	data, err := json.Marshal(paused)
+
+	if err != nil {
+		return err
+	}
+
+	err = o.store.Write("paused.json", data)
+
+	if err != nil {
+		log.Debug(err.Error())
+	}
+
+	return err
+}
+
+func (o *OverleashContext) readPaused() (bool, error) {
+	data, err := o.store.Read("paused.json")
+
+	if err != nil {
+		return false, err
+	}
+
+	var paused bool
+	if err := json.Unmarshal(data, &paused); err != nil {
+		return false, err
+	}
+
+	return paused, nil
 }
 
 func calculateETag(bytes []byte) string {
