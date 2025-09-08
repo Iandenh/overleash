@@ -31,6 +31,7 @@ func (o *OverleashContext) startMetrics(ctx context.Context) {
 		for {
 			select {
 			case <-ctx.Done():
+				o.sendMetrics()
 				return
 
 			case val := <-o.metrics.metricChannel:
