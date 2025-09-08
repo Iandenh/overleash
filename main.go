@@ -98,6 +98,17 @@ func initConfig() {
 	pflag.Int("prometheus_metrics_port", 9100, "Which port to expose Prometheus metrics.")
 	pflag.Bool("webhook", false, "Whether to expose webhook that will refresh the flags.")
 
+	pflag.String("storage", "file", "Storage backend: file or redis")
+
+	pflag.String("redis_addr", "localhost:6379", "Redis address (host:port)")
+	pflag.String("redis_password", "", "Redis password")
+	pflag.Int("redis_db", 0, "Redis DB number")
+	pflag.String("redis_channel", "overrides-updates", "Redis Pub/Sub channel")
+
+	pflag.Bool("redis_sentinel", false, "Use Redis Sentinel")
+	pflag.String("redis_master", "mymaster", "Redis master name (for Sentinel)")
+	pflag.String("redis_sentinels", "", "Comma separated list of sentinel addresses (host:port)")
+
 	pflag.Parse()
 
 	viper.BindPFlags(pflag.CommandLine)
