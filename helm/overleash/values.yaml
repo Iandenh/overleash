@@ -168,6 +168,7 @@ extraEnv:
   OVERLEASH_REGISTER_METRICS: "false"
   OVERLEASH_REGISTER: "false"
   OVERLEASH_HEADLESS: "false"
+  OVERLEASH_WEBHOOK: "true"
   TZ: "Europe/Amsterdam"
 
 # adds environmentvars for existing secrets to the container via tpl function
