@@ -1,6 +1,6 @@
 # Rust Build
 FROM --platform=$BUILDPLATFORM rust:1.89 AS rust-build-stage
-WORKDIR /yggdrasil
+WORKDIR /yggdrasil-bindings
 ARG TARGETPLATFORM
 
 RUN case "$TARGETPLATFORM" in \
@@ -15,7 +15,7 @@ fi
 
 RUN rustup toolchain install stable --profile default
 RUN rustup target add $(cat /rust_target.txt)
-COPY ./yggdrasil /yggdrasil
+COPY ./yggdrasil-bindings /yggdrasil-bindings
 RUN cargo build --release --target $(cat /rust_target.txt)
 RUN cp target/$(cat /rust_target.txt)/release/libyggdrasilffi.so libyggdrasilffi.so
 
@@ -30,7 +30,7 @@ RUN if [ "$TARGETPLATFORM" = "linux/arm64" ]; then \
         apt-get update && apt-get install -y gcc-aarch64-linux-gnu ; \
 fi
 WORKDIR /app
-COPY --from=rust-build-stage /yggdrasil/libyggdrasilffi.so /app/unleashengine/libyggdrasilffi.so
+COPY --from=rust-build-stage /yggdrasil-bindings/libyggdrasilffi.so /app/unleashengine/libyggdrasilffi.so
 RUN go install github.com/a-h/templ/cmd/templ@latest
 COPY go.mod go.sum ./
 RUN go mod download
@@ -62,7 +62,7 @@ RUN useradd -ms /bin/sh -u 1001 1001 && mkdir /data && chown -R 1001:1001 /data
 
 USER 1001
 COPY --from=build-stage /entrypoint /entrypoint
-COPY --from=rust-build-stage /yggdrasil/libyggdrasilffi.so /usr/lib/libyggdrasilffi.so
+COPY --from=rust-build-stage /yggdrasil-bindings/libyggdrasilffi.so /usr/lib/libyggdrasilffi.so
 
 ENV DATA_DIR="/data"
 EXPOSE 8080

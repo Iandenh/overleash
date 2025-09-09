@@ -46,7 +46,7 @@ To:   http://overleash.test
 
 Overleash supports the **Frontend API**, powered by [yggdrasil](https://github.com/Unleash/yggdrasil), the reusable Unleash SDK logic.
 
-> Note: This project uses a custom fork of Yggdrasil with additional FFI functions: [resolve_all branch](https://github.com/Iandenh/yggdrasil/tree/resolve_all).
+> Note: This project uses a custom fork of Yggdrasil-bindings with additional FFI functions: [resolve_all branch](https://github.com/Iandenh/yggdrasil-bindings/tree/resolve_all).
 
 ## Local build
 
