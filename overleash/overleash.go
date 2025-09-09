@@ -194,6 +194,9 @@ func (o *OverleashContext) registerEventStore(ctx context.Context, store storage
 
 	store.Subscribe(ctx, func(key string, data []byte) {
 		if key == "overrides.json" {
+			o.LockMutex.Lock()
+			defer o.LockMutex.Unlock()
+
 			overrides := &map[string]*Override{}
 			err := json.Unmarshal(data, overrides)
 			if err != nil {
@@ -206,6 +209,8 @@ func (o *OverleashContext) registerEventStore(ctx context.Context, store storage
 			log.Info("Overrides loaded from store")
 			o.compileFeatureFiles()
 		} else if key == "paused.json" {
+			o.LockMutex.Lock()
+			defer o.LockMutex.Unlock()
 
 			var paused bool
 			if err := json.Unmarshal(data, &paused); err != nil {
