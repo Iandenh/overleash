@@ -1,4 +1,4 @@
-[submodule "yggdrasil"]
-	path = yggdrasil
-	url = https://github.com/Iandenh/yggdrasil.git
+[submodule "yggdrasil-bindings"]
+	path = yggdrasil-bindings
+	url = https://github.com/Iandenh/yggdrasil-bindings.git
 	branch = resolve_all
