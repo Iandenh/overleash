@@ -15,7 +15,7 @@ jobs:
           submodules: 'true'
       - name: Build binaries in "${{ matrix.BUILD_TARGET }}" mode
         run: |
-          cd ${{ github.workspace }}/yggdrasil 
+          cd ${{ github.workspace }}/yggdrasil-bindings 
           cargo build --release
           sudo cp target/release/libyggdrasilffi.so /usr/local/lib
           sudo ldconfig
