@@ -117,12 +117,11 @@ func (c *Config) registerFrontendApi(s *http.ServeMux) {
 	}))
 
 	s.Handle("POST /api/frontend/client/metrics", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		r.Body = http.MaxBytesReader(w, r.Body, maxBodySize)
-
 		decoder := json.NewDecoder(r.Body)
 
-		var metric *overleash.MetricsData
-		err := decoder.Decode(metric)
+		var metric overleash.MetricsData
+		err := decoder.Decode(&metric)
+
 		if err != nil {
 			http.Error(w, "Error parsing json", http.StatusBadRequest)
 			return
@@ -130,7 +129,7 @@ func (c *Config) registerFrontendApi(s *http.ServeMux) {
 
 		metric.Environment = c.featureEnvironmentFromRequest(r).Environment()
 
-		c.Overleash.AddMetric(metric)
+		c.Overleash.AddMetric(&metric)
 
 		w.WriteHeader(http.StatusOK)
 	}))
