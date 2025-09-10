@@ -68,7 +68,7 @@ func (h *httpSubscriber) writeEvent(e overleash.SseEvent) error {
 	return nil
 }
 
-func (c *Config) registerDeltaApi(s *http.ServeMux) {
+func (c *Server) registerDeltaApi(s *http.ServeMux) {
 	s.HandleFunc("/api/client/streaming", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/event-stream")
 		w.Header().Set("Cache-Control", "no-cache")

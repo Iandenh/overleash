@@ -11,7 +11,7 @@ import (
 	"github.com/charmbracelet/log"
 )
 
-func (c *Config) registerFrontendApi(s *http.ServeMux) {
+func (c *Server) registerFrontendApi(s *http.ServeMux) {
 	s.Handle("GET /api/frontend", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		c.Overleash.LockMutex.RLock()
 		defer c.Overleash.LockMutex.RUnlock()

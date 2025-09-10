@@ -12,6 +12,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Iandenh/overleash/internal/config"
 	"github.com/Iandenh/overleash/internal/storage"
 	"github.com/Iandenh/overleash/unleashengine"
 	"github.com/charmbracelet/log"
@@ -27,7 +28,7 @@ var forceEnable = Strategy{
 }
 
 type OverleashContext struct {
-	upstream            string
+	Config              *config.Config
 	featureEnvironments []*FeatureEnvironment
 	activeFeatureIdx    int
 	overrides           map[string]*Override
@@ -39,8 +40,6 @@ type OverleashContext struct {
 	client              client
 	reload              time.Duration
 	metrics             *metrics
-	IsStreamer          bool
-	FrontendApiEnabled  bool
 }
 
 type FeatureEnvironment struct {
@@ -95,24 +94,23 @@ type Override struct {
 	Constraints []OverrideConstraint `json:"constraints"`
 }
 
-func NewOverleash(upstream string, tokens []string, reload time.Duration, streamer, frontendApiEnabled bool) *OverleashContext {
+func NewOverleash(cfg *config.Config) *OverleashContext {
 	o := &OverleashContext{
-		upstream:            upstream,
-		featureEnvironments: makeFeatureEnvironments(tokens, streamer, frontendApiEnabled),
+		Config:              cfg,
+		featureEnvironments: makeFeatureEnvironments(cfg),
 		activeFeatureIdx:    0,
 		overrides:           make(map[string]*Override),
 		lastSync:            time.Now(),
 		paused:              false,
-		store:               storage.NewStoreFromConfig(),
-		reload:              reload,
-		IsStreamer:          streamer,
-		FrontendApiEnabled:  frontendApiEnabled,
+		store:               storage.NewStoreFromConfig(cfg),
+		reload:              cfg.ParseReload(),
 	}
 
 	return o
 }
 
-func makeFeatureEnvironments(tokens []string, streamer, frontendApiEnabled bool) []*FeatureEnvironment {
+func makeFeatureEnvironments(cfg *config.Config) []*FeatureEnvironment {
+	tokens := cfg.Tokens()
 	features := make([]*FeatureEnvironment, len(tokens))
 
 	for i, token := range tokens {
@@ -124,11 +122,11 @@ func makeFeatureEnvironments(tokens []string, streamer, frontendApiEnabled bool)
 		var s *Streamer
 		var e unleashengine.Engine
 
-		if streamer {
+		if cfg.Streamer {
 			s = NewStreamer()
 		}
 
-		if frontendApiEnabled {
+		if cfg.EnableFrontend {
 			e = unleashengine.NewUnleashEngine()
 		}
 
@@ -144,9 +142,9 @@ func makeFeatureEnvironments(tokens []string, streamer, frontendApiEnabled bool)
 	return features
 }
 
-func (o *OverleashContext) Start(ctx context.Context, registerMetrics, register, useDeltaApi bool) {
+func (o *OverleashContext) Start(ctx context.Context) {
 	if o.client == nil {
-		o.client = newClient(o.upstream, o.reload, ctx)
+		o.client = newClient(o.Upstream(), o.Config.ParseReload(), ctx)
 	}
 
 	if overrides, err := o.readOverrides(); err == nil {
@@ -161,15 +159,15 @@ func (o *OverleashContext) Start(ctx context.Context, registerMetrics, register,
 		o.registerEventStore(ctx, es)
 	}
 
-	if registerMetrics {
+	if o.Config.RegisterMetrics {
 		o.startMetrics(ctx)
 	}
 
-	if register {
+	if o.Config.Register {
 		o.registerRemotes()
 	}
 
-	if useDeltaApi {
+	if o.Config.Delta {
 		o.startStreamListeners(ctx)
 
 		return
@@ -424,7 +422,11 @@ func (o *OverleashContext) GetRemotes() []string {
 }
 
 func (o *OverleashContext) Upstream() string {
-	return o.upstream
+	if o.Config.Upstream == "" {
+		return o.Config.URL
+	}
+
+	return o.Config.Upstream
 }
 
 func (fe *FeatureEnvironment) CachedJson() []byte {

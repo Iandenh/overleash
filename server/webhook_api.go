@@ -8,7 +8,7 @@ import (
 	"github.com/charmbracelet/log"
 )
 
-func (c *Config) registerWebhookApi(s *http.ServeMux) {
+func (c *Server) registerWebhookApi(s *http.ServeMux) {
 	s.HandleFunc("/api/webhook", func(w http.ResponseWriter, request *http.Request) {
 		log.Debug("webhook api refreshed for feature files")
 

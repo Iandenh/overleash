@@ -26,35 +26,22 @@ var (
 
 const maxBodySize = 1 * 1024 * 1024 // 1 MiB
 
-type Config struct {
-	Overleash             *overleash.OverleashContext
-	listenAddress         string
-	ctx                   context.Context
-	headless              bool
-	streamer              bool
-	envFromToken          bool
-	prometheusMetrics     bool
-	prometheusMetricsPort int
-	webhookEnabled        bool
+type Server struct {
+	Overleash *overleash.OverleashContext
+	ctx       context.Context
 }
 
-func New(config *overleash.OverleashContext, listenAddress string, ctx context.Context, headless, envFromToken, prometheusMetrics bool, prometheusMetricsPort int, webhookEnabled bool) *Config {
-	return &Config{
-		Overleash:             config,
-		listenAddress:         listenAddress,
-		ctx:                   ctx,
-		headless:              headless,
-		envFromToken:          envFromToken,
-		prometheusMetrics:     prometheusMetrics,
-		prometheusMetricsPort: prometheusMetricsPort,
-		webhookEnabled:        webhookEnabled,
+func New(config *overleash.OverleashContext, ctx context.Context) *Server {
+	return &Server{
+		Overleash: config,
+		ctx:       ctx,
 	}
 }
 
-func (c *Config) Start() {
+func (c *Server) Start() {
 	s := http.NewServeMux()
 
-	if !c.headless {
+	if !c.Overleash.Config.Headless {
 		var staticFS = fs.FS(staticFiles)
 		htmlContent, err := fs.Sub(staticFS, "static")
 
@@ -69,19 +56,19 @@ func (c *Config) Start() {
 	c.registerClientApi(s)
 	c.registerEdgeApi(s)
 
-	if c.webhookEnabled {
+	if c.Overleash.Config.Webhook {
 		c.registerWebhookApi(s)
 	}
 
-	if c.Overleash.FrontendApiEnabled {
+	if c.Overleash.Config.EnableFrontend {
 		c.registerFrontendApi(s)
 	}
 
-	if c.Overleash.IsStreamer {
+	if c.Overleash.Config.Streamer {
 		c.registerDeltaApi(s)
 	}
 
-	if !c.headless {
+	if !c.Overleash.Config.Headless {
 		c.registerDashboardApi(s)
 	}
 
@@ -95,17 +82,17 @@ func (c *Config) Start() {
 	compress, _ := httpcompression.DefaultAdapter()
 
 	handler = compress(handler)
-	if c.prometheusMetrics {
+	if c.Overleash.Config.PrometheusMetrics {
 		handler = instrumentHandler(handler)
 	}
 
 	httpServer := &http.Server{
-		Addr:    c.listenAddress,
+		Addr:    c.Overleash.Config.ListenAddress,
 		Handler: handler,
 	}
 
 	go func() {
-		log.Debugf("Starting server on port: %s", c.listenAddress)
+		log.Debugf("Starting server on port: %s", c.Overleash.Config.ListenAddress)
 		if err := httpServer.ListenAndServe(); err != nil {
 			log.Error(err)
 			panic(err)
@@ -113,17 +100,17 @@ func (c *Config) Start() {
 	}()
 
 	var metricsServer *http.Server
-	if c.prometheusMetrics == true {
+	if c.Overleash.Config.PrometheusMetrics == true {
 		mux := http.NewServeMux()
 		mux.Handle("/metrics", promhttp.Handler())
 
 		metricsServer = &http.Server{
-			Addr:    fmt.Sprintf(":%d", c.prometheusMetricsPort),
+			Addr:    fmt.Sprintf(":%d", c.Overleash.Config.PrometheusPort),
 			Handler: mux,
 		}
 
 		go func() {
-			log.Debugf("Starting metrics server on port: %d", c.prometheusMetricsPort)
+			log.Debugf("Starting metrics server on port: %d", c.Overleash.Config.PrometheusPort)
 			if err := metricsServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 				log.Errorf("metrics server error: %v", err)
 			}

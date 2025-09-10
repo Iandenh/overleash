@@ -1,6 +1,8 @@
 package overleash
 
-import "time"
+import (
+	"time"
+)
 
 type ticker struct {
 	period time.Duration
