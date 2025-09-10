@@ -4,8 +4,8 @@ import (
 	"context"
 	"strings"
 
+	"github.com/Iandenh/overleash/internal/config"
 	"github.com/charmbracelet/log"
-	"github.com/spf13/viper"
 )
 
 type Store interface {
@@ -18,29 +18,29 @@ type EventStore interface {
 	Subscribe(ctx context.Context, handler func(key string, data []byte)) error
 }
 
-func NewStoreFromConfig() Store {
-	backend := viper.GetString("storage")
+func NewStoreFromConfig(cfg *config.Config) Store {
+	backend := cfg.Storage
 
 	switch backend {
 	case "file":
 		return NewFileStore()
 
 	case "redis":
-		cfg := RedisConfig{
-			Addr:        viper.GetString("redis_addr"),
-			Password:    viper.GetString("redis_password"),
-			DB:          viper.GetInt("redis_db"),
-			UseSentinel: viper.GetBool("redis_sentinel"),
-			MasterName:  viper.GetString("redis_master"),
-			Channel:     viper.GetString("redis_channel"),
+		redisCfg := RedisConfig{
+			Addr:        cfg.RedisAddr,
+			Password:    cfg.RedisPassword,
+			DB:          cfg.RedisDB,
+			UseSentinel: cfg.RedisSentinel,
+			MasterName:  cfg.RedisMaster,
+			Channel:     cfg.RedisChannel,
 		}
-		if cfg.UseSentinel {
-			sentinels := viper.GetString("redis_sentinels")
+		if redisCfg.UseSentinel {
+			sentinels := cfg.RedisSentinels
 			if sentinels != "" {
-				cfg.Sentinels = strings.Split(sentinels, ",")
+				redisCfg.Sentinels = strings.Split(sentinels, ",")
 			}
 		}
-		return NewRedisStore(cfg)
+		return NewRedisStore(redisCfg)
 
 	default:
 		log.Fatalf("invalid storage backend: %s", backend)

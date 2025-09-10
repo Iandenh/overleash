@@ -9,7 +9,7 @@ import (
 	"github.com/Iandenh/overleash/overleash"
 )
 
-func (c *Config) registerClientApi(s *http.ServeMux) {
+func (c *Server) registerClientApi(s *http.ServeMux) {
 	s.Handle("GET /api/client/features", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ifNoneMatch := strings.Trim(strings.TrimPrefix(r.Header.Get("If-None-Match"), "W/"), "\"")
 

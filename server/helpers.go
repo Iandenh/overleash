@@ -151,8 +151,8 @@ func renderJiraLink(text string) string {
 	})
 }
 
-func (c *Config) featureEnvironmentFromRequest(r *http.Request) *overleash.FeatureEnvironment {
-	if c.envFromToken == false {
+func (c *Server) featureEnvironmentFromRequest(r *http.Request) *overleash.FeatureEnvironment {
+	if c.Overleash.Config.EnvFromToken == false {
 		return c.Overleash.ActiveFeatureEnvironment()
 	}
 

@@ -6,7 +6,7 @@ import (
 	"github.com/Iandenh/overleash/proxy"
 )
 
-func (c *Config) registerEdgeApi(s *http.ServeMux) {
+func (c *Server) registerEdgeApi(s *http.ServeMux) {
 	s.Handle("POST /edge/validate", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		p := proxy.New(c.Overleash.Upstream())
 

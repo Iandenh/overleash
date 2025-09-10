@@ -9,7 +9,7 @@ import (
 	"github.com/a-h/templ"
 )
 
-func (c *Config) registerDashboardApi(s *http.ServeMux) {
+func (c *Server) registerDashboardApi(s *http.ServeMux) {
 	s.HandleFunc("/", func(w http.ResponseWriter, request *http.Request) {
 		if request.Method == http.MethodDelete {
 			c.Overleash.DeleteAllOverride()
