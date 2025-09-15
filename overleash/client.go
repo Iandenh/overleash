@@ -113,15 +113,15 @@ func fromMetricData(data []*MetricsData) []*metricEnv {
 }
 
 type clientEnv struct {
-	ConnectVia   ConnectVia `json:"connectVia"`
-	AppName      string     `json:"appName"`
-	InstanceID   string     `json:"instanceId"`
-	ConnectionId string     `json:"connectionId"`
-	Environment  string     `json:"environment"`
-	SDKVersion   string     `json:"sdkVersion"`
-	Strategies   []string   `json:"strategies"`
-	Started      time.Time  `json:"started"`
-	Interval     int64      `json:"interval"`
+	ConnectVia   []ConnectVia `json:"connectVia"`
+	AppName      string       `json:"appName"`
+	InstanceID   string       `json:"instanceId"`
+	ConnectionId string       `json:"connectionId"`
+	Environment  string       `json:"environment"`
+	SDKVersion   string       `json:"sdkVersion"`
+	Strategies   []string     `json:"strategies"`
+	Started      time.Time    `json:"started"`
+	Interval     int64        `json:"interval"`
 }
 
 func fromClientData(data []*ClientData, via ConnectVia) []*clientEnv {
@@ -129,7 +129,7 @@ func fromClientData(data []*ClientData, via ConnectVia) []*clientEnv {
 
 	for _, m := range data {
 		metrics = append(metrics, &clientEnv{
-			ConnectVia:   via,
+			ConnectVia:   []ConnectVia{via},
 			AppName:      m.AppName,
 			InstanceID:   m.InstanceID,
 			ConnectionId: m.ConnectionId,
