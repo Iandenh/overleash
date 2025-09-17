@@ -169,6 +169,10 @@ func (c *overleashClient) getFeatures(token string) (*FeatureFile, error) {
 		return nil, err
 	}
 
+	if res == nil {
+		return nil, fmt.Errorf("httpClient.Do returned nil response without error")
+	}
+
 	defer res.Body.Close()
 
 	response, err := io.ReadAll(res.Body)
@@ -216,6 +220,10 @@ func (c *overleashClient) validateToken(token string) (*EdgeToken, error) {
 
 	if err != nil {
 		return nil, err
+	}
+
+	if res == nil {
+		return nil, fmt.Errorf("httpClient.Do returned nil response without error")
 	}
 
 	defer res.Body.Close()
@@ -283,6 +291,10 @@ func (c *overleashClient) registerClient(token *EdgeToken) error {
 
 	if err != nil {
 		return err
+	}
+
+	if res == nil {
+		return fmt.Errorf("httpClient.Do returned nil response without error")
 	}
 
 	if res.StatusCode != http.StatusOK {

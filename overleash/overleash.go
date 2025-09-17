@@ -130,8 +130,14 @@ func makeFeatureEnvironments(cfg *config.Config) []*FeatureEnvironment {
 			e = unleashengine.NewUnleashEngine()
 		}
 
+		parts := strings.SplitN(token, ".", 2)
+		name := ""
+		if len(parts) > 0 {
+			name = parts[0]
+		}
+
 		features[i] = &FeatureEnvironment{
-			name:        strings.SplitN(token, ".", 2)[0],
+			name:        name,
 			token:       token,
 			engine:      e,
 			Streamer:    s,

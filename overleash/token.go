@@ -27,9 +27,17 @@ func fromString(token string) (*EdgeToken, bool) {
 	if strings.Contains(token, ":") && strings.Contains(token, ".") {
 		tokenParts := strings.SplitN(token, ":", 2)
 
+		if len(tokenParts) == 0 {
+			return nil, false
+		}
+
 		project := tokenParts[0]
 
 		tokenParts = strings.SplitN(tokenParts[1], ".", 2)
+
+		if len(tokenParts) == 0 {
+			return nil, false
+		}
 
 		return &EdgeToken{
 			Token:       token,

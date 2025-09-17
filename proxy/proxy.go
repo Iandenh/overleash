@@ -2,6 +2,7 @@ package proxy
 
 import (
 	"crypto/tls"
+	"fmt"
 	"io"
 	"net/http"
 	"net/url"
@@ -59,6 +60,10 @@ func (p *Proxy) ProxyRequest(w http.ResponseWriter, req *http.Request) error {
 
 	if err != nil {
 		return err
+	}
+
+	if proxiedResponse == nil {
+		return fmt.Errorf("httpClient.Do returned nil response without error")
 	}
 
 	defer proxiedResponse.Body.Close()
