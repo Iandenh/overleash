@@ -292,16 +292,23 @@ type Constraint struct {
 	Operator Operator `json:"operator"`
 
 	// Values is the list of target values for multi-valued constraints.
-	Values []string `json:"values"`
+	Values []string `json:"values,omitempty"`
 
 	// Value is the target value single-value constraints.
-	Value string `json:"value"`
+	Value *string `json:"value,omitempty"`
 
 	// CaseInsensitive makes the string operators case-insensitive.
 	CaseInsensitive bool `json:"caseInsensitive"`
 
 	// Inverted flips the constraint check result.
 	Inverted bool `json:"inverted"`
+}
+
+func (c Constraint) ValueOrEmpty() string {
+	if c.Value == nil {
+		return ""
+	}
+	return *c.Value
 }
 
 func (f FeatureFlags) String(i int) string {
