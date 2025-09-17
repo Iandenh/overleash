@@ -338,7 +338,7 @@ templ featureDetail(strategies []overleash.Strategy, segments map[int][]overleas
                             </div>
                         } else {
                             <div class="value">
-                                {constraint.Value}
+                                {constraint.ValueOrEmpty()}
                             </div>
                         }
                         <div class="constrain-separator">and</div>
