@@ -1,5 +1,5 @@
 # Rust Build
-FROM --platform=$BUILDPLATFORM rust:1.89 AS rust-build-stage
+FROM --platform=$BUILDPLATFORM rust:1.90 AS rust-build-stage
 WORKDIR /yggdrasil-bindings
 ARG TARGETPLATFORM
 
