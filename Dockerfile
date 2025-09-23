@@ -17,7 +17,7 @@ RUN rustup toolchain install stable --profile default
 RUN rustup target add $(cat /rust_target.txt)
 COPY ./yggdrasil-bindings /yggdrasil-bindings
 RUN cargo build --release --target $(cat /rust_target.txt)
-RUN cp target/$(cat /rust_target.txt)/release/libyggdrasilffi.so libyggdrasilffi.so
+RUN cp target/$(cat /rust_target.txt)/release/libyggdrasilffi.a libyggdrasilffi.a
 
 # Go Build
 FROM --platform=$BUILDPLATFORM golang:1.25 AS build-stage
@@ -30,20 +30,20 @@ RUN if [ "$TARGETPLATFORM" = "linux/arm64" ]; then \
         apt-get update && apt-get install -y gcc-aarch64-linux-gnu ; \
 fi
 WORKDIR /app
-COPY --from=rust-build-stage /yggdrasil-bindings/libyggdrasilffi.so /app/unleashengine/libyggdrasilffi.so
+COPY --from=rust-build-stage /yggdrasil-bindings/libyggdrasilffi.a /app/unleashengine/libyggdrasilffi.a
 RUN go install github.com/a-h/templ/cmd/templ@latest
 COPY go.mod go.sum ./
 RUN go mod download
 COPY . /app
 RUN templ generate
 RUN case "$TARGETPLATFORM" in \
-  "linux/arm64") CGO_ENABLED=1 CC=aarch64-linux-gnu-gcc CC_FOR_TARGET=aarch64-linux-gnu-gcc GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build -ldflags="-extld=aarch64-linux-gnu-gcc -s -w -X github.com/Iandenh/overleash/internal/version.Version=${VERSION}" -o /entrypoint main.go ;; \
-  "linux/amd64") CGO_ENABLED=1 GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build  -ldflags="-s -w -X github.com/Iandenh/overleash/internal/version.Version=${VERSION}" -o /entrypoint main.go ;; \
+  "linux/arm64") CGO_ENABLED=1 CC=aarch64-linux-gnu-gcc CC_FOR_TARGET=aarch64-linux-gnu-gcc GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build -tags yggdrasil_static -ldflags="-extld=aarch64-linux-gnu-gcc -s -w -X github.com/Iandenh/overleash/internal/version.Version=${VERSION}" -o /entrypoint main.go ;; \
+  "linux/amd64") CGO_ENABLED=1 GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build -tags yggdrasil_static -ldflags="-s -w -X github.com/Iandenh/overleash/internal/version.Version=${VERSION}" -o /entrypoint main.go ;; \
   *) exit 1 ;; \
 esac
 
 # Final image
-FROM --platform=$BUILDPLATFORM debian:bookworm-slim AS release-stage
+FROM --platform=$BUILDPLATFORM debian:trixie-slim AS release-stage
 ARG TARGETPLATFORM
 ENV OVERLEASH_LISTEN_ADDRESS=":8080"
 
@@ -58,11 +58,10 @@ RUN if [ "$TARGETPLATFORM" = "linux/arm64" ]; then \
 fi
 WORKDIR /
 
-RUN useradd -ms /bin/sh -u 1001 1001 && mkdir /data && chown -R 1001:1001 /data
+RUN useradd -ms /bin/sh -u 1001 noroot && mkdir /data && chown -R 1001:1001 /data
 
 USER 1001
 COPY --from=build-stage /entrypoint /entrypoint
-COPY --from=rust-build-stage /yggdrasil-bindings/libyggdrasilffi.so /usr/lib/libyggdrasilffi.so
 
 ENV DATA_DIR="/data"
 EXPOSE 8080

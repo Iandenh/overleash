@@ -1,6 +1,13 @@
-//go:build !yggdrasil_static
+//go:build yggdrasil_static
 
 package unleashengine
+
+/*
+#cgo CFLAGS: -g -Wall
+#cgo LDFLAGS: ${SRCDIR}/libyggdrasilffi.a
+#include "unleash_engine.h"
+*/
+import "C"
 
 import (
 	"encoding/json"
@@ -8,10 +15,6 @@ import (
 
 	"github.com/charmbracelet/log"
 )
-
-// #cgo LDFLAGS: -L. -lyggdrasilffi
-// #include "unleash_engine.h"
-import "C"
 
 type Engine interface {
 	TakeState(json string)
