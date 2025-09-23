@@ -5,7 +5,7 @@ import (
 	"os"
 	"os/signal"
 
-	"github.com/Iandenh/overleash/internal/config"
+	"github.com/Iandenh/overleash/config"
 	"github.com/Iandenh/overleash/overleash"
 	"github.com/Iandenh/overleash/server"
 	"github.com/charmbracelet/log"

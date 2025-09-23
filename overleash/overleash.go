@@ -12,7 +12,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Iandenh/overleash/internal/config"
+	"github.com/Iandenh/overleash/config"
 	"github.com/Iandenh/overleash/internal/storage"
 	"github.com/Iandenh/overleash/unleashengine"
 	"github.com/charmbracelet/log"
