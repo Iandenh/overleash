@@ -127,15 +127,36 @@ Configuration can be set via command-line flags or environment variables. Enviro
 | `--redis-master`    | `OVERLEASH_REDIS_MASTER`    | Redis master name (for Sentinel).                       | `mymaster`          |
 | `--redis-sentinels` | `OVERLEASH_REDIS_SENTINELS` | Comma-separated list of Sentinel addresses (host:port). | `""`                |
 
+## API Endpoints
 
-### Dashboard Overrides
-These endpoints return html.
+### **Client API**
+| Method  | Endpoint                     | Description                                                                                  |
+|---------|------------------------------|----------------------------------------------------------------------------------------------|
+| `GET`   | `/api/client/features`       | Fetch all feature flags.                                                                     |
+| `GET`   | `/api/client/features/{key}` | Fetch a specific feature flag.                                                               |
+| `POST`  | `/api/client/metrics`        | Proxy metrics to Unleash server when proxy metrics is enabled; otherwise, returns 200 OK.    |
+| `POST`  | `/api/client/register`       | Register client. Always returns 200 OK.                                                      |
 
-| Method | Endpoint                          | Description                                                                        |
-|--------|-----------------------------------|------------------------------------------------------------------------------------|
-| POST | /override/{key}/{enabled}         | Override a feature flag `true` for enabled and `false` for disabled. |
-| POST | /override/constrain/{key}/{enabled} | Add a constraint override.                                                         |
-| DELETE | /override/{key}                   | Remove an override.                                                                |
-| POST | /dashboard/refresh                | Refresh feature flag data.                                                         |
-| POST | /dashboard/pause                  | Pause Overleash updates.                                                           |
-| POST | /dashboard/unpause                | Resume Overleash updates.                                                          |
+---
+### **Frontend API**
+| Method   | Endpoint                               | Description                                                                                 |
+|----------|----------------------------------------|---------------------------------------------------------------------------------------------|
+| `GET`    | `/api/frontend`                        | Fetch evaluated toggles.                                                                    |
+| `POST`   | `/api/frontend`                        | Fetch toggles with custom context.                                                          |
+| `GET`    | `/api/frontend/features/{featureName}` | Fetch a specific feature evaluation.                                                        |
+| `POST`   | `/api/frontend/client/metrics`         | Proxy metrics to Unleash server when proxy metrics is enabled; otherwise, returns 200 OK.   |
+| `POST`   | `/api/frontend/client/register`        | Register frontend client. Always returns 200 OK.                                            |
+
+---
+### **Dashboard & Control API**
+These endpoints are primarily for interacting with the Overleash dashboard or for automation.
+
+| Method   | Endpoint                              | Description                                                                                                                                                                                        |
+|----------|---------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `POST`   | `/override/{key}/{enabled}`           | Override a feature flag. Set `{enabled}` to `true` or `false`.                                                                                                                                     |
+| `POST`   | `/override/constrain/{key}/{enabled}` | Add a constraint override.                                                                                                                                                                         |
+| `DELETE` | `/override/{key}`                     | Remove an override.                                                                                                                                                                                |
+| `POST`   | `/dashboard/refresh`                  | Manually refresh feature flag data from the upstream.                                                                                                                                              |
+| `POST`   | `/dashboard/pause`                    | Pause Overleash updates.                                                                                                                                                                           |
+| `POST`   | `/dashboard/unpause`                  | Resume Overleash updates.                                                                                                                                                                          |
+| `POST`   | `/webhook/refresh`                    | **Webhook Endpoint**. Triggers a forced refresh of feature flags. Can be configured in the Unleash UI to notify Overleash of changes instantly. No authentication or specific payload is required. |
