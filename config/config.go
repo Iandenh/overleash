@@ -38,7 +38,7 @@ type Config struct {
 	Storage string `mapstructure:"storage"`
 
 	// Redis
-	RedisAddr      string `mapstructure:"redis_addr"`
+	RedisAddr      string `mapstructure:"redis_address"`
 	RedisPassword  string `mapstructure:"redis_password"`
 	RedisDB        int    `mapstructure:"redis_db"`
 	RedisChannel   string `mapstructure:"redis_channel"`
@@ -71,7 +71,7 @@ func InitConfig() (*Config, error) {
 
 	pflag.String("storage", "file", "Storage backend: file or redis")
 
-	pflag.String("redis_addr", "localhost:6379", "Redis address (host:port)")
+	pflag.String("redis_address", "localhost:6379", "Redis address (host:port)")
 	pflag.String("redis_password", "", "Redis password")
 	pflag.Int("redis_db", 0, "Redis DB number")
 	pflag.String("redis_channel", "overrides-updates", "Redis Pub/Sub channel")
