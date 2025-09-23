@@ -11,7 +11,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Iandenh/overleash/internal/config"
+	"github.com/Iandenh/overleash/config"
 	"github.com/Iandenh/overleash/unleashengine"
 	"github.com/launchdarkly/eventsource"
 )

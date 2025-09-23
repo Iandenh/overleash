@@ -4,7 +4,7 @@ import (
 	"context"
 	"strings"
 
-	"github.com/Iandenh/overleash/internal/config"
+	"github.com/Iandenh/overleash/config"
 	"github.com/charmbracelet/log"
 )
 
