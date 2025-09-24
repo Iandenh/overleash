@@ -162,13 +162,19 @@ metrics:
 
 extraEnv:
   OVERLEASH_UPSTREAM: ""
+  OVERLEASH_DELTA: "false"
   OVERLEASH_TOKEN: ""
+  OVERLEASH_ENV_FROM_TOKEN: "false"
   OVERLEASH_RELOAD: "1"
   OVERLEASH_VERBOSE: "false"
   OVERLEASH_REGISTER_METRICS: "false"
   OVERLEASH_REGISTER: "false"
   OVERLEASH_HEADLESS: "false"
   OVERLEASH_WEBHOOK: "true"
+  OVERLEASH_PROMETHEUS_METRICS: "false"
+  OVERLEASH_PROMETHEUS_METRICS_PORT: "9100"
+  OVERLEASH_STORAGE: "file" # "redis" is the other option
+
   TZ: "Europe/Amsterdam"
 
 # adds environmentvars for existing secrets to the container via tpl function
