@@ -210,7 +210,7 @@ func (o *OverleashContext) registerEventStore(ctx context.Context, store storage
 
 			o.overrides = *overrides
 
-			log.Info("Overrides loaded from store")
+			log.Debug("Overrides loaded from store")
 			o.compileFeatureFiles()
 		} else if key == "paused.json" {
 			o.LockMutex.Lock()
@@ -223,7 +223,17 @@ func (o *OverleashContext) registerEventStore(ctx context.Context, store storage
 			}
 
 			o.paused = paused
+			log.Debug("Paused loaded from store")
 			o.compileFeatureFiles()
+		} else if key == "webhook-received" {
+			err := o.RefreshFeatureFiles()
+
+			if err != nil {
+				log.Errorf("Error reloading after webhook though store: %v", err)
+				return
+			}
+
+			log.Debug("webhook-received loaded from store")
 		}
 	})
 }
@@ -305,6 +315,20 @@ func (o *OverleashContext) loadRemotes() error {
 	o.lastSync = time.Now()
 
 	return e
+}
+
+func (o *OverleashContext) ProcessWebhook() error {
+	err := o.RefreshFeatureFiles()
+
+	if err != nil {
+		log.Errorf("Error reloading after webhook: %v", err)
+	}
+
+	if es, ok := o.store.(storage.BroadcastStore); ok {
+		_ = es.Broadcast("webhook-received", []byte(""))
+	}
+
+	return err
 }
 
 func (o *OverleashContext) RefreshFeatureFiles() error {

@@ -14,7 +14,7 @@ func (c *Server) registerWebhookApi(s *http.ServeMux) {
 
 		go func() {
 			time.Sleep(time.Second)
-			c.Overleash.RefreshFeatureFiles()
+			c.Overleash.ProcessWebhook()
 		}()
 
 		w.Header().Set("Content-Type", "application/json")
