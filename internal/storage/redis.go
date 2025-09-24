@@ -79,6 +79,18 @@ func (r *RedisStore) Write(key string, data []byte) error {
 	return r.client.Publish(ctx, r.pubsubCh, b).Err()
 }
 
+func (r *RedisStore) Broadcast(key string, data []byte) error {
+	ctx := context.Background()
+
+	msg := message{
+		Key: key, Data: data, InstanceID: r.instanceId,
+	}
+
+	b, _ := json.Marshal(msg)
+
+	return r.client.Publish(ctx, r.pubsubCh, b).Err()
+}
+
 // Subscribe listens for update notifications and calls handler
 func (r *RedisStore) Subscribe(ctx context.Context, handler func(key string, data []byte)) error {
 	sub := r.client.Subscribe(ctx, r.pubsubCh)

@@ -18,6 +18,11 @@ type EventStore interface {
 	Subscribe(ctx context.Context, handler func(key string, data []byte)) error
 }
 
+type BroadcastStore interface {
+	Store
+	Broadcast(key string, data []byte) error
+}
+
 func NewStoreFromConfig(cfg *config.Config) Store {
 	backend := cfg.Storage
 
