@@ -42,6 +42,16 @@ void free_engine(void *engine_ptr);
 const char *take_state(void *engine_ptr, const char *json_ptr);
 
 /**
+ * Gets the current state of the engine as a JSON encoded `ClientFeatures` structure.
+ *
+ * # Safety
+ *
+ * This function dereferences the engine_ptr argument, and so this function should not
+ * be called with a null pointer.
+ */
+const char *get_state(void *engine_ptr);
+
+/**
  * Checks if a toggle is enabled for a given context. Returns a JSON encoded response of type `EnabledResponse`.
  *
  * # Safety
@@ -56,7 +66,8 @@ const char *take_state(void *engine_ptr, const char *json_ptr);
  */
 const char *check_enabled(void *engine_ptr,
                           const char *toggle_name_ptr,
-                          const char *context_ptr);
+                          const char *context_ptr,
+                          const char *custom_strategy_results_ptr);
 
 /**
  * Resolves all toggles for a given context.
@@ -118,7 +129,8 @@ const char *resolve(void *engine_ptr,
  */
 const char *check_variant(void *engine_ptr,
                           const char *toggle_name_ptr,
-                          const char *context_ptr);
+                          const char *context_ptr,
+                          const char *custom_strategy_results_ptr);
 
 /**
  * Returns a JSON encoded response with a list of strings representing the built-in strategies Yggdrasil supports.
