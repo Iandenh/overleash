@@ -10,10 +10,7 @@ RUN apk add --no-cache build-base
 RUN case "$TARGETPLATFORM" in \
   "linux/arm64") \
     echo aarch64-unknown-linux-musl > /rust_target.txt && \
-    apk add --no-cache g++-aarch64 && \
-    mkdir -p .cargo && \
-    echo '[target.aarch64-unknown-linux-musl]' > .cargo/config.toml && \
-    echo 'linker = "aarch64-alpine-linux-musl-gcc"' >> .cargo/config.toml \
+    apk add aarch64-linux-musl-binutils aarch64-linux-musl-gcc && \
     ;; \
   "linux/amd64") \
     echo x86_64-unknown-linux-musl > /rust_target.txt \
