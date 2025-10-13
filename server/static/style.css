@@ -147,7 +147,6 @@ body {
     color: var(--text-color);
     font-family: Archivo;
     margin: 0 auto;
-    letter-spacing: .5px;
 }
 
 a {
