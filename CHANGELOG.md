@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.1-alpha](https://github.com/Iandenh/overleash/compare/v1.0.0-alpha...v1.0.1-alpha) (2025-10-13)
+
+
+### Bug Fixes
+
+* arm build ([cba1d49](https://github.com/Iandenh/overleash/commit/cba1d49e96c291102bedba1cc7c40dbbcd92ea72))
+
 ## [0.11.0](https://github.com/Iandenh/overleash/compare/v0.10.0...v0.11.0) (2025-08-18)
 
 
