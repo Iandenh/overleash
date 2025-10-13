@@ -6,15 +6,9 @@ ARG TARGETPLATFORM
 # Install the C build toolchain for Alpine
 RUN apk add --no-cache build-base
 
-# Determine the MUSL target based on the platform and install the correct cross-compiler if needed
 RUN case "$TARGETPLATFORM" in \
-  "linux/arm64") \
-    echo aarch64-unknown-linux-musl > /rust_target.txt && \
-    apk add aarch64-linux-musl-binutils aarch64-linux-musl-gcc && \
-    ;; \
-  "linux/amd64") \
-    echo x86_64-unknown-linux-musl > /rust_target.txt \
-    ;; \
+  "linux/arm64") apk add aarch64-linux-musl-binutils aarch64-linux-musl-gcc && echo aarch64-unknown-linux-musl > /rust_target.txt ;; \
+  "linux/amd64") echo x86_64-unknown-linux-musl > /rust_target.txt ;; \
   *) exit 1 ;; \
 esac
 
