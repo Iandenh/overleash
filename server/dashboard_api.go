@@ -107,14 +107,13 @@ func (c *Server) registerDashboardApi(s *http.ServeMux) {
 
 		if err != nil {
 			http.Error(w, "Invalid remote index", http.StatusBadRequest)
-			w.WriteHeader(http.StatusBadRequest)
+			return
 		}
 
 		err = c.Overleash.SetFeatureFileIdx(idx)
 
 		if err != nil {
 			http.Error(w, "Failed to load remote", http.StatusBadRequest)
-			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
 
