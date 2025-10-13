@@ -1,5 +1,56 @@
 # Changelog
 
+## [0.12.0](https://github.com/Iandenh/overleash/compare/v0.11.0...v0.12.0) (2025-10-13)
+
+
+### Features
+
+* add env_from_token option. That will use the env from the token in the header ([a8f524f](https://github.com/Iandenh/overleash/commit/a8f524f6520c36a4ca7a187fe57e688e49f46999))
+* add first version of consuming delta api ([aa737db](https://github.com/Iandenh/overleash/commit/aa737db651037ac1b57d27ea265318e1c1b7f794))
+* add first version of delta api ([58f8e65](https://github.com/Iandenh/overleash/commit/58f8e651c9229b3ba4bd47a4e60d35aa12b232b7))
+* add headless mode ([c331b26](https://github.com/Iandenh/overleash/commit/c331b267277dcb2c00d5eb89b0b1935cf4aa35a7))
+* add prometheus metrics ([7d093c5](https://github.com/Iandenh/overleash/commit/7d093c5be2bd6dda5f9a69cdc83b5ced768c3622))
+* add proxy edge validate ([dffe331](https://github.com/Iandenh/overleash/commit/dffe331cb386d64b862e8f0511ba5d293209beac))
+* add ReadTimeout, WriteTimeout and IdleTimeout back ([0af8bc3](https://github.com/Iandenh/overleash/commit/0af8bc3b167a3425e3a09f52e36e2daeb1698d11))
+* add set frontend api behind setting ([64455ce](https://github.com/Iandenh/overleash/commit/64455cedbe23f7bc5fa52229da72356b0bd8318d))
+* add support for bulk metrics ([33bd446](https://github.com/Iandenh/overleash/commit/33bd44643c1cef8baa3289e30d8bb63821cfdfe9))
+* add support for redis as storage with pub sub ([19a4cdd](https://github.com/Iandenh/overleash/commit/19a4cdd126b41b78fc02685008cdb35d7c4b3060))
+* add support for syncing overrides over the sse ([a4fd7d9](https://github.com/Iandenh/overleash/commit/a4fd7d9232644d476b9497e7f62a9cf754a28d9b))
+* add webhook endpoint that wil refresh the token ([15f2df5](https://github.com/Iandenh/overleash/commit/15f2df5cf29eaf7db84e56b3d2b8f9ba50b14d76))
+* allow container to be reused as a sidecar ([702fbcb](https://github.com/Iandenh/overleash/commit/702fbcbe8f8dc9a5b76a9f38adf69e1a7de4d3c5))
+* broadcast webhook received if possible ([4c07b80](https://github.com/Iandenh/overleash/commit/4c07b8046e5330a044adc960dbd3d7c3c5301450))
+* don't process if no subscribers ([5460d48](https://github.com/Iandenh/overleash/commit/5460d48e7e368038a88e45cc5068d328f1cc3312))
+* move to listen port instead of only port ([0c39936](https://github.com/Iandenh/overleash/commit/0c3993683e38491649baab26c6992a00fb28141d))
+* only expose static files in non-headless mode ([6fa5029](https://github.com/Iandenh/overleash/commit/6fa50292618c7f42de71d73090fcacc0164df660))
+* send not send metrics before shutting down ([4dccef3](https://github.com/Iandenh/overleash/commit/4dccef31c5b4a247a16836c47a979de500dd2c6a))
+* statically compile for docker ([3bbf950](https://github.com/Iandenh/overleash/commit/3bbf95068175a65b3e869b7132355d5eb304110c))
+* support time unit in reload ([7b47fde](https://github.com/Iandenh/overleash/commit/7b47fde539bc3cd6378327b46f5acee3b568f99a))
+* update README.md ([f14f77d](https://github.com/Iandenh/overleash/commit/f14f77d124baa51c36496d844dbbe1c96456e060))
+* update the .env.example ([5db1663](https://github.com/Iandenh/overleash/commit/5db166372bd6a607754e800d490e7057bf4b80a9))
+* update unleash_engine.h ([106a52d](https://github.com/Iandenh/overleash/commit/106a52da7a70be977d5c12885f19264fd4d92de4))
+* use static distroless image ([9250a93](https://github.com/Iandenh/overleash/commit/9250a93af80588349c1542ae57a2c602d0bd3340))
+* use staticly build in docker file ([217273b](https://github.com/Iandenh/overleash/commit/217273bb9a8145ddd8d107e6e952e4fcb3782db3))
+
+
+### Bug Fixes
+
+* add locks on updates from redis ([3820b76](https://github.com/Iandenh/overleash/commit/3820b7667363873a2f0a2c67c7b47c4263fbf717))
+* add missing method of fakeClient ([eb9350c](https://github.com/Iandenh/overleash/commit/eb9350cfec70a7c82bcd88507c453aa70c35a9fc))
+* better text rendering ([70677ab](https://github.com/Iandenh/overleash/commit/70677ab907b2c22b574579f5187ea49b3f63be4b))
+* client tests ([128c6dd](https://github.com/Iandenh/overleash/commit/128c6dd0afe9874adeab9c42e8689b91585d6357))
+* ConnectVia is array for sending to edge ([354f06b](https://github.com/Iandenh/overleash/commit/354f06b08d52d61f291e35a8563fbf577d19724e))
+* constrain json contained both value and values ([5a1e032](https://github.com/Iandenh/overleash/commit/5a1e032dcb44aea00142c7e80a3474765b15c339))
+* correct return after returning error 500 ([d9d10aa](https://github.com/Iandenh/overleash/commit/d9d10aaded1d0109c972387de7af90cbe44b74e7))
+* example name of OVERLEASH_REDIS_ADDRESS ([67bba27](https://github.com/Iandenh/overleash/commit/67bba2779bf32a38ae8e8d036c544ae308e09efd))
+* frontend api metrics ([4d25921](https://github.com/Iandenh/overleash/commit/4d25921d0dcd182fe9884a6123366eb6c4042a08))
+* improve some nil pointers ([c8c2e69](https://github.com/Iandenh/overleash/commit/c8c2e69ff17759c818080e5c502f1c74b5f9ffe7))
+* resolve broken test after adding extra option for streamer ([25b5fcf](https://github.com/Iandenh/overleash/commit/25b5fcf1cabefdafc95b3f34f287c5cb010f92c9))
+* send delete override sse event ([551adc1](https://github.com/Iandenh/overleash/commit/551adc17ae220bfe24b72c58aa04dc7e17497328))
+* set correct default env_from_token ([a50cd3f](https://github.com/Iandenh/overleash/commit/a50cd3ff5b20589bc12be87c4cc782394500949b))
+* tests ([83dd09a](https://github.com/Iandenh/overleash/commit/83dd09adfd61f22839f63c7f2a8ffa8b4bf46466))
+* tests ([e5a19fa](https://github.com/Iandenh/overleash/commit/e5a19fa0dface13cb5858a3adb05da40b50614a6))
+* tests after moving to yggdrasil-bindings ([e223cbf](https://github.com/Iandenh/overleash/commit/e223cbf4851a9d97af5aebd1e56b0e649be5a502))
+
 ## [0.11.0](https://github.com/Iandenh/overleash/compare/v0.10.0...v0.11.0) (2025-08-18)
 
 
