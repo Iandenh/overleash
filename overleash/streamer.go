@@ -28,14 +28,16 @@ type Streamer struct {
 	i           atomic.Int64
 }
 
-func (s *Streamer) createNewUpdateDelta(id int, events []Event, overleashEvent bool) SseEvent {
+func (s *Streamer) NotifyWithNewUpdateDelta(id int, events []Event, overleashEvent bool) {
 	j, _ := json.Marshal(Events{events})
 
-	return SseEvent{
-		Id:             strconv.Itoa(id),
-		Event:          "unleash-updated",
-		Data:           string(j),
-		OverleashEvent: overleashEvent,
+	for _, subscriber := range s.subscribers {
+		subscriber.Notify(SseEvent{
+			Id:             strconv.Itoa(id),
+			Event:          "unleash-updated",
+			Data:           string(j),
+			OverleashEvent: overleashEvent,
+		})
 	}
 }
 
@@ -122,9 +124,7 @@ func (o *OverleashContext) processOverleashStreaming() {
 				return
 			}
 
-			for _, subscriber := range e.Streamer.subscribers {
-				subscriber.Notify(e.Streamer.createNewUpdateDelta(id, events, true))
-			}
+			e.Streamer.NotifyWithNewUpdateDelta(id, events, true)
 		}
 	}
 }
@@ -202,9 +202,7 @@ func (s *Streamer) processFeature(old, new, remote FeatureFile) {
 		return
 	}
 
-	for _, subscriber := range s.subscribers {
-		subscriber.Notify(s.createNewUpdateDelta(id, events, false))
-	}
+	s.NotifyWithNewUpdateDelta(id, events, false)
 }
 
 func keyFeatureFlags(file FeatureFile) map[string]Feature {
