@@ -143,6 +143,7 @@ func updateRequestUrlFromHeader(w http.ResponseWriter, request *http.Request) {
 		parsedUrl, err := url.Parse(u)
 		if err != nil {
 			http.Error(w, "Failed to parse url", http.StatusBadRequest)
+			return
 		}
 
 		request.URL = parsedUrl
