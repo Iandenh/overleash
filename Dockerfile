@@ -7,7 +7,7 @@ ARG TARGETPLATFORM
 RUN apk add --no-cache build-base
 
 RUN case "$TARGETPLATFORM" in \
-  "linux/arm64") apk add aarch64-linux-musl-binutils aarch64-linux-musl-gcc && echo aarch64-unknown-linux-musl > /rust_target.txt ;; \
+  "linux/arm64") echo aarch64-unknown-linux-musl > /rust_target.txt ;; \
   "linux/amd64") echo x86_64-unknown-linux-musl > /rust_target.txt ;; \
   *) exit 1 ;; \
 esac
