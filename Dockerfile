@@ -6,10 +6,18 @@ ARG TARGETPLATFORM
 # Install the C build toolchain for Alpine
 RUN apk add --no-cache build-base
 
-# Determine the MUSL target based on the platform
+# Determine the MUSL target based on the platform and install the correct cross-compiler if needed
 RUN case "$TARGETPLATFORM" in \
-  "linux/arm64") echo aarch64-unknown-linux-musl > /rust_target.txt ;; \
-  "linux/amd64") echo x86_64-unknown-linux-musl > /rust_target.txt ;; \
+  "linux/arm64") \
+    echo aarch64-unknown-linux-musl > /rust_target.txt && \
+    apk add --no-cache gcc-aarch64-linux-musl && \
+    mkdir -p .cargo && \
+    echo '[target.aarch64-unknown-linux-musl]' > .cargo/config.toml && \
+    echo 'linker = "aarch64-linux-musl-gcc"' >> .cargo/config.toml \
+    ;; \
+  "linux/amd64") \
+    echo x86_64-unknown-linux-musl > /rust_target.txt \
+    ;; \
   *) exit 1 ;; \
 esac
 
@@ -18,6 +26,7 @@ RUN rustup target add $(cat /rust_target.txt)
 COPY ./yggdrasil-bindings /yggdrasil-bindings
 
 # Build the static library against the MUSL target
+# This command now works for both platforms because the correct linker is configured.
 RUN cargo build --release --target $(cat /rust_target.txt)
 RUN cp target/$(cat /rust_target.txt)/release/libyggdrasilffi.a libyggdrasilffi.a
 
