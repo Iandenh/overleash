@@ -80,6 +80,13 @@ func (c *Server) registerDeltaApi(s *http.ServeMux) {
 			return
 		}
 
+		rc := http.NewResponseController(w)
+
+		// Disable the server's read and write timeouts for this long-lived connection.
+		// Setting a zero-value time.Time effectively means no deadline.
+		rc.SetReadDeadline(time.Time{})
+		rc.SetWriteDeadline(time.Time{})
+
 		isOverleash := r.Header.Get("X-Overleash") == "yes"
 		subscriber := &httpSubscriber{flusher: flusher, writer: w, isOverleashClient: isOverleash, send: make(chan overleash.SseEvent, 32)}
 

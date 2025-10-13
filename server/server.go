@@ -87,8 +87,11 @@ func (c *Server) Start() {
 	}
 
 	httpServer := &http.Server{
-		Addr:    c.Overleash.Config.ListenAddress,
-		Handler: handler,
+		Addr:         c.Overleash.Config.ListenAddress,
+		Handler:      handler,
+		ReadTimeout:  5 * time.Second,
+		WriteTimeout: 10 * time.Second,
+		IdleTimeout:  120 * time.Second,
 	}
 
 	go func() {
@@ -105,8 +108,11 @@ func (c *Server) Start() {
 		mux.Handle("/metrics", promhttp.Handler())
 
 		metricsServer = &http.Server{
-			Addr:    fmt.Sprintf(":%d", c.Overleash.Config.PrometheusPort),
-			Handler: mux,
+			Addr:         fmt.Sprintf(":%d", c.Overleash.Config.PrometheusPort),
+			Handler:      mux,
+			ReadTimeout:  5 * time.Second,
+			WriteTimeout: 10 * time.Second,
+			IdleTimeout:  120 * time.Second,
 		}
 
 		go func() {
