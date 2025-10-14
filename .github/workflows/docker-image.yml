@@ -54,6 +54,10 @@ jobs:
           images: |
             iandenh/overleash
             ghcr.io/${{ github.repository }}
+          flavor: |
+            latest=false
+            prefix=
+            suffix=
           tags: |
             type=schedule
             type=semver,pattern={{version}}
