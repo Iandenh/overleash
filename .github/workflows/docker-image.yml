@@ -66,8 +66,7 @@ jobs:
             type=ref,event=tag
             type=sha
             type=raw,value=latest,enable=${{ !github.event.release.prerelease }}
-    
-            type=raw,value=beta,enable=${{ github.event.release.prerelease }}
+            type=raw,value=beta,enable=${{ !!github.event.release.prerelease }}
             type=edge
             
 
