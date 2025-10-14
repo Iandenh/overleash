@@ -1,4 +1,3 @@
-# Stage 1: Rust Build for a static library using MUSL on Alpine
 FROM --platform=$BUILDPLATFORM rust:1.90 AS rust-build-stage
 WORKDIR /yggdrasil-bindings
 ARG TARGETPLATFORM
@@ -11,17 +10,15 @@ RUN case "$TARGETPLATFORM" in \
   *) exit 1 ;; \
 esac
 
-# Add the MUSL target to the Rust toolchain
 RUN rustup target add $(cat /rust_target.txt)
 COPY ./yggdrasil-bindings /yggdrasil-bindings
 
-# Build the static library against the MUSL target
 RUN cargo build --release --target $(cat /rust_target.txt)
 RUN cp target/$(cat /rust_target.txt)/release/libyggdrasilffi.a libyggdrasilffi.a
 
 # ----------------------------------------------------------------
 
-# Stage 2: Go Build for a fully static binary on Alpine
+# Stage 2: Go Build for a fully static binary
 FROM --platform=$BUILDPLATFORM golang:1.25 AS build-stage
 ARG VERSION
 ARG TARGETOS
@@ -85,12 +82,6 @@ RUN \
     -tags yggdrasil_static \
     -ldflags="-linkmode external -extldflags "-static" -s -w -X github.com/Iandenh/overleash/internal/version.Version=${VERSION}" \
     -o /entrypoint main.go
-
-# Build the final static binary. The Alpine toolchain inherently supports this.
-#RUN CGO_ENABLED=1 GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build \
-#    -tags yggdrasil_static \
-#    -ldflags="-linkmode external -extldflags \"-static\" -s -w -X github.com/Iandenh/overleash/internal/version.Version=${VERSION}" \
-#    -o /entrypoint main.go
 
 # ----------------------------------------------------------------
 
