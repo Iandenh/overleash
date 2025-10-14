@@ -1,10 +1,9 @@
 # Stage 1: Rust Build for a static library using MUSL on Alpine
-FROM --platform=$BUILDPLATFORM rust:1.90-alpine AS rust-build-stage
+FROM --platform=$BUILDPLATFORM rust:1.90 AS rust-build-stage
 WORKDIR /yggdrasil-bindings
 ARG TARGETPLATFORM
 
-# Install the C build toolchain for Alpine
-RUN apk add --no-cache build-base
+RUN apt-get update && apt-get install -y musl-tools gcc-aarch64-linux-gnu
 
 RUN case "$TARGETPLATFORM" in \
   "linux/arm64") echo aarch64-unknown-linux-musl > /rust_target.txt ;; \
@@ -23,18 +22,18 @@ RUN cp target/$(cat /rust_target.txt)/release/libyggdrasilffi.a libyggdrasilffi.
 # ----------------------------------------------------------------
 
 # Stage 2: Go Build for a fully static binary on Alpine
-FROM --platform=$BUILDPLATFORM golang:1.25-alpine AS build-stage
+FROM --platform=$BUILDPLATFORM golang:1.25 AS build-stage
 ARG VERSION
 ARG TARGETOS
 ARG TARGETARCH
+ARG TARGETPLATFORM
 
-# Install the C build toolchain for Alpine
-RUN apk add --no-cache build-base
+RUN apt-get update && apt-get install -y musl-tools
 
 WORKDIR /app
 
 # Create a non-root user. We will copy the user definition to the final stage.
-RUN adduser -D -u 1001 -s /bin/sh noroot && mkdir /data && chown -R noroot:noroot /data
+RUN addgroup --gid 1001 noroot && adduser --disabled-password --no-create-home --uid 1001 --gid 1001 --shell /bin/sh noroot && mkdir /data && chown -R noroot:noroot /data
 
 # Copy the static library from the Rust stage
 COPY --from=rust-build-stage /yggdrasil-bindings/libyggdrasilffi.a /app/unleashengine/libyggdrasilffi.a
@@ -46,13 +45,45 @@ RUN go mod download
 COPY . /app
 RUN templ generate
 
-# Build the final static binary. The Alpine toolchain inherently supports this.
-RUN CGO_ENABLED=1 GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build \
+RUN \
+    # Ensure the script exits on any error
+    set -e; \
+    \
+    # Print the target platform for logging purposes
+    echo "Building for platform: $TARGETPLATFORM"; \
+    \
+    # Start the case statement on the TARGETPLATFORM variable
+    case "$TARGETPLATFORM" in \
+        # If building for arm64...
+        "linux/arm64") \
+            echo "-> Cross-compiling for arm64. Installing cross-compiler."; \
+            # Install the aarch64 C cross-compiler
+            apt-get update && apt-get install -y --no-install-recommends gcc-aarch64-linux-gnu; \
+            # Export the CC variable so the 'go build' command uses the correct compiler
+            export CC=aarch64-linux-gnu-gcc; \
+            ;; \
+        \
+        # If building for amd64...
+        "linux/amd64") \
+            echo "-> Natively compiling for amd64."; \
+            # No special compiler needed, but we set CC for consistency.
+            # The 'build-essential' package or default gcc is usually present.
+            ;; \
+        \
+        # If the platform is not supported...
+        *) \
+            echo "Error: Unsupported TARGETPLATFORM: $TARGETPLATFORM" >&2; \
+            exit 1; \
+            ;; \
+    esac; \
+    \
+    # === UNIVERSAL BUILD COMMAND ===
+    # This command runs after the case statement and uses the exported CC variable.
+    # GOARCH is set dynamically using the automatic $TARGETARCH variable.
+    CGO_ENABLED=1 GOOS=linux GOARCH=$TARGETARCH go build \
     -tags yggdrasil_static \
-    -ldflags="-linkmode external -extldflags \"-static\" -s -w -X github.com/Iandenh/overleash/internal/version.Version=${VERSION}" \
+    -ldflags="-linkmode external -extldflags "-static" -s -w -X github.com/Iandenh/overleash/internal/version.Version=${VERSION}" \
     -o /entrypoint main.go
-
-# ----------------------------------------------------------------
 
 # Stage 3: Final, minimal image using distroless
 FROM gcr.io/distroless/static-debian12 AS release-stage
