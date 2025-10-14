@@ -78,6 +78,8 @@ jobs:
           context: .
           file: ./Dockerfile
           push: true
+          sbom: true
+          provenance: mode=max
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
@@ -86,14 +88,7 @@ jobs:
       - name: Generate artifact attestation to Docker
         uses: actions/attest-build-provenance@v3
         with:
-          subject-name: index.docker.io/${{ env.IMAGE_NAME}}
-          subject-digest: ${{ steps.push.outputs.digest }}
-          push-to-registry: true
-
-      - name: Generate artifact attestation to ghcr
-        uses: actions/attest-build-provenance@v3
-        with:
-          subject-name: ghcr.io/${{ env.IMAGE_NAME}}
+          subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME}}
           subject-digest: ${{ steps.push.outputs.digest }}
           push-to-registry: true
 
