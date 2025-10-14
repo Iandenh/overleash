@@ -3,6 +3,9 @@ name: Publish Docker image
 on:
   release:
     types: [published]
+  push:
+    branches:
+      - 'master'
 
 jobs:
   push_to_registry:
@@ -65,6 +68,7 @@ jobs:
             type=raw,value=latest,enable=${{ !github.event.release.prerelease }}
     
             type=raw,value=beta,enable=${{ github.event.release.prerelease }}
+            type=edge
             
 
       - name: Build and push Docker image
