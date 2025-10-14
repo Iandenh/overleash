@@ -28,7 +28,7 @@ ARG TARGETOS
 ARG TARGETARCH
 ARG TARGETPLATFORM
 
-RUN apt-get update && apt-get install -y musl-tools
+RUN apt-get update && apt-get install -y musl-tools gcc-aarch64-linux-gnu
 
 WORKDIR /app
 
@@ -68,6 +68,7 @@ RUN \
             echo "-> Natively compiling for amd64."; \
             # No special compiler needed, but we set CC for consistency.
             # The 'build-essential' package or default gcc is usually present.
+            export CC=gcc; \
             ;; \
         \
         # If the platform is not supported...
@@ -84,6 +85,14 @@ RUN \
     -tags yggdrasil_static \
     -ldflags="-linkmode external -extldflags "-static" -s -w -X github.com/Iandenh/overleash/internal/version.Version=${VERSION}" \
     -o /entrypoint main.go
+
+# Build the final static binary. The Alpine toolchain inherently supports this.
+#RUN CGO_ENABLED=1 GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build \
+#    -tags yggdrasil_static \
+#    -ldflags="-linkmode external -extldflags \"-static\" -s -w -X github.com/Iandenh/overleash/internal/version.Version=${VERSION}" \
+#    -o /entrypoint main.go
+
+# ----------------------------------------------------------------
 
 # Stage 3: Final, minimal image using distroless
 FROM gcr.io/distroless/static-debian12 AS release-stage
