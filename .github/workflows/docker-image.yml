@@ -83,10 +83,17 @@ jobs:
           build-args: |
             VERSION=${{ steps.version.outputs.VERSION }}
 
-      - name: Generate artifact attestation
+      - name: Generate artifact attestation to Docker
         uses: actions/attest-build-provenance@v3
         with:
-          subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME}}
+          subject-name: index.docker.io/${{ env.IMAGE_NAME}}
+          subject-digest: ${{ steps.push.outputs.digest }}
+          push-to-registry: true
+
+      - name: Generate artifact attestation to ghcr
+        uses: actions/attest-build-provenance@v3
+        with:
+          subject-name: ghcr.io/${{ env.IMAGE_NAME}}
           subject-digest: ${{ steps.push.outputs.digest }}
           push-to-registry: true
 
