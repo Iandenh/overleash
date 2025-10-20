@@ -10,7 +10,7 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/launchdarkly/eventsource v1.10.0
 	github.com/prometheus/client_golang v1.23.2
-	github.com/redis/go-redis/v9 v9.14.0
+	github.com/redis/go-redis/v9 v9.14.1
 	github.com/rs/cors v1.11.1
 	github.com/spf13/pflag v1.0.10
 	github.com/spf13/viper v1.21.0
