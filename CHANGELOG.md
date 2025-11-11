@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.1.0-alpha](https://github.com/Iandenh/overleash/compare/v1.0.0-alpha...v1.1.0-alpha) (2025-11-11)
+
+
+### Features
+
+* cleanup css ([f7b928b](https://github.com/Iandenh/overleash/commit/f7b928bfa395c6beb86d2e2f9653da9f788172bf))
+
+
+### Bug Fixes
+
+* css ([03f8d2c](https://github.com/Iandenh/overleash/commit/03f8d2c05482bdeac3487c8de7128e6315330086))
+* enabled state ([cba200a](https://github.com/Iandenh/overleash/commit/cba200acb07b0e53c6526ea71215a7e3e932a16d))
+
 ## [0.11.0](https://github.com/Iandenh/overleash/compare/v0.10.0...v0.11.0) (2025-08-18)
 
 
