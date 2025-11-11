@@ -66,7 +66,7 @@
     --override-background-color: light-dark(#e0e0e0, #3c3c3c);
     --override-background-color2: light-dark(#f8f8f8, #1b1b1b);
     --paused-background-color: light-dark(#f8f8f8, #000);
-    --card-border: light-dark(#e5e7eb, none);
+    --card-border: #e5e7eb;
     --heading-background: light-dark(#f8f8f8, #212121);
     --summary-background: light-dark(#f0f0f0, #282828);
     --border-color-muted: light-dark(rgb(217 217 217 / 70%), rgb(68 68 68 / 70%));
@@ -84,6 +84,7 @@
     --btn-filter: invert(1);
     --btn-black-border: 1px solid white;
     --btn-white-border: none;
+    --card-border: none;
 }
 
 [data-theme='light'] {
@@ -92,6 +93,7 @@
     --btn-filter: invert(0);
     --btn-black-border: 1px solid transparent;
     --btn-white-border: 1px solid black;
+    --card-border: #e5e7eb;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -100,6 +102,7 @@
         --btn-filter: invert(1);
         --btn-black-border: 1px solid white;
         --btn-white-border: none;
+        --card-border: none;
     }
 }
 
