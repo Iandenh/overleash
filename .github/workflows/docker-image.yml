@@ -23,16 +23,16 @@ jobs:
 
       - name: Get release Version
         id: version
-        if: github.event_name == 'release'
         run: |
-          VERSION=${{ github.ref_name }}
-          echo "VERSION=${VERSION:1}" >> "$GITHUB_OUTPUT"
-
-      - name: Get Version
-        id: version
-        if: github.event_name != 'release'
-        run: |
-          echo ${{ github.ref_name }} >> "$GITHUB_OUTPUT"
+          if [[ "${{ github.event_name }}" == "release" ]]; then
+            # For release events, github.ref_name is the tag (e.g., 'v1.0.0').
+            # Strip the leading 'v' or 'V' before setting the output.
+            VERSION=${{ github.ref_name }}
+            echo "version=${VERSION:1}" >> "$GITHUB_OUTPUT"
+          else
+            # For other events (push, pull_request, etc.), use the ref_name directly (e.g., 'main', 'feature-branch').
+            echo "version=${{ github.ref_name }}" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Check out the repo
         uses: actions/checkout@v5
