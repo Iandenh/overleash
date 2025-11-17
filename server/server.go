@@ -15,6 +15,7 @@ import (
 	"github.com/Iandenh/overleash/overleash"
 	"github.com/a-h/templ"
 	"github.com/charmbracelet/log"
+	"github.com/medama-io/go-useragent"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/rs/cors"
 )
@@ -23,6 +24,8 @@ var (
 	//go:embed static
 	staticFiles embed.FS
 )
+
+var ua = useragent.NewParser()
 
 const maxBodySize = 1 * 1024 * 1024 // 1 MiB
 
@@ -157,11 +160,13 @@ func updateRequestUrlFromHeader(w http.ResponseWriter, request *http.Request) {
 }
 
 func renderFeatures(w http.ResponseWriter, r *http.Request, o *overleash.OverleashContext) {
+	agent := ua.Parse(r.Header.Get("User-Agent"))
+
 	list := search(r, o)
 
 	w.Header().Set("HX-Replace-Url", list.url)
 
-	templ.Handler(features(list, o, getColorScheme(r))).ServeHTTP(w, r)
+	templ.Handler(features(list, o, getColorScheme(r), agent.IsMacOS())).ServeHTTP(w, r)
 }
 
 func getColorScheme(r *http.Request) string {

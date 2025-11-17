@@ -8,7 +8,7 @@ import (
     "strings"
 )
 
-templ layout(name string, colorScheme string) {
+templ layout(name string, colorScheme string, isMac bool) {
     <!doctype html>
 	<html lang="en" data-theme={colorScheme}>
 		<head>
@@ -24,7 +24,7 @@ templ layout(name string, colorScheme string) {
 				{ children... }
 			</main>
 
-            @help()
+            @help(isMac)
 		</body>
 	</html>
 }
@@ -187,8 +187,8 @@ templ remoteSelector(o *overleash.OverleashContext) {
     }
 }
 
-templ features(list featureList, o *overleash.OverleashContext, colorScheme string) {
-	@layout("Overleash", colorScheme) {
+templ features(list featureList, o *overleash.OverleashContext, colorScheme string, isMac bool) {
+	@layout("Overleash", colorScheme, isMac) {
 	    @header()
 	    <div class="heading">
             <div class="container">
@@ -357,7 +357,7 @@ templ lastSync(t time.Time) {
     <span hx-get="/dashboard/lastSync" hx-trigger="every 15s" id="last-sync" hx-swap="outerHTML">Last sync: <strong>{ t.Format("15:04:05") }</strong></span>
 }
 
-templ help() {
+templ help(isMac bool) {
     <dialog id="help-dialog">
         <div class="help">
 
@@ -366,7 +366,11 @@ templ help() {
                     <div class="kbd-shortcut">
                         <div class="keys">
                             if shortcut.alt {
-                                <kbd>Alt</kbd> +
+                                if isMac {
+                                    <kbd>⌥ Option</kbd> +
+                                } else {
+                                    <kbd>Alt</kbd> +
+                                }
                             }
                             <kbd>{ shortcut.character }</kbd>
                         </div>
