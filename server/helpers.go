@@ -35,7 +35,7 @@ func getVersion() string {
 		return "Development"
 	}
 
-	return fmt.Sprintf("v%s", v)
+	return v
 }
 
 type shortcut struct {

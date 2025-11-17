@@ -21,11 +21,19 @@ jobs:
       id-token: write
     steps:
 
-      - name: Get Version
+      - name: Get release Version
         id: version
+        if: github.event_name == 'release'
         run: |
           VERSION=${{ github.ref_name }}
           echo "VERSION=${VERSION:1}" >> "$GITHUB_OUTPUT"
+
+      - name: Get Version
+        id: version
+        if: github.event_name != 'release'
+        run: |
+          echo ${{ github.ref_name }} >> "$GITHUB_OUTPUT"
+
       - name: Check out the repo
         uses: actions/checkout@v5
         with:
