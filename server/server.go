@@ -4,6 +4,7 @@ import (
 	"context"
 	"embed"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/fs"
 	"net/http"
@@ -99,7 +100,7 @@ func (c *Server) Start() {
 
 	go func() {
 		log.Debugf("Starting server on port: %s", c.Overleash.Config.ListenAddress)
-		if err := httpServer.ListenAndServe(); err != nil {
+		if err := httpServer.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			log.Error(err)
 			panic(err)
 		}
@@ -120,7 +121,7 @@ func (c *Server) Start() {
 
 		go func() {
 			log.Debugf("Starting metrics server on port: %d", c.Overleash.Config.PrometheusPort)
-			if err := metricsServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			if err := metricsServer.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 				log.Errorf("metrics server error: %v", err)
 			}
 		}()

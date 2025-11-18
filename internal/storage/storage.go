@@ -47,6 +47,9 @@ func NewStoreFromConfig(cfg *config.Config) Store {
 		}
 		return NewRedisStore(redisCfg)
 
+	case "null":
+		return &NullStore{}
+
 	default:
 		log.Fatalf("invalid storage backend: %s", backend)
 		return nil

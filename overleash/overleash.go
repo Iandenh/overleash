@@ -296,6 +296,11 @@ func (o *OverleashContext) loadRemotesWithLock() error {
 	return o.loadRemotes()
 }
 
+func (o *OverleashContext) LoadFeatureFile(state FeatureFile) {
+	o.ActiveFeatureEnvironment().featureFile = state
+	o.compileFeatureFiles()
+}
+
 func (o *OverleashContext) loadRemotes() error {
 	e := error(nil)
 

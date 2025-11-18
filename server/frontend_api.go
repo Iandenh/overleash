@@ -79,6 +79,50 @@ func (c *Server) registerFrontendApi(s *http.ServeMux) {
 		w.Write(resultJson)
 	}))
 
+	s.Handle("POST /api/frontend/features/{featureName}", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		c.Overleash.LockMutex.RLock()
+		defer c.Overleash.LockMutex.RUnlock()
+
+		featureName := r.PathValue("featureName")
+
+		ctx, err := createContextFromPostRequest(r)
+
+		if err != nil {
+			log.Error(err)
+			w.WriteHeader(http.StatusBadRequest)
+
+			return
+		}
+
+		resolved, ok := resolve(c.featureEnvironmentFromRequest(r).Engine(), ctx, featureName)
+
+		if !ok {
+			w.WriteHeader(http.StatusNotFound)
+
+			return
+		}
+
+		evaluated := EvaluatedToggle{
+			Name:    featureName,
+			Enabled: resolved.Enabled,
+			Variant: EvaluatedVariant{
+				Name:              resolved.Variant.Name,
+				Enabled:           resolved.Variant.Enabled,
+				Payload:           resolved.Variant.Payload,
+				FeatureEnabled:    resolved.Variant.FeatureEnabled,
+				OldFeatureEnabled: resolved.Variant.FeatureEnabled,
+			},
+			ImpressionData: resolved.ImpressionData,
+		}
+
+		w.Header().Add("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+
+		resultJson, _ := json.Marshal(evaluated)
+
+		w.Write(resultJson)
+	}))
+
 	s.Handle("GET /api/frontend/features/{featureName}", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		c.Overleash.LockMutex.RLock()
 		defer c.Overleash.LockMutex.RUnlock()

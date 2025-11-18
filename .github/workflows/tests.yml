@@ -19,6 +19,8 @@ jobs:
           cargo build --release
           sudo cp target/release/libyggdrasilffi.so /usr/local/lib
           sudo ldconfig
+          cd ${{ github.workspace }}/tests
+          git clone --depth 5 --branch v5.1.9 https://github.com/Unleash/client-specification.git client-specification
       - name: Setup Go
         uses: actions/setup-go@v6
         with:
