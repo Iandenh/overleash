@@ -89,10 +89,10 @@ type Dependency struct {
 type Variant struct {
 	Name       string            `json:"name"`
 	Weight     int               `json:"weight"`
-	WeightType string            `json:"weightType"`
+	WeightType string            `json:"weightType,omitzero"`
 	Stickiness string            `json:"stickiness"`
 	Payload    Payload           `json:"payload"`
-	Overrides  []VariantOverride `json:"overrides"`
+	Overrides  []VariantOverride `json:"overrides,omitzero"`
 }
 
 type VariantOverride struct {
@@ -120,7 +120,7 @@ type Strategy struct {
 	Parameters ParameterMap `json:"parameters"`
 
 	// Variants for a strategy
-	Variants []StrategyVariant `json:"variants"`
+	Variants []StrategyVariant `json:"variants,omitzero"`
 }
 
 type StrategyVariant struct {
