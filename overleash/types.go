@@ -292,7 +292,7 @@ type Constraint struct {
 	Operator Operator `json:"operator"`
 
 	// Values is the list of target values for multi-valued constraints.
-	Values []string `json:"values,omitempty"`
+	Values []string `json:"values"`
 
 	// Value is the target value single-value constraints.
 	Value *string `json:"value,omitempty"`
