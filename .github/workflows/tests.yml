@@ -19,18 +19,31 @@ jobs:
           cargo build --release
           sudo cp target/release/libyggdrasilffi.so /usr/local/lib
           sudo ldconfig
+
+      # Clone Specs
+      - name: Clone Client Specifications
+        run: |
           cd ${{ github.workspace }}/tests
           git clone --depth 5 --branch v5.1.9 https://github.com/Unleash/client-specification.git client-specification
+
+      # --- NEW STEP: Build PHP Docker Image ---
+      - name: Build PHP Test Harness
+        run: |
+          cd ${{ github.workspace }}/tests/php
+          docker build -t overleash-php-test .
+
       - name: Setup Go
         uses: actions/setup-go@v6
         with:
           go-version: '1.25.x'
+
       - name: Install dependencies
         run: go get .
-      - name: Install dependencies
+
+      - name: Install templ
         run: |
           go install github.com/a-h/templ/cmd/templ@latest
           templ generate
       - name: Test with the Go CLI
         run: |
-          go test ./...
+          go test -v ./...
