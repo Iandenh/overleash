@@ -59,6 +59,7 @@ service:
 # This block is for setting up the ingress for more information can be found here: https://kubernetes.io/docs/concepts/services-networking/ingress/
 ingress:
   enabled: false
+  basePath: ""  # or "/feature"
 
   enableDashboard: true
   enableClientApi: true
@@ -174,6 +175,7 @@ extraEnv:
   OVERLEASH_PROMETHEUS_METRICS: "false"
   OVERLEASH_PROMETHEUS_METRICS_PORT: "9100"
   OVERLEASH_STORAGE: "file" # "redis" is the other option
+  OVERLEASH_BASE_PATH: ""  # or "/feature"
 
   TZ: "Europe/Amsterdam"
 

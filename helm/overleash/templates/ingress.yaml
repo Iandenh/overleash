@@ -1,4 +1,5 @@
 {{- if and (not .Values.sidecar.enabled) .Values.ingress.enabled -}}
+{{- $base := default "" .Values.ingress.basePath -}}
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
@@ -30,7 +31,7 @@ spec:
       http:
         paths:
           {{- if and $.Values.ingress.enableDashboard $.Values.ingress.enableClientApi $.Values.ingress.enableFrontedApi }}
-          - path: "/"
+          - path: "{{ $base }}/"
             pathType: ImplementationSpecific
             backend:
               service:
@@ -39,28 +40,28 @@ spec:
                   number: {{ $.Values.service.port }}
           {{ else }}
           {{ if and $.Values.ingress.enableDashboard }}
-          - path: "/"
+          - path: "{{ $base }}/"
             pathType: Exact
             backend:
               service:
                 name: {{ include "overleash.fullname" $ }}
                 port:
                   number: {{ $.Values.service.port }}
-          - path: "/dashboard"
+          - path: "{{ $base }}/dashboard"
             pathType: Prefix
             backend:
               service:
                 name: {{ include "overleash.fullname" $ }}
                 port:
                   number: {{ $.Values.service.port }}
-          - path: "/override"
+          - path: "{{ $base }}/override"
             pathType: Prefix
             backend:
               service:
                 name: {{ include "overleash.fullname" $ }}
                 port:
                   number: {{ $.Values.service.port }}
-          - path: "/static"
+          - path: "{{ $base }}/static"
             pathType: Prefix
             backend:
               service:
@@ -69,7 +70,7 @@ spec:
                   number: {{ $.Values.service.port }}
           {{- end }}
           {{ if and $.Values.ingress.enableClientApi }}
-          - path: "/api/client"
+          - path: "{{ $base }}/api/client"
             pathType: Prefix
             backend:
               service:
@@ -78,7 +79,7 @@ spec:
                   number: {{ $.Values.service.port }}
           {{- end }}
           {{ if and $.Values.ingress.enableFrontedApi }}
-          - path: "/api/frontend"
+          - path: "{{ $base }}/api/frontend"
             pathType: Prefix
             backend:
               service:

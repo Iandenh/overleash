@@ -62,7 +62,7 @@ func search(r *http.Request, o *overleash.OverleashContext) featureList {
 		urlValues.Set("filter", filterOption)
 	}
 
-	finalURL := "/"
+	finalURL := o.Config.CleanBasePath() + "/"
 	encodedQuery := urlValues.Encode()
 	if encodedQuery != "" {
 		finalURL += "?" + encodedQuery

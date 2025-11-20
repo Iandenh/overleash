@@ -123,7 +123,7 @@ func (list *featureList) generateUrl(key, value string) string {
 
 	urlValues.Set(key, value)
 
-	return "/?" + urlValues.Encode()
+	return "?" + urlValues.Encode()
 }
 
 func (list *featureList) isSelected(key, value string) bool {

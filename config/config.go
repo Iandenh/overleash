@@ -15,6 +15,9 @@ type Config struct {
 	Upstream string `mapstructure:"upstream"`
 	Token    string `mapstructure:"token"`
 
+	// Network / Routing
+	BasePath string `mapstructure:"base_path"`
+
 	// Server
 	ListenAddress string `mapstructure:"listen_address"`
 	Reload        string `mapstructure:"reload"`
@@ -55,6 +58,7 @@ func InitConfig() (*Config, error) {
 	pflag.String("url", "", "DEPRECATED: Unleash URL (e.g. https://unleash.my-site.com) without /api. Use --upstream instead.")
 	pflag.String("upstream", "", "Unleash upstream URL to load feature flags (e.g. https://unleash.my-site.com) without /api, can be an Unleash instance or Unleash Edge.")
 	pflag.String("token", "", "Comma-separated Unleash client token(s) to fetch feature flag configurations.")
+	pflag.String("base_path", "", "Base URL path if running behind an ingress with a prefix (e.g. /overleash).")
 	pflag.String("listen_address", ":5433", "Address to listen on for incoming connections. Can be just a port (e.g. ':5433'), an IP with port (e.g. '127.0.0.1:5433'), or '0.0.0.0:5433' to listen on all interfaces.")
 	pflag.String("reload", "0", "Reload frequency in minutes for refreshing feature flag configuration (0 disables automatic reloading).")
 	pflag.Bool("verbose", false, "Enable verbose logging to troubleshoot and diagnose issues.")
@@ -108,4 +112,19 @@ func (c *Config) ParseReload() time.Duration {
 
 func (c *Config) Tokens() []string {
 	return strings.Split(c.Token, ",")
+}
+
+// CleanBasePath ensures the path starts with / and does not end with /
+// This makes it safe for http.StripPrefix
+func (c *Config) CleanBasePath() string {
+	if c.BasePath == "" || c.BasePath == "/" {
+		return ""
+	}
+	// Ensure leading slash
+	path := c.BasePath
+	if !strings.HasPrefix(path, "/") {
+		path = "/" + path
+	}
+	// Remove trailing slash
+	return strings.TrimSuffix(path, "/")
 }

@@ -8,16 +8,17 @@ import (
     "strings"
 )
 
-templ layout(name string, colorScheme string, isMac bool) {
+templ layout(name string, colorScheme string, isMac bool, base string) {
     <!doctype html>
 	<html lang="en" data-theme={colorScheme}>
 		<head>
             <meta charset="utf-8" />
+            <base href={base+"/"} />
             <title>{ name }</title>
-            <script src="/static/htmx.2.0.7.min.js" defer></script>
-            <link href={"/static/style.css?version="+version.Version} rel="stylesheet" />
-            <link rel="icon" href={"/static/overleash.svg?version="+version.Version} />
-            <script src={"/static/overleash.js?version="+version.Version} defer></script>
+            <script src="static/htmx.2.0.7.min.js" defer></script>
+            <link href={"static/style.css?version="+version.Version} rel="stylesheet" />
+            <link rel="icon" href={"static/overleash.svg?version="+version.Version} />
+            <script src={"static/overleash.js?version="+version.Version} defer></script>
 		</head>
 		<body>
 			<main>
@@ -135,13 +136,13 @@ templ feature(flag overleash.Feature, o *overleash.OverleashContext, showDetail 
     </div>
 
     <div class="action">
-        <button class="btn black" hx-post={"/override/" + flag.Name + "/true"} hx-target="closest .flag" hx-swap="innerHTML" hx-trigger="click, enable-flag from:closest .flag">Enable <span class="shortcuts">(e)</span></button>
-        <button class="btn white" hx-post={"/override/" + flag.Name + "/false"} hx-target="closest .flag" hx-swap="innerHTML" hx-trigger="click, disable-flag from:closest .flag">Disable <span class="shortcuts">(d)</span></button>
+        <button class="btn black" hx-post={"override/" + flag.Name + "/true"} hx-target="closest .flag" hx-swap="innerHTML" hx-trigger="click, enable-flag from:closest .flag">Enable <span class="shortcuts">(e)</span></button>
+        <button class="btn white" hx-post={"override/" + flag.Name + "/false"} hx-target="closest .flag" hx-swap="innerHTML" hx-trigger="click, disable-flag from:closest .flag">Disable <span class="shortcuts">(d)</span></button>
 
         if showDetail {
-           <button class="list muted" hx-get={"/dashboard/feature/" + flag.Name} hx-target="closest .flag" hx-swap="innerHTML" hx-trigger="click, toggle-detail from:closest .flag"></button>
+           <button class="list muted" hx-get={"dashboard/feature/" + flag.Name} hx-target="closest .flag" hx-swap="innerHTML" hx-trigger="click, toggle-detail from:closest .flag"></button>
         } else {
-            <button class="list" hx-get={"/dashboard/feature/" + flag.Name + "?details=true"} hx-target="closest .flag" hx-swap="innerHTML" hx-trigger="click, toggle-detail from:closest .flag"></button>
+            <button class="list" hx-get={"dashboard/feature/" + flag.Name + "?details=true"} hx-target="closest .flag" hx-swap="innerHTML" hx-trigger="click, toggle-detail from:closest .flag"></button>
         }
     </div>
 
@@ -162,7 +163,7 @@ templ feature(flag overleash.Feature, o *overleash.OverleashContext, showDetail 
             }
             </div>
 
-            <button class="btn white" hx-delete={"/override/" + flag.Name} hx-target="closest .flag" hx-swap="innerHTML" hx-trigger="click, remove-flag from:closest .flag">Remove Override <span class="shortcuts">(q)</span></button>
+            <button class="btn white" hx-delete={"override/" + flag.Name} hx-target="closest .flag" hx-swap="innerHTML" hx-trigger="click, remove-flag from:closest .flag">Remove Override <span class="shortcuts">(q)</span></button>
         </div>
      }
 }
@@ -173,7 +174,7 @@ templ remoteSelector(o *overleash.OverleashContext) {
                 class="remote-select"
                 autocomplete="off"
                 hx-trigger="input changed, remote"
-                hx-post="/dashboard/changeRemote"
+                hx-post="dashboard/changeRemote"
                 hx-swap="innerHTML"
                 hx-target="body">
             for idx, remote := range o.GetRemotes() {
@@ -188,23 +189,23 @@ templ remoteSelector(o *overleash.OverleashContext) {
 }
 
 templ features(list featureList, o *overleash.OverleashContext, colorScheme string, isMac bool) {
-	@layout("Overleash", colorScheme, isMac) {
+	@layout("Overleash", colorScheme, isMac, o.Config.CleanBasePath()) {
 	    @header()
 	    <div class="heading">
             <div class="container">
                 <div class="head">
                     <div class="actions">
-                        <button class="btn small black" hx-delete={"/"} hx-swap="innerHTML" hx-target="body">Remove all overrides</button>
+                        <button class="btn small black" hx-delete={""} hx-swap="innerHTML" hx-target="body">Remove all overrides</button>
                         if o.IsPaused() {
-                            <button class="btn small white pause-btn" hx-post={"/dashboard/unpause"} hx-swap="innerHTML" hx-target="body" hx-trigger="click, toggle-pause">Unpause overrides</button>
+                            <button class="btn small white pause-btn" hx-post={"dashboard/unpause"} hx-swap="innerHTML" hx-target="body" hx-trigger="click, toggle-pause">Unpause overrides</button>
                         } else {
-                           <button class="btn small white pause-btn" hx-post={"/dashboard/pause"} hx-swap="innerHTML" hx-target="body" hx-trigger="click, toggle-pause">Pause overrides</button>
+                           <button class="btn small white pause-btn" hx-post={"dashboard/pause"} hx-swap="innerHTML" hx-target="body" hx-trigger="click, toggle-pause">Pause overrides</button>
                         }
                         @remoteSelector(o)
                     </div>
                     <div class="sync">
                         @lastSync(o.LastSync())
-                        <button class="sync-btn" hx-post={"/dashboard/refresh"} hx-swap="innerHTML" hx-target="body" hx-trigger="click, refresh"><img src="/static/icons/sync.svg" alt="Sync" /></button>
+                        <button class="sync-btn" hx-post={"dashboard/refresh"} hx-swap="innerHTML" hx-target="body" hx-trigger="click, refresh"><img src="static/icons/sync.svg" alt="Sync" /></button>
                     </div>
                 </div>
 
@@ -215,7 +216,7 @@ templ features(list featureList, o *overleash.OverleashContext, colorScheme stri
                                autocomplete="off"
                                autofocus
                                value={list.searchTerm}
-                               hx-post="/dashboard/search"
+                               hx-post="dashboard/search"
                                hx-trigger="input changed delay:100ms, search"
                                hx-target=".features"
                                hx-swap="outerHTML" />
@@ -354,7 +355,7 @@ templ featureDetail(strategies []overleash.Strategy, segments map[int][]overleas
 
 
 templ lastSync(t time.Time) {
-    <span hx-get="/dashboard/lastSync" hx-trigger="every 15s" id="last-sync" hx-swap="outerHTML">Last sync: <strong>{ t.Format("15:04:05") }</strong></span>
+    <span hx-get="dashboard/lastSync" hx-trigger="every 15s" id="last-sync" hx-swap="outerHTML">Last sync: <strong>{ t.Format("15:04:05") }</strong></span>
 }
 
 templ help(isMac bool) {
@@ -392,14 +393,14 @@ templ help(isMac bool) {
 templ header() {
     <header>
         <div class="header">
-            <div><img class="logo" src="/static/overleash.svg"/></div>
+            <div><img class="logo" src="static/overleash.svg"/></div>
 
             <div class="header-actions">
                 <div class="header-action">
                     <button class="theme-btn">
-                        <img class="auto" src="/static/icons/auto.svg"/>
-                        <img class="light" src="/static/icons/light.svg"/>
-                        <img class="dark" src="/static/icons/dark.svg"/>
+                        <img class="auto" src="static/icons/auto.svg"/>
+                        <img class="light" src="static/icons/light.svg"/>
+                        <img class="dark" src="static/icons/dark.svg"/>
                     </button>
                 </div>
 
@@ -409,7 +410,7 @@ templ header() {
 
                  <div class="header-action">
                     <button class="search-btn">
-                        <img src="/static/icons/help.svg"/>
+                        <img src="static/icons/help.svg"/>
                     </button>
                 </div>
             </div>

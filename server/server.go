@@ -82,7 +82,35 @@ func (c *Server) Start() {
 		json.NewEncoder(w).Encode(status)
 	})
 
-	handler := cors.AllowAll().Handler(s)
+	// 3. Create the Root Handler
+	var rootHandler http.Handler = s
+
+	basePath := c.Overleash.Config.CleanBasePath()
+	if basePath != "" {
+		stripped := http.StripPrefix(basePath, s)
+
+		rootHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if r.URL.Path == "/health" {
+				s.ServeHTTP(w, r)
+				return
+			}
+
+			if r.URL.Path == "/metrics" {
+				s.ServeHTTP(w, r)
+				return
+			}
+
+			if r.URL.Path == basePath {
+				http.Redirect(w, r, basePath+"/", http.StatusTemporaryRedirect)
+				return
+			}
+
+			// 3. All other traffic must match the prefix
+			stripped.ServeHTTP(w, r)
+		})
+	}
+
+	handler := cors.AllowAll().Handler(rootHandler)
 	compress, _ := httpcompression.DefaultAdapter()
 
 	handler = compress(handler)

@@ -1,7 +1,7 @@
 @font-face {
     font-family: Archivo;
-    src: url('/static/fonts/Archivo-Medium.woff2') format('woff2'),
-    url('/static/fonts/Archivo-Medium.woff') format('woff');
+    src: url('fonts/Archivo-Medium.woff2') format('woff2'),
+    url('fonts/Archivo-Medium.woff') format('woff');
     font-weight: 500;
     font-style: normal;
     font-display: block;
@@ -9,8 +9,8 @@
 
 @font-face {
     font-family: Archivo;
-    src: url('/static/fonts/Archivo-SemiBold.woff2') format('woff2'),
-    url('/static/fonts/Archivo-SemiBold.woff') format('woff');
+    src: url('fonts/Archivo-SemiBold.woff2') format('woff2'),
+    url('fonts/Archivo-SemiBold.woff') format('woff');
     font-weight: 600;
     font-style: normal;
     font-display: block;
@@ -18,8 +18,8 @@
 
 @font-face {
     font-family: Archivo;
-    src: url('/static/fonts/Archivo-ExtraBold.woff2') format('woff2'),
-    url('/static/fonts/Archivo-ExtraBold.woff') format('woff');
+    src: url('fonts/Archivo-ExtraBold.woff2') format('woff2'),
+    url('fonts/Archivo-ExtraBold.woff') format('woff');
     font-weight: 900;
     font-style: normal;
     font-display: block;
@@ -27,8 +27,8 @@
 
 @font-face {
     font-family: Archivo;
-    src: url('/static/fonts/Archivo-Bold.woff2') format('woff2'),
-    url('/static/fonts/Archivo-Bold.woff') format('woff');
+    src: url('fonts/Archivo-Bold.woff2') format('woff2'),
+    url('fonts/Archivo-Bold.woff') format('woff');
     font-weight: 700;
     font-style: normal;
     font-display: block;
@@ -36,8 +36,8 @@
 
 @font-face {
     font-family: Archivo;
-    src: url('/static/fonts/Archivo-Regular.woff2') format('woff2'),
-    url('/static/fonts/Archivo-Regular.woff') format('woff');
+    src: url('fonts/Archivo-Regular.woff2') format('woff2'),
+    url('fonts/Archivo-Regular.woff') format('woff');
     font-weight: normal;
     font-style: normal;
     font-display: block;
