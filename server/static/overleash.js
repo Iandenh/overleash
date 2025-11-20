@@ -92,9 +92,21 @@ const overleash = function() {
         }
     };
 
+    /**
+     * @param event {KeyboardEvent}
+     * @return string
+     */
+    const getKey = (event) => {
+        if (event.code && /^Key[A-Z]$/.test(event.code)) {
+            return event.code.substring(3, 4).toLowerCase();
+        }
+
+        return event.key;
+    }
+
     document.addEventListener("keydown", (event) => {
         const altMode = event.getModifierState('Alt');
-        switch (event.key) {
+        switch (getKey(event)) {
             case 'Escape':
                 if (helpDialog.open) {
                     toggleHelp(event)
