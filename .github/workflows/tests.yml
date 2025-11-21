@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Run tests
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           submodules: 'true'
       - name: Build binaries in "${{ matrix.BUILD_TARGET }}" mode
