@@ -1,5 +1,21 @@
 # Changelog
 
+## [1.1.0-alpha.2](https://github.com/Iandenh/overleash/compare/v1.0.0-alpha.2...v1.1.0-alpha.2) (2025-11-25)
+
+
+### Features
+
+* add base path option ([b8fb57e](https://github.com/Iandenh/overleash/commit/b8fb57e72196ae250ff5238a00579a193095bb42))
+* show option on help when agent is mac ([e09c612](https://github.com/Iandenh/overleash/commit/e09c612a3f35cb9bb8390cb3ec55b9ce1079e229))
+* start of a new layout ([963e923](https://github.com/Iandenh/overleash/commit/963e9230a5ac01032cfa685a35974b3cf264ff64))
+
+
+### Bug Fixes
+
+* fix for php spec ([a9728a2](https://github.com/Iandenh/overleash/commit/a9728a290c387f412cb431ef3ef7b2d3f27ef06d))
+* try to fix for mac os ([1347647](https://github.com/Iandenh/overleash/commit/13476474e5737953420b726d272ab76c5805896b))
+* variant typing. Based on spec tests ([93f3d94](https://github.com/Iandenh/overleash/commit/93f3d9428af8a99d89246dadaa66d0f685cf21fe))
+
 ## [0.11.0](https://github.com/Iandenh/overleash/compare/v0.10.0...v0.11.0) (2025-08-18)
 
 
