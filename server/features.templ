@@ -24,148 +24,34 @@ templ layout(name string, colorScheme string, isMac bool, base string) {
 			<main>
 				{ children... }
 			</main>
-
             @help(isMac)
 		</body>
 	</html>
 }
 
-templ featureTemplate(list featureList, o *overleash.OverleashContext) {
-    <div class="features" id="flags">
-        <div class="feature-bar">
-            <div class="feature-count">
-                if len(list.flags) == list.totalFlags {
-                    Showing <strong>{ strconv.Itoa(len(list.flags)) }</strong> flags
-                } else {
-                    Showing <strong>{ strconv.Itoa(len(list.flags)) }</strong> of <strong>{ strconv.Itoa(list.totalFlags) }</strong> flags
-                }
+templ header() {
+    <header>
+        <div class="header">
+            <div><img class="logo" src="static/overleash.svg" alt="Overleash"/></div>
+            <div class="header-actions">
+                <div class="header-action">
+                    <button class="theme-btn" title="Toggle theme">
+                        <img class="auto" src="static/icons/auto.svg" alt="Auto theme"/>
+                        <img class="light" src="static/icons/light.svg" alt="Light theme"/>
+                        <img class="dark" src="static/icons/dark.svg" alt="Dark theme"/>
+                    </button>
+                </div>
+                <div class="header-action">
+                    <div class="separator"></div>
+                </div>
+                <div class="header-action">
+                    <button class="search-btn" title="Keyboard shortcuts">
+                        <img src="static/icons/help.svg" alt="Help"/>
+                    </button>
+                </div>
             </div>
         </div>
-
-        <div class="feature-container">
-            for _, flag := range list.flags {
-                <div class="card flag">
-                    @feature(flag, o, false)
-                </div>
-            }
-
-            if len(list.flags) == 0 && list.totalFlags > 0 {
-                <div class="striped-card">
-                    if strings.TrimSpace(list.searchTerm) == "" {
-                        <div class="empty-state">No results found</div>
-                    } else {
-                       <div class="empty-state">No results for “<strong>{list.searchTerm}</strong>”</div>
-                    }
-                </div>
-            }
-        </div>
-    </div>
-}
-
-templ feature(flag overleash.Feature, o *overleash.OverleashContext, showDetail bool) {
-    <div class="flag-name">
-        <div class="key">
-            if flag.SearchTerm != "" {
-                @templ.Raw(flag.SearchTerm)
-            } else {
-                { flag.Name }
-            }
-        </div>
-
-        if *flag.Stale == true {
-            <div class="stale-status">Stale</div>
-        }
-    </div>
-
-    if flag.Description != "" {
-        <div class="description">
-            @templ.Raw(renderJiraLink(flag.Description))
-        </div>
-    }
-
-    <div class="separator"></div>
-
-    <div class="current-status">
-
-        if !showDetail || !o.HasMultipleEnvironments() {
-            <div>
-                <span class="label">Feature flag:</span>
-                <span class="text">
-                     if o.ActiveFeatureEnvironment().RemoteFeatureFile().FeatureFlagEnabled(flag.Name) {
-                        enabled
-                     } else {
-                        disabled
-                     }
-                </span>
-            </div>
-        }
-
-        if !showDetail {
-            for _, status := range o.ActiveFeatureEnvironment().RemoteFeatureFile().FeatureFlagStatus(flag.Name) {
-                <div>
-                    <span class="label">{ status.Strategy }:</span>
-                    <span class="text">{ status.Status }</span>
-                </div>
-            }
-        }
-
-        if showDetail {
-            if o.HasMultipleEnvironments() {
-                for idx, env := range o.FeatureEnvironments() {
-                    <div class={"detail-environment", templ.KV("detail-environment-separator", idx > 0)}>
-                        <div class="detail-environment-container">
-                            <h4>{ env.Name() }</h4>
-                            <div>
-                                <span class="label">Feature flag:</span>
-                                <span class="text">
-                                     if env.RemoteFeatureFile().FeatureFlagEnabled(flag.Name) {
-                                        enabled
-                                     } else {
-                                        disabled
-                                     }
-                                </span>
-                            </div>
-                            @featureDetail(env.RemoteFeatureFile().Get(flag.Name).Strategies, env.RemoteFeatureFile().SegmentsMap())
-                        </div>
-                    </div>
-                }
-            } else {
-                @featureDetail(o.ActiveFeatureEnvironment().RemoteFeatureFile().Get(flag.Name).Strategies, o.ActiveFeatureEnvironment().RemoteFeatureFile().SegmentsMap())
-            }
-        }
-    </div>
-
-    <div class="action">
-        <button class="btn black" hx-post={"override/" + flag.Name + "/true"} hx-target="closest .flag" hx-swap="innerHTML" hx-trigger="click, enable-flag from:closest .flag">Enable <span class="shortcuts">(e)</span></button>
-        <button class="btn white" hx-post={"override/" + flag.Name + "/false"} hx-target="closest .flag" hx-swap="innerHTML" hx-trigger="click, disable-flag from:closest .flag">Disable <span class="shortcuts">(d)</span></button>
-
-        if showDetail {
-           <button class="list muted" hx-get={"dashboard/feature/" + flag.Name} hx-target="closest .flag" hx-swap="innerHTML" hx-trigger="click, toggle-detail from:closest .flag"></button>
-        } else {
-            <button class="list" hx-get={"dashboard/feature/" + flag.Name + "?details=true"} hx-target="closest .flag" hx-swap="innerHTML" hx-trigger="click, toggle-detail from:closest .flag"></button>
-        }
-    </div>
-
-     if ok, status := o.HasOverride(flag.Name); ok == true {
-        <div class={"override", templ.KV("enabled", status), templ.KV("paused", o.IsPaused()), templ.KV("disabled", !status)}>
-            <div>
-            if o.IsPaused() {
-                Override <strong>paused</strong>:
-            } else {
-                Override active:
-            }
-            if status && o.GetOverride(flag.Name).IsGlobal {
-                <div class="status">Enabled</div>
-            } else if status {
-                <div class="status">Enabled with constraints</div>
-            } else {
-                <div class="status">Disabled</div>
-            }
-            </div>
-
-            <button class="btn white" hx-delete={"override/" + flag.Name} hx-target="closest .flag" hx-swap="innerHTML" hx-trigger="click, remove-flag from:closest .flag">Remove Override <span class="shortcuts">(q)</span></button>
-        </div>
-     }
+    </header>
 }
 
 templ remoteSelector(o *overleash.OverleashContext) {
@@ -188,6 +74,12 @@ templ remoteSelector(o *overleash.OverleashContext) {
     }
 }
 
+templ lastSync(t time.Time) {
+    <span hx-get="dashboard/lastSync" hx-trigger="every 15s" id="last-sync" hx-swap="outerHTML">
+        Last sync: <strong>{ t.Format("15:04:05") }</strong>
+    </span>
+}
+
 templ features(list featureList, o *overleash.OverleashContext, colorScheme string, isMac bool) {
 	@layout("Overleash", colorScheme, isMac, o.Config.CleanBasePath()) {
 	    @header()
@@ -195,17 +87,25 @@ templ features(list featureList, o *overleash.OverleashContext, colorScheme stri
             <div class="container">
                 <div class="head">
                     <div class="actions">
-                        <button class="btn small black" hx-delete={""} hx-swap="innerHTML" hx-target="body">Remove all overrides</button>
+                        <button class="btn small black" hx-delete={""} hx-swap="innerHTML" hx-target="body">
+                            Remove all overrides
+                        </button>
                         if o.IsPaused() {
-                            <button class="btn small white pause-btn" hx-post={"dashboard/unpause"} hx-swap="innerHTML" hx-target="body" hx-trigger="click, toggle-pause">Unpause overrides</button>
+                            <button class="btn small white pause-btn" hx-post={"dashboard/unpause"} hx-swap="innerHTML" hx-target="body" hx-trigger="click, toggle-pause">
+                                Unpause overrides
+                            </button>
                         } else {
-                           <button class="btn small white pause-btn" hx-post={"dashboard/pause"} hx-swap="innerHTML" hx-target="body" hx-trigger="click, toggle-pause">Pause overrides</button>
+                            <button class="btn small white pause-btn" hx-post={"dashboard/pause"} hx-swap="innerHTML" hx-target="body" hx-trigger="click, toggle-pause">
+                                Pause overrides
+                            </button>
                         }
                         @remoteSelector(o)
                     </div>
                     <div class="sync">
                         @lastSync(o.LastSync())
-                        <button class="sync-btn" hx-post={"dashboard/refresh"} hx-swap="innerHTML" hx-target="body" hx-trigger="click, refresh"><img src="static/icons/sync.svg" alt="Sync" /></button>
+                        <button class="sync-btn" hx-post={"dashboard/refresh"} hx-swap="innerHTML" hx-target="body" hx-trigger="click, refresh" title="Refresh">
+                            <img src="static/icons/sync.svg" alt="Sync"/>
+                        </button>
                     </div>
                 </div>
 
@@ -223,91 +123,10 @@ templ features(list featureList, o *overleash.OverleashContext, colorScheme stri
                     </div>
 
                     <div class="feature-filter">
-            <details class="select-menu" name="search-filter">
-                <summary>
-                    <div>
-                        if list.isSelected("sort", "") {
-                                Sort <span class="dropdown-caret"></span>
-                        } else if list.isSelected("sort", "name-asc") {
-                                Sort: <span class="way">Ascending</span> <span class="dropdown-caret"></span>
-                        } else {
-                                Sort: <span class="way">Descending</span> <span class="dropdown-caret"></span>
-                        }
-                    </div>
-                </summary>
-                <article>
-                <div class="select-menu-modal">
-                    <div class="select-menu-list">
-                        <a
-                            class={"select-menu-item", templ.KV("select-menu-selected", list.isSelected("sort", ""))}
-                            href={templ.URL(list.generateUrl("sort", ""))}
-                            hx-get={list.generateUrl("sort", "")}
-                            hx-swap="innerHTML"
-                            hx-target="body">Default</a>
-                        <a
-                            class={"select-menu-item", templ.KV("select-menu-selected", list.isSelected("sort", "name-asc"))}
-                            href={templ.URL(list.generateUrl("sort", "name-asc"))}
-                            hx-get={list.generateUrl("sort", "name-asc")}
-                            hx-swap="innerHTML"
-                            hx-target="body">Alphabetic ascending</a>
-
-                        <a
-                            class={"select-menu-item", templ.KV("select-menu-selected", list.isSelected("sort", "name-desc"))}
-                            href={templ.URL(list.generateUrl("sort", "name-desc"))}
-                            hx-get={list.generateUrl("sort", "name-desc")}
-                            hx-swap="innerHTML"
-                            hx-target="body">Alphabetic descending</a>
+                        @sortDropdown(list)
+                        @filterDropdown(list)
                     </div>
                 </div>
-                </article>
-            </details>
-
-
-            <details class="select-menu" name="search-filter">
-                <summary>
-                    <div>
-                        if list.isSelected("filter", "") {
-                                Filter <span class="dropdown-caret"></span>
-                        } else if list.isSelected("filter", "overridden") {
-                                Filter: <span class="way">Only overridden</span> <span class="dropdown-caret"></span>
-                        } else {
-                                Filter: <span class="way">Not overridden</span> <span class="dropdown-caret"></span>
-                        }
-                    </div>
-                </summary>
-
-                    <article>
-                        <div class="select-menu-modal">
-                            <div class="select-menu-list">
-                            <a
-                                class={"select-menu-item", templ.KV("select-menu-selected", list.isSelected("filter", ""))}
-                                href={templ.URL(list.generateUrl("filter", ""))}
-                                hx-get={list.generateUrl("filter", "")}
-                                hx-params="*"
-                                hx-swap="innerHTML"
-                                hx-target="body">Show all</a>
-
-                            <a
-                                class={"select-menu-item", templ.KV("select-menu-selected", list.isSelected("filter", "overridden"))}
-                                href={templ.URL(list.generateUrl("filter", "overridden"))}
-                                hx-get={list.generateUrl("filter", "overridden")}
-                                hx-swap="innerHTML"
-                                hx-target="body">Only overridden</a>
-
-                            <a
-                                class={"select-menu-item", templ.KV("select-menu-selected", list.isSelected("filter", "not-overridden"))}
-                                href={templ.URL(list.generateUrl("filter", "not-overridden"))}
-                                hx-get={list.generateUrl("filter", "not-overridden")}
-                                hx-params="*"
-                                hx-swap="innerHTML"
-                                hx-target="body">Not overridden</a>
-                            </div>
-                        </div>
-                    </article>
-                </details>
-            </div>
-                </div>
-
             </div>
 		</div>
 
@@ -317,9 +136,260 @@ templ features(list featureList, o *overleash.OverleashContext, colorScheme stri
 	}
 }
 
+templ sortDropdown(list featureList) {
+    <details class="select-menu" name="search-filter">
+        <summary>
+            <div>
+                if list.isSelected("sort", "") {
+                    Sort <span class="dropdown-caret"></span>
+                } else if list.isSelected("sort", "name-asc") {
+                    Sort: <span class="way">Ascending</span> <span class="dropdown-caret"></span>
+                } else {
+                    Sort: <span class="way">Descending</span> <span class="dropdown-caret"></span>
+                }
+            </div>
+        </summary>
+        <article>
+            <div class="select-menu-modal">
+                <div class="select-menu-list">
+                    <a class={"select-menu-item", templ.KV("select-menu-selected", list.isSelected("sort", ""))}
+                       href={templ.URL(list.generateUrl("sort", ""))}
+                       hx-get={list.generateUrl("sort", "")}
+                       hx-swap="innerHTML"
+                       hx-target="body">Default</a>
+                    <a class={"select-menu-item", templ.KV("select-menu-selected", list.isSelected("sort", "name-asc"))}
+                       href={templ.URL(list.generateUrl("sort", "name-asc"))}
+                       hx-get={list.generateUrl("sort", "name-asc")}
+                       hx-swap="innerHTML"
+                       hx-target="body">Alphabetic ascending</a>
+                    <a class={"select-menu-item", templ.KV("select-menu-selected", list.isSelected("sort", "name-desc"))}
+                       href={templ.URL(list.generateUrl("sort", "name-desc"))}
+                       hx-get={list.generateUrl("sort", "name-desc")}
+                       hx-swap="innerHTML"
+                       hx-target="body">Alphabetic descending</a>
+                </div>
+            </div>
+        </article>
+    </details>
+}
+
+templ filterDropdown(list featureList) {
+    <details class="select-menu" name="search-filter">
+        <summary>
+            <div>
+                if list.isSelected("filter", "") {
+                    Filter <span class="dropdown-caret"></span>
+                } else if list.isSelected("filter", "overridden") {
+                    Filter: <span class="way">Only overridden</span> <span class="dropdown-caret"></span>
+                } else {
+                    Filter: <span class="way">Not overridden</span> <span class="dropdown-caret"></span>
+                }
+            </div>
+        </summary>
+        <article>
+            <div class="select-menu-modal">
+                <div class="select-menu-list">
+                    <a class={"select-menu-item", templ.KV("select-menu-selected", list.isSelected("filter", ""))}
+                       href={templ.URL(list.generateUrl("filter", ""))}
+                       hx-get={list.generateUrl("filter", "")}
+                       hx-params="*"
+                       hx-swap="innerHTML"
+                       hx-target="body">Show all</a>
+                    <a class={"select-menu-item", templ.KV("select-menu-selected", list.isSelected("filter", "overridden"))}
+                       href={templ.URL(list.generateUrl("filter", "overridden"))}
+                       hx-get={list.generateUrl("filter", "overridden")}
+                       hx-swap="innerHTML"
+                       hx-target="body">Only overridden</a>
+                    <a class={"select-menu-item", templ.KV("select-menu-selected", list.isSelected("filter", "not-overridden"))}
+                       href={templ.URL(list.generateUrl("filter", "not-overridden"))}
+                       hx-params="*"
+                       hx-swap="innerHTML"
+                       hx-target="body">Not overridden</a>
+                </div>
+            </div>
+        </article>
+    </details>
+}
+
+templ featureTemplate(list featureList, o *overleash.OverleashContext) {
+    <div class="features" id="flags">
+        <div class="feature-bar">
+            <div class="feature-count">
+                if len(list.flags) == list.totalFlags {
+                    Showing <strong>{ strconv.Itoa(len(list.flags)) }</strong> flags
+                } else {
+                    Showing <strong>{ strconv.Itoa(len(list.flags)) }</strong> of <strong>{ strconv.Itoa(list.totalFlags) }</strong> flags
+                }
+            </div>
+        </div>
+
+        <!-- Keyboard hints bar
+        <div class="keyboard-hints">
+            <div class="hint"><kbd>↑</kbd><kbd>↓</kbd> Navigate</div>
+            <div class="hint"><kbd>E</kbd> Enable</div>
+            <div class="hint"><kbd>D</kbd> Disable</div>
+            <div class="hint"><kbd>Q</kbd> Remove override</div>
+            <div class="hint"><kbd>Enter</kbd> Toggle details</div>
+        </div>
+        -->
+
+        <div class="feature-container">
+            for _, flag := range list.flags {
+                <div class="card flag" tabindex="0">
+                    @feature(flag, o, false)
+                </div>
+            }
+
+            if len(list.flags) == 0 && list.totalFlags > 0 {
+                <div class="striped-card">
+                    if strings.TrimSpace(list.searchTerm) == "" {
+                        <div class="empty-state">No results found</div>
+                    } else {
+                        <div class="empty-state">No results for "<strong>{list.searchTerm}</strong>"</div>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+}
+
+templ feature(flag overleash.Feature, o *overleash.OverleashContext, showDetail bool) {
+    <div class="flag-name">
+        <div class="key">
+            if flag.SearchTerm != "" {
+                @templ.Raw(flag.SearchTerm)
+            } else {
+                { flag.Name }
+            }
+        </div>
+        if *flag.Stale == true {
+            <div class="stale-status">Stale</div>
+        }
+    </div>
+
+    if flag.Description != "" {
+        <div class="description">
+            @templ.Raw(renderJiraLink(flag.Description))
+        </div>
+    }
+
+    <div class="separator"></div>
+
+    <div class="current-status">
+        if !showDetail || !o.HasMultipleEnvironments() {
+            <div>
+                <span class="label">Feature flag:</span>
+                <span class="text">
+                    if o.ActiveFeatureEnvironment().RemoteFeatureFile().FeatureFlagEnabled(flag.Name) {
+                        enabled
+                    } else {
+                        disabled
+                    }
+                </span>
+            </div>
+        }
+
+        <!-- Strategy summaries in collapsed view -->
+        if !showDetail {
+            for _, status := range o.ActiveFeatureEnvironment().RemoteFeatureFile().FeatureFlagStatus(flag.Name) {
+                <div class="strategy-summary">
+                    <span class="label">{ status.Strategy }:</span>
+                    <span class="text">{ status.Status }</span>
+                </div>
+            }
+        }
+
+        <!-- Expanded detail view -->
+        if showDetail {
+            if o.HasMultipleEnvironments() {
+                for idx, env := range o.FeatureEnvironments() {
+                    <div class={"detail-environment", templ.KV("detail-environment-separator", idx > 0)}>
+                        <div class="detail-environment-container">
+                            <h4>{ env.Name() }</h4>
+                            <div>
+                                <span class="label">Feature flag:</span>
+                                <span class="text">
+                                    if env.RemoteFeatureFile().FeatureFlagEnabled(flag.Name) {
+                                        enabled
+                                    } else {
+                                        disabled
+                                    }
+                                </span>
+                            </div>
+                            @featureDetail(env.RemoteFeatureFile().Get(flag.Name).Strategies, env.RemoteFeatureFile().SegmentsMap())
+                        </div>
+                    </div>
+                }
+            } else {
+                @featureDetail(o.ActiveFeatureEnvironment().RemoteFeatureFile().Get(flag.Name).Strategies, o.ActiveFeatureEnvironment().RemoteFeatureFile().SegmentsMap())
+            }
+        }
+    </div>
+
+    <div class="action">
+        <button class="btn black"
+                hx-post={"override/" + flag.Name + "/true"}
+                hx-target="closest .flag"
+                hx-swap="innerHTML"
+                hx-trigger="click, enable-flag from:closest .flag">
+            Enable <span class="shortcuts">(e)</span>
+        </button>
+        <button class="btn white"
+                hx-post={"override/" + flag.Name + "/false"}
+                hx-target="closest .flag"
+                hx-swap="innerHTML"
+                hx-trigger="click, disable-flag from:closest .flag">
+            Disable <span class="shortcuts">(d)</span>
+        </button>
+
+        if showDetail {
+            <button class="list muted"
+                    hx-get={"dashboard/feature/" + flag.Name}
+                    hx-target="closest .flag"
+                    hx-swap="innerHTML"
+                    hx-trigger="click, toggle-detail from:closest .flag"
+                    title="Collapse details"></button>
+        } else {
+            <button class="list"
+                    hx-get={"dashboard/feature/" + flag.Name + "?details=true"}
+                    hx-target="closest .flag"
+                    hx-swap="innerHTML"
+                    hx-trigger="click, toggle-detail from:closest .flag"
+                    title="Expand details"></button>
+        }
+    </div>
+
+    <!-- Override banner with clear enabled/disabled styling -->
+    if ok, status := o.HasOverride(flag.Name); ok == true {
+        <div class={"override", templ.KV("enabled", status && !o.IsPaused()), templ.KV("disabled", !status && !o.IsPaused()), templ.KV("paused", o.IsPaused())}>
+            <div>
+                if o.IsPaused() {
+                    Override paused:
+                } else {
+                    Override active:
+                }
+                if status && o.GetOverride(flag.Name).IsGlobal {
+                    <div class="status">ENABLED</div>
+                } else if status {
+                    <div class="status">ENABLED (with constraints)</div>
+                } else {
+                    <div class="status">DISABLED</div>
+                }
+            </div>
+            <button class="btn white"
+                    hx-delete={"override/" + flag.Name}
+                    hx-target="closest .flag"
+                    hx-swap="innerHTML"
+                    hx-trigger="click, remove-flag from:closest .flag">
+                Remove Override <span class="shortcuts">(q)</span>
+            </button>
+        </div>
+    }
+}
+
 templ featureDetail(strategies []overleash.Strategy, segments map[int][]overleash.Constraint) {
-        <div class="detail-container">
-         for _, strategy := range strategies {
+    <div class="detail-container">
+        for _, strategy := range strategies {
             <div class="strategy">
                 <div class="title">{ overleash.ToStrategyName(strategy) }</div>
                 for _, constraint := range constraintsOfStrategy(strategy, segments) {
@@ -328,11 +398,10 @@ templ featureDetail(strategies []overleash.Strategy, segments map[int][]overleas
                         <div class={"name", templ.KV("inverted", constraint.Inverted)}>
                             { constraint.ContextName }
                             if constraint.Inverted {
-                                 <span class="inverted"><strong>NOT</strong></span>
+                                <span class="inverted"><strong>NOT</strong></span>
                             }
                         </div>
                         <div class="operator">{ string(constraint.Operator) }</div>
-
                         if len(constraint.Values) > 0 {
                             <div class="values" title={strings.Join(constraint.Values, ", ")}>
                                 {strings.Join(constraint.Values, ", ")}
@@ -350,18 +419,12 @@ templ featureDetail(strategies []overleash.Strategy, segments map[int][]overleas
                 </div>
             </div>
         }
-        </div>
-}
-
-
-templ lastSync(t time.Time) {
-    <span hx-get="dashboard/lastSync" hx-trigger="every 15s" id="last-sync" hx-swap="outerHTML">Last sync: <strong>{ t.Format("15:04:05") }</strong></span>
+    </div>
 }
 
 templ help(isMac bool) {
     <dialog id="help-dialog">
         <div class="help">
-
             <div class="kbd-shortcuts">
                 for _, shortcut := range getShortcuts() {
                     <div class="kbd-shortcut">
@@ -384,36 +447,7 @@ templ help(isMac bool) {
             <div class="version">
                 {getVersion()}
             </div>
-
             <button class="btn black">Close</button>
         </div>
     </dialog>
-}
-
-templ header() {
-    <header>
-        <div class="header">
-            <div><img class="logo" src="static/overleash.svg"/></div>
-
-            <div class="header-actions">
-                <div class="header-action">
-                    <button class="theme-btn">
-                        <img class="auto" src="static/icons/auto.svg"/>
-                        <img class="light" src="static/icons/light.svg"/>
-                        <img class="dark" src="static/icons/dark.svg"/>
-                    </button>
-                </div>
-
-                 <div class="header-action">
-                    <div class="separator"></div>
-                 </div>
-
-                 <div class="header-action">
-                    <button class="search-btn">
-                        <img src="static/icons/help.svg"/>
-                    </button>
-                </div>
-            </div>
-        </div>
-    </header>
 }
