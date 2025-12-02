@@ -235,7 +235,7 @@ templ featureTemplate(list featureList, o *overleash.OverleashContext) {
 
         <div class="feature-container">
             for _, flag := range list.flags {
-                <div class="card flag" tabindex="0">
+                <div class="card flag">
                     @feature(flag, o, false)
                 </div>
             }
