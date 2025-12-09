@@ -22,6 +22,8 @@ type Config struct {
 	ListenAddress string `mapstructure:"listen_address"`
 	Reload        string `mapstructure:"reload"`
 
+	Backup bool `mapstructure:"backup"`
+
 	// Logging & Metrics
 	Verbose           bool `mapstructure:"verbose"`
 	RegisterMetrics   bool `mapstructure:"register_metrics"`
@@ -72,6 +74,7 @@ func InitConfig() (*Config, error) {
 	pflag.Bool("prometheus_metrics", false, "Whether to collect prometheus metrics from the server.")
 	pflag.Int("prometheus_metrics_port", 9100, "Which port to expose Prometheus metrics.")
 	pflag.Bool("webhook", false, "Whether to expose webhook that will refresh the flags.")
+	pflag.Bool("backup", true, "Whether backup feature file in storage.")
 
 	pflag.String("storage", "file", "Storage backend: file or redis")
 

@@ -182,7 +182,30 @@ func (o *OverleashContext) Start(ctx context.Context) {
 	err := o.loadRemotesWithLock()
 
 	if err != nil {
-		panic(err)
+		if o.Config.Backup {
+			for idx, feature := range o.featureEnvironments {
+				data, err := o.store.Read(feature.name + "-backup.json")
+
+				if err != nil {
+					panic(err)
+				}
+
+				var f FeatureFile
+
+				err = json.Unmarshal(data, &f)
+
+				if err != nil {
+					panic(err)
+				}
+
+				o.featureEnvironments[idx].featureFile = f
+			}
+			o.compileFeatureFiles()
+
+			log.Info("Loaded from backup")
+		} else {
+			panic(err)
+		}
 	}
 
 	if o.reload == 0 {
@@ -304,6 +327,7 @@ func (o *OverleashContext) LoadFeatureFile(state FeatureFile) {
 func (o *OverleashContext) loadRemotes() error {
 	e := error(nil)
 
+	hasRefreshed := false
 	for idx, featureEnvironment := range o.featureEnvironments {
 		featureFile, err := o.client.getFeatures(featureEnvironment.token)
 
@@ -314,10 +338,23 @@ func (o *OverleashContext) loadRemotes() error {
 		}
 
 		o.featureEnvironments[idx].featureFile = *featureFile
+		hasRefreshed = true
+
+		if o.Config.Backup {
+			data, err := json.Marshal(featureFile)
+
+			if err != nil {
+				continue
+			}
+
+			o.store.Write(o.featureEnvironments[idx].name+"-backup.json", data)
+		}
 	}
 
-	o.compileFeatureFiles()
-	o.lastSync = time.Now()
+	if hasRefreshed {
+		o.compileFeatureFiles()
+		o.lastSync = time.Now()
+	}
 
 	return e
 }
