@@ -128,6 +128,11 @@ func (c *Config) CleanBasePath() string {
 	if !strings.HasPrefix(path, "/") {
 		path = "/" + path
 	}
+	// Prevent dangerous paths like //evil or /\evil
+	if len(path) > 1 && (path[1] == '/' || path[1] == '\\') {
+		// fallback to safe default
+		return ""
+	}
 	// Remove trailing slash
 	return strings.TrimSuffix(path, "/")
 }
