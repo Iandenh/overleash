@@ -220,11 +220,11 @@ type EvaluatedToggle struct {
 }
 
 type EvaluatedVariant struct {
-	Name              string         `json:"name"`
-	Enabled           bool           `json:"enabled"`
-	Payload           VariantPayload `json:"payload"`
-	FeatureEnabled    bool           `json:"feature_enabled"`
-	OldFeatureEnabled bool           `json:"featureEnabled"`
+	Name              string          `json:"name"`
+	Enabled           bool            `json:"enabled"`
+	Payload           *VariantPayload `json:"payload"`
+	FeatureEnabled    bool            `json:"feature_enabled"`
+	OldFeatureEnabled bool            `json:"featureEnabled"`
 }
 
 type VariantPayload struct {
@@ -240,10 +240,10 @@ type ResolvedToggle struct {
 }
 
 type Variant struct {
-	Name           string         `json:"name"`
-	Enabled        bool           `json:"enabled"`
-	FeatureEnabled bool           `json:"feature_enabled"`
-	Payload        VariantPayload `json:"payload"`
+	Name           string          `json:"name"`
+	Enabled        bool            `json:"enabled"`
+	FeatureEnabled bool            `json:"feature_enabled"`
+	Payload        *VariantPayload `json:"payload"`
 }
 
 type apiResponse[T any] struct {
