@@ -6,8 +6,10 @@
       "bump-minor-pre-major": true,
       "bump-patch-for-minor-pre-major": true,
       "draft": false,
+      "last-release-sha": "61e9dc0c142706fab77908e7e3bdaaa997180216"
     }
   },
+  "last-release-sha": "61e9dc0c142706fab77908e7e3bdaaa997180216",
   "versioning": "default",
   "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json"
 }
