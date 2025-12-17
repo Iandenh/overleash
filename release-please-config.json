@@ -5,7 +5,9 @@
       "release-type": "go",
       "bump-minor-pre-major": true,
       "bump-patch-for-minor-pre-major": true,
-      "draft": false
+      "draft": false,
+      "last-release-sha": "61e9dc0c142706fab77908e7e3bdaaa997180216",
+      "release-as": "1.0.0"
     }
   },
   "last-release-sha": "61e9dc0c142706fab77908e7e3bdaaa997180216",
