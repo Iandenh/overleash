@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.1.0-beta](https://github.com/Iandenh/overleash/compare/v1.0.0-beta...v1.1.0-beta) (2025-12-17)
+
+
+### Features
+
+* add overleash in header ([a33c4c0](https://github.com/Iandenh/overleash/commit/a33c4c078fe9d3d057f4222224a7ca43493dc226))
+* small environment notation improvements dashboard ([a495636](https://github.com/Iandenh/overleash/commit/a49563645f76117d7bd22c5587096055213666a0))
+
+
+### Bug Fixes
+
+* payload is nullable ([d0502ce](https://github.com/Iandenh/overleash/commit/d0502ce32d93157cb5dca0ce0087a514a6414106))
+* same button height as select ([ff88b79](https://github.com/Iandenh/overleash/commit/ff88b79c24b5c799b3d227272fda953c1be60634))
+* tests after env dashboard change ([3268328](https://github.com/Iandenh/overleash/commit/3268328b1f5908de561d773bc178531a32d635fc))
+
 ## [0.11.0](https://github.com/Iandenh/overleash/compare/v0.10.0...v0.11.0) (2025-08-18)
 
 
