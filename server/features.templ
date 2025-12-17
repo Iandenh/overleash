@@ -305,7 +305,7 @@ templ feature(flag overleash.Feature, o *overleash.OverleashContext, showDetail 
                 for idx, env := range o.FeatureEnvironments() {
                     <div class={"detail-environment", templ.KV("detail-environment-separator", idx > 0)}>
                         <div class="detail-environment-container">
-                            <h4>{ env.Name() }</h4>
+                            <h4 class={templ.KV("active", o.ActiveFeatureEnvironment().Environment() == env.Environment())}>{ env.Environment() }</h4>
                             <div>
                                 <span class="label">Feature flag:</span>
                                 <span class="text">

@@ -812,9 +812,13 @@ header {
 
 .detail-environment h4 {
     margin: 0 0 0.5rem;
-    font-size: 0.8125rem;
-    font-weight: 600;
+    font-size: 1rem;
+    font-weight: 500;
     color: var(--foreground);
+
+    &.active {
+        font-weight: 800;
+    }
 }
 
 /* Segments display */
@@ -1002,7 +1006,6 @@ kbd {
     .title {
         font-weight: 700;
         padding: 0.5rem 0.5rem 0;;
-        font-size: 1rem;
         color: var(--foreground);
 
         .text {

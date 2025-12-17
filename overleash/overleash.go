@@ -487,7 +487,7 @@ func (o *OverleashContext) GetRemotes() []string {
 	remotes := make([]string, len(o.featureEnvironments))
 
 	for idx, featureEnvironment := range o.featureEnvironments {
-		remotes[idx] = featureEnvironment.name
+		remotes[idx] = featureEnvironment.environment
 	}
 
 	return remotes
