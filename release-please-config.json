@@ -8,5 +8,7 @@
       "draft": false
     }
   },
+  "last-release-sha": "61e9dc0c142706fab77908e7e3bdaaa997180216",
+  "release-as": "1.0.0",
   "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json"
 }
