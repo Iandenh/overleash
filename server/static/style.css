@@ -50,6 +50,8 @@
 }
 
 :root {
+    --header-background: rgba(255,255,255,0.9);
+
     --background: #ffffff;
     --foreground: #0a0a0a;
     --card: #ffffff;
@@ -84,6 +86,8 @@
 }
 
 [data-theme="dark"] {
+    --header-background: rgba(23,23,23,0.9);
+
     --background: #0a0a0a;
     --foreground: #fafafa;
     --card: #171717;
@@ -114,6 +118,7 @@
 
 @media (prefers-color-scheme: dark) {
     :root:not([data-theme='light']) {
+        --header-background: rgba(23,23,23,0.9);
         --background: #0a0a0a;
         --foreground: #fafafa;
         --card: #171717;
@@ -162,10 +167,22 @@ body {
 /* Header */
 header {
     border-bottom: 1px solid var(--border);
-    background: var(--card);
+    background: var(--header-background);
+    backdrop-filter: blur(20px);
     position: sticky;
     top: 0;
     z-index: 50;
+}
+
+.overleash {
+    gap: 1rem;
+    display: flex;
+    align-items: center;
+
+    div {
+        font-weight: 500;
+        color: var(--foreground);
+    }
 }
 
 .header {
