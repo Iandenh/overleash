@@ -289,7 +289,7 @@ func TestSetFeatureFileIdx(t *testing.T) {
 
 // TestTokenFunctions verifies GetRemotes and ActiveToken.
 func TestTokenFunctions(t *testing.T) {
-	tokens := []string{"remote1.token", "remote2.token"}
+	tokens := []string{"*:remote1.token", "*:remote2.token"}
 
 	cfg := &config.Config{
 		Upstream: "http://example.com",
