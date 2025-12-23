@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"net/url"
 	"regexp"
+	"runtime"
 	"strings"
 
 	"github.com/Iandenh/overleash/internal/version"
@@ -32,10 +33,10 @@ func getVersion() string {
 	v := version.Version
 
 	if v == "DEV" || v == "" {
-		return "Development"
+		v = "Development"
 	}
 
-	return v
+	return fmt.Sprintf("%s (%s)", v, runtime.GOARCH)
 }
 
 type shortcut struct {
