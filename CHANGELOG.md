@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.1](https://github.com/Iandenh/overleash/compare/v1.0.0...v1.0.1) (2025-12-23)
+
+
+### Bug Fixes
+
+* add running arch to version ([d6d06ff](https://github.com/Iandenh/overleash/commit/d6d06ff591567a9b488e78369a40d06e48e9bedc))
+
 ## [1.0.0](https://github.com/Iandenh/overleash/compare/v1.0.0-beta...v1.0.0) (2025-12-17)
 
 
