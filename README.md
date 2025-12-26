@@ -14,6 +14,13 @@ Override feature flags dynamically without modifying upstream configs. Overleash
 * **File (Default):** Simple and requires no external dependencies. Perfect for local development.
 * **Redis:** Enables a high-availability (HA) setup. When using Redis, Overleash utilizes a Pub/Sub connection to **instantly synchronize overrides** across multiple Overleash instances, ensuring consistent behavior in a distributed environment.
 
+### Persistence & Resilient Bootstrapping
+Overleash uses your selected storage engine (File or Redis) not just for overrides, but also as a backup for feature flag configurations. This ensures high availability even during upstream outages.
+
+When Overleash restarts, it follows a specific resolution order:
+1. Check Upstream: It first attempts to fetch the latest configurations from the upstream Unleash instance.
+2. Fallback to Backup: If the upstream is unreachable, it immediately reads the last known good configuration from the storage engine (File or Redis) to ensure your application remains functional.
+
 ### Near-Instant Updates with Delta Streaming
 Instead of periodically polling for changes, Overleash can connect directly to an upstream Unleash instance's Server-Sent Events (SSE) stream. This provides **near-instant updates** for any feature flag changes, ensuring your local environment is always up-to-date with minimal latency and reduced network traffic.
 
