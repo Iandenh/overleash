@@ -11,6 +11,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"reflect"
 	"testing"
 	"time"
 
@@ -55,8 +56,9 @@ type TestDefinition struct {
 }
 
 type PhpResult struct {
-	Result     bool   `json:"result"`
-	ToggleName string `json:"toggleName"`
+	Result     bool               `json:"result"`
+	ToggleName string             `json:"toggleName"`
+	Variant    *overleash.Variant `json:"variant"`
 }
 
 // --- Tests ---
@@ -94,6 +96,10 @@ func TestFrontendApi(t *testing.T) {
 		t.Run(definition.Name, func(t *testing.T) {
 			o.LoadFeatureFile(definition.State)
 
+			if len(definition.Tests) == 0 && len(definition.VariantTests) == 0 {
+				t.Skip("No standard tests in this definition")
+			}
+
 			for _, testCase := range definition.Tests {
 				cont, err := json.Marshal(testCase.Context)
 				if err != nil {
@@ -123,6 +129,39 @@ func TestFrontendApi(t *testing.T) {
 
 				if j.Enabled != testCase.ExpectedResult {
 					t.Fatalf("%s: expected %v, got %v", testCase.Description, testCase.ExpectedResult, j.Enabled)
+				}
+			}
+
+			for _, testCase := range definition.VariantTests {
+				cont, err := json.Marshal(testCase.Context)
+				if err != nil {
+					t.Fatal(err)
+				}
+
+				req, err := http.NewRequest(http.MethodPost, serverURL+"/api/frontend/features/"+testCase.ToggleName, io.NopCloser(bytes.NewReader(cont)))
+				if err != nil {
+					t.Fatal(err)
+				}
+
+				res, err := httpClient.Do(req)
+				if err != nil {
+					t.Fatal(err)
+				}
+				defer res.Body.Close()
+
+				response, err := io.ReadAll(res.Body)
+				if err != nil {
+					t.Fatal(err)
+				}
+
+				var j struct {
+					Enabled bool               `json:"enabled"`
+					Variant *overleash.Variant `json:"variant"`
+				}
+				json.Unmarshal(response, &j)
+
+				if reflect.DeepEqual(testCase.ExpectedResult.Variant, j.Variant) {
+					t.Fatalf("%s: expected %v, got %v", testCase.Description, testCase.ExpectedResult.Name, j.Variant.Name)
 				}
 			}
 		})
@@ -157,7 +196,7 @@ func TestPhpIntegration(t *testing.T) {
 		t.Run(definition.Name, func(t *testing.T) {
 			o.LoadFeatureFile(definition.State)
 
-			if len(definition.Tests) == 0 {
+			if len(definition.Tests) == 0 && len(definition.VariantTests) == 0 {
 				t.Skip("No standard tests in this definition")
 			}
 
@@ -177,6 +216,18 @@ func TestPhpIntegration(t *testing.T) {
 				if phpRes.Result != testCase.ExpectedResult {
 					t.Errorf("FAIL: %s\n\tToggle: %s\n\tExpected: %v\n\tGot (PHP): %v",
 						testCase.Description, testCase.ToggleName, testCase.ExpectedResult, phpRes.Result)
+				}
+			}
+
+			for _, testCase := range definition.VariantTests {
+				phpRes, exists := phpResults[testCase.Description]
+				if !exists {
+					t.Errorf("Test case '%s' missing from PHP output", testCase.Description)
+					continue
+				}
+
+				if reflect.DeepEqual(testCase.ExpectedResult.Variant, phpRes.Variant) {
+					t.Fatalf("%s: expected %v, got %v", testCase.Description, testCase.ExpectedResult.Name, phpRes.Variant.Name)
 				}
 			}
 		})

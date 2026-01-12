@@ -34,7 +34,10 @@ function createContext(array $context): UnleashContext
 
 $unleashApiUrl = getenv('UNLEASH_API_URL') ?: 'http://localhost:1244/api';
 
-$tests = json_decode(file_get_contents('php://stdin'), true)["tests"];
+$json = json_decode(file_get_contents('php://stdin'), true);
+
+$tests = $json["tests"] ?? [];
+$variantTests = $json["variantTests"] ?? [];
 
 $unleash = UnleashBuilder::create()
     ->withAppName("php-test-harness")
@@ -49,11 +52,26 @@ foreach ($tests as $test) {
     $context = createContext($test["context"]);
 
     $result = $unleash->isEnabled($test["toggleName"], $context);
+
     $output[$test["description"]] = [
         "result" => $result,
         "toggleName" => $test["toggleName"],
+        "variant" => null,
     ];
 }
+
+foreach ($variantTests as $variantTest) {
+    $context = createContext($variantTest["context"]);
+
+    $result = $unleash->isEnabled($variantTest["toggleName"], $context);
+    $variant = $unleash->getVariant($variantTest["toggleName"], $context);
+    $output[$variantTest["description"]] = [
+        "result" => $result,
+        "toggleName" => $variantTest["toggleName"],
+        "variant" => $variant,
+    ];
+}
+
 echo json_encode($output, JSON_PRETTY_PRINT);
 
 echo PHP_EOL;
