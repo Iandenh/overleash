@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.2](https://github.com/Iandenh/overleash/compare/v1.0.1...v1.0.2) (2026-01-12)
+
+
+### Bug Fixes
+
+* make sure variant test are ran ([455fdf2](https://github.com/Iandenh/overleash/commit/455fdf25d3ce98544092e4610662eb7d1a4632dc))
+
 ## [1.0.1](https://github.com/Iandenh/overleash/compare/v1.0.0...v1.0.1) (2025-12-23)
 
 
