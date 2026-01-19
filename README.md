@@ -54,7 +54,7 @@ docker pull iandenh/overleash
 ```
 
 ### Traefik
-If you're using Traefik, ensure the right `NETWORK_NAME` in your docker-compose. By default, Overleash is served as `overleash.test`.
+If you're using Traefik, ensure the right `NETWORK_NAME` in your `compose.yaml`. By default, Overleash is served as `overleash.test`.
 
 ### Using in your application
 Just update your Unleash SDK’s base URL to Overleash—no code changes required!
