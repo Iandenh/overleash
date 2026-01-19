@@ -1,84 +1,83 @@
 # Overleash
 
-## Override your Unleash feature flags blazing fast 🚀
+## Override your Unleash feature flags
 
-Overleash is a powerful developer tool that allows you to easily **override feature flags** on and off in your environment. It simplifies the process of making and testing changes that rely on feature flags, enabling faster iterations and smoother development without interrupting your teammates or the need for complex configurations.
+Overleash is a developer tool to quickly and safely **override feature flags** for your Unleash-powered apps. You can toggle flags in your environment instantly—no need for tricky upstream config changes, and no need to coordinate with the whole team. This helps you move faster, test new features, and keep your development smooth.
 
 ---
 
 ## Key Concepts & Features
 
 ### Dynamic Overrides with Multiple Storage Backends
-Override feature flags dynamically without modifying upstream configs. Overleash supports two storage backends for these overrides:
+Easily override flags without changing upstream configs. Overleash lets you store overrides with either:
+- **File (default):** Simple, zero dependencies, great for local development.
+- **Redis:** For distributed/high-availability setups. Uses Redis Pub/Sub to synchronize overrides instantly between Overleash instances.
 
-* **File (Default):** Simple and requires no external dependencies. Perfect for local development.
-* **Redis:** Enables a high-availability (HA) setup. When using Redis, Overleash utilizes a Pub/Sub connection to **instantly synchronize overrides** across multiple Overleash instances, ensuring consistent behavior in a distributed environment.
+### Reliable and Resilient Bootstrapping
+Overleash always tries to fetch configs from your upstream Unleash first. If that's not available, it uses the most recent backup from your storage (file or Redis). This keeps your app working even if Unleash is down.
 
-### Persistence & Resilient Bootstrapping
-Overleash uses your selected storage engine (File or Redis) not just for overrides, but also as a backup for feature flag configurations. This ensures high availability even during upstream outages.
+### Instant Updates with Delta Streaming
+Instead of polling for changes, Overleash can connect to Unleash’s Server-Sent Events (SSE) to receive updates as soon as feature flags change, keeping things fast and fresh.
 
-When Overleash restarts, it follows a specific resolution order:
-1. Check Upstream: It first attempts to fetch the latest configurations from the upstream Unleash instance.
-2. Fallback to Backup: If the upstream is unreachable, it immediately reads the last known good configuration from the storage engine (File or Redis) to ensure your application remains functional.
+### Environment Handling Modes
+- **Dashboard-driven (default):** Control which environment’s flags you’re using directly in the Overleash dashboard. Ideal for dev/local work.
+- **Token-driven:** Automatically select the environment based on the client token in the Authorization header. Useful for serving flag data to multiple environments (dev, staging, etc) from a single instance.
 
-### Near-Instant Updates with Delta Streaming
-Instead of periodically polling for changes, Overleash can connect directly to an upstream Unleash instance's Server-Sent Events (SSE) stream. This provides **near-instant updates** for any feature flag changes, ensuring your local environment is always up-to-date with minimal latency and reduced network traffic.
+### Other Highlights
+- Web dashboard to view/manage flags
+- Multi-token support for testing multiple Unleash setups
+- Proxy and forward metrics as needed
+- Expose Prometheus metrics for easy monitoring
+- Webhook support for on-demand refreshes from CI or Unleash
 
-### Flexible Environment Handling
-Overleash can operate in two modes for handling environments:
-1.  **Dashboard-Driven (Default):** The active environment is managed and can be changed directly within the Overleash dashboard. This is the recommended setup for local development.
-2.  **Token-Driven:** For more advanced use cases, you can enable a mode where the environment is dynamically resolved from the client token sent in the `Authorization` header. This allows a single Overleash instance to serve flags for multiple environments (e.g., dev, staging) based on the token provided by the client SDK.
+---
 
-### Additional Features
-* **Dashboard:** View and manage feature flags with ease.
-* **Multi-Token Support:** Seamlessly test with multiple Unleash tokens.
-* **Proxy Metrics:** Enable metrics forwarding for your Unleash setup.
-* **Prometheus Metrics:** Expose metrics for monitoring with Prometheus.
-* **Webhook Refresh:** Trigger a refresh of feature flags from an external source, like an Unleash webhook.
 ## 🚀 Quick Start
 
-The simplest way to get started is by using the provided `docker-compose` configuration:
-
-1. Copy the `.env.example` to `.env` and fill in your configuration options.
-2. Run:
+1. Copy `.env.example` to `.env` and update your config values.
+2. Start with Docker Compose:
    ```bash
    docker compose up
    ```
+3. Change your Unleash SDK configuration:
+   ```
+   From: https://unleash.mysite.com
+   To:   http://overleash.test
+   ```
+
+---
 
 ## Docker image
-The Overleash Docker image is published to **Docker Hub**:
+You’ll find Overleash on Docker Hub:
 ```bash
 docker pull iandenh/overleash
 ```
 
 ### Traefik
+If you're using Traefik, ensure the right `NETWORK_NAME` in your docker-compose. By default, Overleash is served as `overleash.test`.
 
-The docker-compose file provide as labels to register as a service Traefik 2+. For this to work correctly make sure to
-set the correct `NETWORK_NAME`.
-The default host name for optimizely is `overleash.test`.
+### Using in your application
+Just update your Unleash SDK’s base URL to Overleash—no code changes required!
 
-### Using in application
-To use Overleash in your application, simply update your Unleash host:
-```plaintext
-From: https://unleash.mysite.com
-To:   http://overleash.test
-```
+---
 
 ## Yggdrasil - Frontend API
 
-Overleash supports the **Frontend API**, powered by [yggdrasil](https://github.com/Unleash/yggdrasil), the reusable Unleash SDK logic.
+Overleash supports the Unleash Frontend API, powered by [yggdrasil](https://github.com/Unleash/yggdrasil) SDK logic.
 
-> Note: This project uses a custom fork of Yggdrasil-bindings with additional FFI functions: [resolve_all branch](https://github.com/Iandenh/yggdrasil-bindings/tree/resolve_all).
+*Note: This project uses a custom fork of Yggdrasil-bindings with extra FFI functions—see the [resolve_all branch](https://github.com/Iandenh/yggdrasil-bindings/tree/resolve_all).* 
+
+---
 
 ## Local build
+- Written in Go; uses [templ](https://github.com/a-h/templ/tree/main) for templates
+- After editing templates, re-run: `templ generate`
+- Make sure the `libyggdrasilffi.so` library is available and linked:
+   ```bash
+   export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$(pwd)/unleashengine
+   ```
 
-This project is written in golang. For templating it
-uses [templ](https://github.com/a-h/templ/tree/main), so make sure that is installed.
-Generating templ templates can be done with `templ generate`
-
-Because we are using yggdrasil you also need to make sure the `libyggdrasilffi.so` is correctly linked. This can be done
-with:
-`export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$(pwd)/unleashengine`
+---
 
 ## Config
 
@@ -92,47 +91,6 @@ Configuration can be set via command-line flags or environment variables. Enviro
 | `--url`      | `OVERLEASH_URL`      | **DEPRECATED**. Use `--upstream` instead.                                                                                     | `""`    |
 
 ---
-### **Server & Logging**
-| Flag                        | Environment Variable                | Description                                                                                         | Default |
-|:----------------------------|:------------------------------------|:----------------------------------------------------------------------------------------------------|:--------|
-| `--listen-address`          | `OVERLEASH_LISTEN_ADDRESS`          | Address to listen on (e.g., `:5433`, `127.0.0.1:5433`).                                             | `:5433` |
-| `--reload`                  | `OVERLEASH_RELOAD`                  | Reload frequency for refreshing feature flags (e.g., `5m`, `1h`). `0` disables automatic reloading. | `0`     |
-| `--verbose`                 | `OVERLEASH_VERBOSE`                 | Enable verbose logging to troubleshoot and diagnose issues.                                         | `false` |
-| `--prometheus-metrics`      | `OVERLEASH_PROMETHEUS_METRICS`      | Whether to collect and expose Prometheus metrics.                                                   | `false` |
-| `--prometheus-metrics-port` | `OVERLEASH_PROMETHEUS_METRICS_PORT` | Port to expose Prometheus metrics on.                                                               | `9100`  |
-
----
-### **Unleash-specific**
-| Flag                    | Environment Variable            | Description                                                                                                                     | Default |
-|:------------------------|:--------------------------------|:--------------------------------------------------------------------------------------------------------------------------------|:--------|
-| `--register-metrics`    | `OVERLEASH_REGISTER_METRICS`    | Register metrics with the upstream Unleash server.                                                                              | `false` |
-| `--register`            | `OVERLEASH_REGISTER`            | Register this Overleash instance with the upstream Unleash server.                                                              | `false` |
-| `--headless`            | `OVERLEASH_HEADLESS`            | Disable the dashboard API.                                                                                                      | `false` |
-| `--streamer`            | `OVERLEASH_STREAMER`            | Enable streaming of delta events from this instance.                                                                            | `false` |
-| `--enable-frontend-api` | `OVERLEASH_ENABLE_FRONTEND_API` | Enable the Frontend API.                                                                                                        | `true`  |
-| `--delta`               | `OVERLEASH_DELTA`               | Use the upstream delta streaming API for near-instant updates.                                                                  | `false` |
-| `--env-from-token`      | `OVERLEASH_ENV_FROM_TOKEN`      | Resolve the environment from the client token in the `Authorization` header. Recommended to keep `false` for local development. | `false` |
-| `--webhook`             | `OVERLEASH_WEBHOOK`             | Expose a webhook that will force a refresh of the flags when triggered.                                                         | `false` |
-
----
-### **Storage**
-| Flag         | Environment Variable | Description                                                                                                | Default |
-|:-------------|:---------------------|:-----------------------------------------------------------------------------------------------------------|:--------|
-| `--storage`  | `OVERLEASH_STORAGE`  | Storage backend for overrides. Options: `file` or `redis`. Use `redis` for multi-instance synchronization. | `file`  |
-
----
-### **Redis**
-(These settings are only used if `--storage` is set to `redis`)*
-
-| Flag                | Environment Variable        | Description                                             | Default             |
-|:--------------------|:----------------------------|:--------------------------------------------------------|:--------------------|
-| `--redis-address`   | `OVERLEASH_REDIS_ADDRESS`   | Redis address (host:port).                              | `localhost:6379`    |
-| `--redis-password`  | `OVERLEASH_REDIS_PASSWORD`  | Redis password.                                         | `""`                |
-| `--redis-db`        | `OVERLEASH_REDIS_DB`        | Redis database number.                                  | `0`                 |
-| `--redis-channel`   | `OVERLEASH_REDIS_CHANNEL`   | Redis Pub/Sub channel for override updates.             | `overrides-updates` |
-| `--redis-sentinel`  | `OVERLEASH_REDIS_SENTINEL`  | Use Redis Sentinel for high availability.               | `false`             |
-| `--redis-master`    | `OVERLEASH_REDIS_MASTER`    | Redis master name (for Sentinel).                       | `mymaster`          |
-| `--redis-sentinels` | `OVERLEASH_REDIS_SENTINELS` | Comma-separated list of Sentinel addresses (host:port). | `""`                |
 
 ## API Endpoints
 
