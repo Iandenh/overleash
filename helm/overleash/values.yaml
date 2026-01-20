@@ -38,10 +38,9 @@ podLabels: {}
 
 podSecurityContext:
   fsGroup: 1001
+  fsGroupChangePolicy: Always
 
 securityContext:
-  fsGroup: 1001
-  fsGroupChangePolicy: Always
   allowPrivilegeEscalation: false
   runAsNonRoot: true
   seccompProfile:

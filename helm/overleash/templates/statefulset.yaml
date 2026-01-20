@@ -29,7 +29,7 @@ spec:
       {{- end }}
       serviceAccountName: {{ include "overleash.serviceAccountName" . }}
       securityContext:
-          {{- toYaml .Values.securityContext | nindent 12 }}
+          {{- toYaml .Values.podSecurityContext | nindent 12 }}
       containers:
         {{ include "overleash.container" . | nindent 8 }}
       volumes:
