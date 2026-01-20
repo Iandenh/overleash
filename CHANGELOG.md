@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.0.3](https://github.com/Iandenh/overleash/compare/v1.0.2...v1.0.3) (2026-01-20)
+
+
+### Bug Fixes
+
+* podSecurityContext and securityContext helm settings ([f34aab5](https://github.com/Iandenh/overleash/commit/f34aab537c3cd0dc1b8b04f0f41d2587db7054ae))
+* use USER 1001 to fix kubernetes error on runAsNonRoot ([15f1688](https://github.com/Iandenh/overleash/commit/15f168815069f648260167a9060f53aeed198c58))
+
 ## [1.0.2](https://github.com/Iandenh/overleash/compare/v1.0.1...v1.0.2) (2026-01-12)
 
 
