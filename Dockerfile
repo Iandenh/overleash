@@ -81,7 +81,7 @@ RUN \
     CGO_ENABLED=1 GOOS=linux GOARCH=$TARGETARCH go build \
     -tags yggdrasil_static \
     -ldflags="-linkmode external -extldflags "-static" -s -w -X github.com/Iandenh/overleash/internal/version.Version=${VERSION}" \
-    -o /entrypoint main.go
+    -o /overleash main.go
 
 # ----------------------------------------------------------------
 
@@ -99,10 +99,10 @@ LABEL org.opencontainers.image.licenses="MIT"
 WORKDIR /
 
 # Copy the static binary, user definitions, and data directory from the build stage
-COPY --from=build-stage --chown=noroot:noroot /entrypoint /entrypoint
+COPY --from=build-stage --chown=noroot:noroot /overleash /overleash
 COPY --from=build-stage /etc/passwd /etc/group /etc/
 COPY --from=build-stage --chown=noroot:noroot /data /data
 
 USER noroot
 EXPOSE 8080
-ENTRYPOINT ["/entrypoint"]
+ENTRYPOINT ["/overleash"]
