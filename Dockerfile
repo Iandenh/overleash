@@ -103,6 +103,7 @@ COPY --from=build-stage --chown=noroot:noroot /overleash /overleash
 COPY --from=build-stage /etc/passwd /etc/group /etc/
 COPY --from=build-stage --chown=noroot:noroot /data /data
 
-USER noroot
+# 1001 is uid for noroot
+USER 1001
 EXPOSE 8080
 ENTRYPOINT ["/overleash"]
