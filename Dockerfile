@@ -86,7 +86,7 @@ RUN \
 # ----------------------------------------------------------------
 
 # Stage 3: Final, minimal image using distroless
-FROM gcr.io/distroless/static-debian12 AS release-stage
+FROM gcr.io/distroless/static-debian13 AS release-stage
 
 ENV OVERLEASH_LISTEN_ADDRESS=":8080"
 ENV DATA_DIR="/data"
