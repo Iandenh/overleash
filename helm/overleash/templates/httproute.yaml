@@ -1,0 +1,89 @@
+{{- if .Values.httpRoute.enabled -}}
+{{- $fullName := include "overleash.fullname" . -}}
+{{- $svcPort := .Values.service.port -}}
+{{- $base := default "" .Values.httpRoute.basePath }}
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: {{ $fullName }}
+  labels:
+    {{- include "overleash.labels" . | nindent 4 }}
+  {{- with .Values.httpRoute.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  {{- if and .Values.httpRoute.parentRefs (gt (len .Values.httpRoute.parentRefs) 0) }}
+  parentRefs:
+    {{- toYaml .Values.httpRoute.parentRefs | nindent 4 }}
+  {{- else }}
+  {{- fail "You must supply at least one .Values.httpRoute.parentRefs for the HTTPRoute to be valid!" }}
+  {{- end }}
+  {{- with .Values.httpRoute.hostnames }}
+  hostnames:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  rules:
+    {{- if and (.Values.httpRoute.rules) (gt (len .Values.httpRoute.rules) 0) }}
+      {{- range .Values.httpRoute.rules }}
+      {{- with .matches }}
+    - matches:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .filters }}
+      filters:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      backendRefs:
+        - name: {{ $fullName }}
+          port: {{ $svcPort }}
+          weight: 1
+      {{- end }}
+    {{- else }}
+    - matches:
+        # Always expose health endpoint
+        - path:
+            type: PathPrefix
+            value: "{{ $base }}/health"
+        {{- if and .Values.httpRoute.enableDashboard .Values.httpRoute.enableClientApi .Values.httpRoute.enableFrontedApi }}
+        # All features enabled: catch-all
+        - path:
+            type: PathPrefix
+            value: "{{ $base }}/"
+        {{- else }}
+        {{- if .Values.httpRoute.enableDashboard }}
+        - path:
+            type: PathPrefix
+            value: "{{ $base }}/dashboard"
+        {{- end }}
+        {{- if .Values.httpRoute.enableClientApi }}
+        - path:
+            type: PathPrefix
+            value: "{{ $base }}/client-api"
+        {{- end }}
+        {{- if .Values.httpRoute.enableFrontedApi }}
+        - path:
+            type: PathPrefix
+            value: "{{ $base }}/fronted-api"
+        {{- end }}
+        {{- end }}
+      backendRefs:
+        - name: {{ $fullName }}
+          port: {{ $svcPort }}
+          weight: 1
+    {{- end }}
+{{- end }}
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: cilium-gateway-http
+spec:
+  gatewayClassName: cilium
+  listeners:
+    - protocol: HTTP
+      port: 80
+      name: web-gw
+      allowedRoutes:
+        namespaces:
+          from: Same

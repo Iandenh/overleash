@@ -56,6 +56,51 @@ service:
   port: 8080
 
 # This block is for setting up the ingress for more information can be found here: https://kubernetes.io/docs/concepts/services-networking/ingress/
+
+httpRoute:
+  enabled: false
+
+  # basePath will be prepended to all route matches, e.g. "/feature". Leave empty for root.
+  basePath: ""  # or "/feature"
+  # Enable/disable API endpoints exposed through the route
+  enableDashboard: true    # If true, adds route for dashboard endpoints ("/dashboard")
+  enableClientApi: true    # If true, adds route for client API ("/client-api")
+  enableFrontedApi: true   # If true, adds route for frontend API ("/fronted-api")
+
+  # Optional: Add custom annotations to the HTTPRoute resource
+  annotations: {}
+    # example.com/some-annotation: value
+
+  # Required: specify how the route is attached (parentRefs)
+  parentRefs:
+    # See https://gateway-api.sigs.k8s.io/references/spec/#gateway.networking.k8s.io/v1.ParentReference
+    # - name: my-gateway
+    #   namespace: default
+    #   kind: Gateway
+    #   sectionName: http
+
+  # The hostnames to match for this route
+  hostnames: []
+    # - "example.com"
+    # - "another.com"
+
+  # Define one or more rules, following Gateway API spec
+  rules:
+    # Each rule should contain at least "matches"
+    # and may optionally include "filters"
+    # "backendRefs" is set by the template using the service
+    # - matches:
+    #     - path:
+    #         type: PathPrefix
+    #         value: /
+    #   filters:
+    #     - type: RequestHeaderModifier
+    #       requestHeaderModifier:
+    #         set:
+    #           X-Forwarded-Proto: https
+    #         remove:
+    #           - X-Secret-Header
+
 ingress:
   enabled: false
   basePath: ""  # or "/feature"
