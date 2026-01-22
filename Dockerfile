@@ -1,4 +1,4 @@
-FROM --platform=$BUILDPLATFORM rust:1.92 AS rust-build-stage
+FROM --platform=$BUILDPLATFORM rust:1.93 AS rust-build-stage
 WORKDIR /frontendengine
 ARG TARGETPLATFORM
 
