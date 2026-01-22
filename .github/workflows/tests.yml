@@ -15,6 +15,7 @@ jobs:
           submodules: 'true'
       - name: Build binaries in "${{ matrix.BUILD_TARGET }}" mode
         run: |
+          sudo apt update && sudo apt install protobuf-compiler
           cd ${{ github.workspace }}/frontendengine 
           cargo build --release
           sudo cp target/release/libfrontendengine.so /usr/local/lib
