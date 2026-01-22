@@ -11,18 +11,21 @@ import (
 
 func (c *Server) registerClientApi(s *http.ServeMux) {
 	s.Handle("GET /api/client/features", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		env := c.featureEnvironmentFromRequest(r)
+
 		ifNoneMatch := strings.Trim(strings.TrimPrefix(r.Header.Get("If-None-Match"), "W/"), "\"")
 
-		if ifNoneMatch != "" && ifNoneMatch == c.featureEnvironmentFromRequest(r).EtagOfCachedJson() {
+		if ifNoneMatch != "" && ifNoneMatch == env.EtagOfCachedJson() {
 			w.WriteHeader(http.StatusNotModified)
 			return
 		}
 
-		w.Header().Set("ETag", fmt.Sprintf("W/\"%s\"", c.featureEnvironmentFromRequest(r).EtagOfCachedJson()))
-		w.Header().Add("Content-Type", "application/json")
+		h := w.Header()
+		h.Set("ETag", fmt.Sprintf("W/\"%s\"", env.EtagOfCachedJson()))
+		h.Add("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 
-		w.Write(c.featureEnvironmentFromRequest(r).CachedJson())
+		w.Write(env.CachedJson())
 	}))
 
 	s.Handle("GET /api/client/features/{key}", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
