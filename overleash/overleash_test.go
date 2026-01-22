@@ -54,12 +54,19 @@ func (fe *fakeEngine) TakeState(state string) {
 	fe.state = state
 }
 
-func (fe *fakeEngine) Resolve(context *unleashengine.Context, featureName string) []byte {
-	return []byte(fe.state)
+func (fe *fakeEngine) Resolve(context *unleashengine.Context, featureName string) (*unleashengine.EvaluatedToggle, error) {
+	// Return a dummy successful toggle to satisfy the interface
+	return &unleashengine.EvaluatedToggle{
+		Name:    featureName,
+		Enabled: true,
+	}, nil
 }
 
-func (fe *fakeEngine) ResolveAll(context *unleashengine.Context) []byte {
-	return []byte(fe.state)
+func (fe *fakeEngine) ResolveAll(context *unleashengine.Context, includeAll bool) (*unleashengine.EvaluatedToggleList, error) {
+	// Return an empty list to satisfy the interface
+	return &unleashengine.EvaluatedToggleList{
+		Toggles: []*unleashengine.EvaluatedToggle{},
+	}, nil
 }
 
 // fakeClient implements getFeatures for testing.

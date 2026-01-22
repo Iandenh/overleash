@@ -1,0 +1,43 @@
+syntax = "proto3";
+
+package unleashengine;
+
+option go_package = "./unleashengine";
+
+message VariantPayload {
+  string type = 1;
+  string value = 2;
+}
+
+message EvaluatedVariant {
+  string name = 1;
+  bool enabled = 2;
+  VariantPayload payload = 3;
+  bool feature_enabled = 4;
+  bool old_feature_enabled = 5;
+}
+
+message EvaluatedToggle {
+  string name = 1;
+  bool enabled = 2;
+  EvaluatedVariant variant = 3;
+  bool impression_data = 4;
+}
+
+message Variant {
+  string name = 1;
+  bool enabled = 2;
+  bool feature_enabled = 3;
+  VariantPayload payload = 4;
+}
+
+message ResolvedToggle {
+  bool enabled = 1;
+  string project = 2;
+  Variant variant = 3;
+  bool impression_data = 4;
+}
+
+message EvaluatedToggleList {
+  repeated EvaluatedToggle toggles = 1;
+}

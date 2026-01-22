@@ -21,12 +21,14 @@ func (c *Server) registerFrontendApi(s *http.ServeMux) {
 
 		ctx := createContextFromGetRequest(r)
 
-		resolvedToggles, ok := resolveAll(c.featureEnvironmentFromRequest(r).Engine(), ctx)
-		if !ok {
+		result, err := c.featureEnvironmentFromRequest(r).Engine().ResolveAll(ctx, false)
+
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+
 			return
 		}
 
-		result := frontendFromYggdrasil(resolvedToggles, false)
 		resultJson, _ := json.Marshal(result)
 
 		w.Write(resultJson)
@@ -48,14 +50,15 @@ func (c *Server) registerFrontendApi(s *http.ServeMux) {
 			return
 		}
 
-		resolvedToggles, ok := resolveAll(c.featureEnvironmentFromRequest(r).Engine(), ctx)
-		if !ok {
+		result, err := c.featureEnvironmentFromRequest(r).Engine().ResolveAll(ctx, false)
+
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+
 			return
 		}
 
-		result := frontendFromYggdrasil(resolvedToggles, false)
 		resultJson, _ := json.Marshal(result)
-
 		w.Write(resultJson)
 	}))
 
@@ -68,12 +71,14 @@ func (c *Server) registerFrontendApi(s *http.ServeMux) {
 
 		ctx := createContextFromGetRequest(r)
 
-		resolvedToggles, ok := resolveAll(c.featureEnvironmentFromRequest(r).Engine(), ctx)
-		if !ok {
+		result, err := c.featureEnvironmentFromRequest(r).Engine().ResolveAll(ctx, true)
+
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+
 			return
 		}
 
-		result := frontendFromYggdrasil(resolvedToggles, true)
 		resultJson, _ := json.Marshal(result)
 
 		w.Write(resultJson)
@@ -94,31 +99,18 @@ func (c *Server) registerFrontendApi(s *http.ServeMux) {
 			return
 		}
 
-		resolved, ok := resolve(c.featureEnvironmentFromRequest(r).Engine(), ctx, featureName)
+		result, err := c.featureEnvironmentFromRequest(r).Engine().Resolve(ctx, featureName)
 
-		if !ok {
-			w.WriteHeader(http.StatusNotFound)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
 
 			return
-		}
-
-		evaluated := EvaluatedToggle{
-			Name:    featureName,
-			Enabled: resolved.Enabled,
-			Variant: EvaluatedVariant{
-				Name:              resolved.Variant.Name,
-				Enabled:           resolved.Variant.Enabled,
-				Payload:           resolved.Variant.Payload,
-				FeatureEnabled:    resolved.Variant.FeatureEnabled,
-				OldFeatureEnabled: resolved.Variant.FeatureEnabled,
-			},
-			ImpressionData: resolved.ImpressionData,
 		}
 
 		w.Header().Add("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 
-		resultJson, _ := json.Marshal(evaluated)
+		resultJson, _ := json.Marshal(result)
 
 		w.Write(resultJson)
 	}))
@@ -131,31 +123,18 @@ func (c *Server) registerFrontendApi(s *http.ServeMux) {
 
 		ctx := createContextFromGetRequest(r)
 
-		resolved, ok := resolve(c.featureEnvironmentFromRequest(r).Engine(), ctx, featureName)
+		result, err := c.featureEnvironmentFromRequest(r).Engine().Resolve(ctx, featureName)
 
-		if !ok {
-			w.WriteHeader(http.StatusNotFound)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
 
 			return
-		}
-
-		evaluated := EvaluatedToggle{
-			Name:    featureName,
-			Enabled: resolved.Enabled,
-			Variant: EvaluatedVariant{
-				Name:              resolved.Variant.Name,
-				Enabled:           resolved.Variant.Enabled,
-				Payload:           resolved.Variant.Payload,
-				FeatureEnabled:    resolved.Variant.FeatureEnabled,
-				OldFeatureEnabled: resolved.Variant.FeatureEnabled,
-			},
-			ImpressionData: resolved.ImpressionData,
 		}
 
 		w.Header().Add("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 
-		resultJson, _ := json.Marshal(evaluated)
+		resultJson, _ := json.Marshal(result)
 
 		w.Write(resultJson)
 	}))
@@ -181,31 +160,6 @@ func (c *Server) registerFrontendApi(s *http.ServeMux) {
 	s.Handle("POST /api/frontend/client/register", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 	}))
-}
-
-func resolveAll(engine unleashengine.Engine, ctx *unleashengine.Context) (map[string]ResolvedToggle, bool) {
-	var apiResponse apiResponse[map[string]ResolvedToggle]
-	err := json.Unmarshal(engine.ResolveAll(ctx), &apiResponse)
-	if err != nil {
-		log.Errorf("Error unmarshalling JSON: %s", err)
-		return map[string]ResolvedToggle{}, false
-	}
-	return apiResponse.Value, true
-}
-
-func resolve(engine unleashengine.Engine, ctx *unleashengine.Context, featureName string) (ResolvedToggle, bool) {
-	var apiResponse apiResponse[ResolvedToggle]
-	err := json.Unmarshal(engine.Resolve(ctx, featureName), &apiResponse)
-	if err != nil {
-		log.Errorf("Error unmarshalling JSON: %s", err)
-		return ResolvedToggle{}, false
-	}
-
-	if apiResponse.StatusCode == "NotFound" {
-		return ResolvedToggle{}, false
-	}
-
-	return apiResponse.Value, true
 }
 
 type FrontendResult struct {
@@ -284,13 +238,13 @@ func createContextFromGetRequest(r *http.Request) *unleashengine.Context {
 	for k := range r.URL.Query() {
 		switch k {
 		case "userId":
-			ctx.UserID = getQuery(r, "userId")
+			ctx.UserId = getQuery(r, "userId")
 		case "environment":
 			ctx.Environment = getQuery(r, "environment")
 		case "appName":
 			ctx.AppName = getQuery(r, "appName")
 		case "sessionId":
-			ctx.SessionID = getQuery(r, "sessionId")
+			ctx.SessionId = getQuery(r, "sessionId")
 		case "currentTime":
 			ctx.CurrentTime = getQuery(r, "currentTime")
 		case "remoteAddress":
@@ -313,7 +267,7 @@ func createContextFromGetRequest(r *http.Request) *unleashengine.Context {
 		}
 	}
 
-	ctx.Properties = &clean
+	ctx.Properties = clean
 
 	return ctx
 }
@@ -335,13 +289,13 @@ func createContextFromPostRequest(r *http.Request) (*unleashengine.Context, erro
 	for k, v := range m {
 		switch k {
 		case "userId":
-			ctx.UserID = getData(v)
+			ctx.UserId = getData(v)
 		case "environment":
 			ctx.Environment = getData(v)
 		case "appName":
 			ctx.AppName = getData(v)
 		case "sessionId":
-			ctx.SessionID = getData(v)
+			ctx.SessionId = getData(v)
 		case "currentTime":
 			ctx.CurrentTime = getData(v)
 		case "remoteAddress":
@@ -361,7 +315,7 @@ func createContextFromPostRequest(r *http.Request) (*unleashengine.Context, erro
 		}
 	}
 
-	ctx.Properties = &clean
+	ctx.Properties = clean
 
 	return ctx, nil
 }

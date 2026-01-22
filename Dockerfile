@@ -1,8 +1,8 @@
 FROM --platform=$BUILDPLATFORM rust:1.92 AS rust-build-stage
-WORKDIR /yggdrasil-bindings
+WORKDIR /frontendengine
 ARG TARGETPLATFORM
 
-RUN apt-get update && apt-get install -y musl-tools gcc-aarch64-linux-gnu
+RUN apt-get update && apt-get install -y musl-tools gcc-aarch64-linux-gnu protobuf-compiler
 
 RUN case "$TARGETPLATFORM" in \
   "linux/arm64") echo aarch64-unknown-linux-musl > /rust_target.txt ;; \
@@ -11,10 +11,10 @@ RUN case "$TARGETPLATFORM" in \
 esac
 
 RUN rustup target add $(cat /rust_target.txt)
-COPY ./yggdrasil-bindings /yggdrasil-bindings
+COPY ./frontendengine /frontendengine
 
 RUN cargo build --release --target $(cat /rust_target.txt)
-RUN cp target/$(cat /rust_target.txt)/release/libyggdrasilffi.a libyggdrasilffi.a
+RUN cp target/$(cat /rust_target.txt)/release/libfrontendengine.a libfrontendengine.a
 
 # ----------------------------------------------------------------
 
@@ -33,7 +33,7 @@ WORKDIR /app
 RUN addgroup --gid 1001 noroot && adduser --disabled-password --no-create-home --uid 1001 --gid 1001 --shell /bin/sh noroot && mkdir /data && chown -R noroot:noroot /data
 
 # Copy the static library from the Rust stage
-COPY --from=rust-build-stage /yggdrasil-bindings/libyggdrasilffi.a /app/unleashengine/libyggdrasilffi.a
+COPY --from=rust-build-stage /frontendengine/libfrontendengine.a /app/unleashengine/libfrontendengine.a
 
 # Standard Go build steps
 RUN go install github.com/a-h/templ/cmd/templ@latest

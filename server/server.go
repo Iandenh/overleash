@@ -130,7 +130,6 @@ func (c *Server) Start() {
 		log.Debugf("Starting server on port: %s", c.Overleash.Config.ListenAddress)
 		if err := httpServer.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			log.Error(err)
-			panic(err)
 		}
 	}()
 

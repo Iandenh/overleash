@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package unleashengine;
+
+option go_package = "./unleashengine";
+
+message Context {
+  optional string userId = 1;
+  optional string sessionId = 2;
+  optional string environment = 3;
+  optional string appName = 4;
+  optional string currentTime = 5;
+  optional string remoteAddress = 6;
+
+  // Note: Protobuf maps are generated as non-pointers in Go.
+  // To get a pointer to a map in Go, you would need a wrapper,
+  // but usually, an empty map is preferred in Go/Proto logic.
+  map<string, string> properties = 7;
+}
