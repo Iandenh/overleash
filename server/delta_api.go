@@ -11,10 +11,19 @@ import (
 )
 
 type httpSubscriber struct {
-	flusher           http.Flusher
-	writer            http.ResponseWriter
-	isOverleashClient bool
-	send              chan overleash.SseEvent
+	flusher              http.Flusher
+	writer               http.ResponseWriter
+	isOverleashClient    bool
+	useActiveEnvironment bool
+	send                 chan overleash.SseEvent
+}
+
+func (h *httpSubscriber) UseActiveEnvironment() bool {
+	return h.useActiveEnvironment
+}
+
+func (h *httpSubscriber) IsOverleashClient() bool {
+	return h.isOverleashClient
 }
 
 func (h *httpSubscriber) Notify(e overleash.SseEvent) {
@@ -97,11 +106,17 @@ func (c *Server) registerDeltaApi(s *http.ServeMux) {
 		rc.SetWriteDeadline(time.Time{})
 
 		isOverleash := r.Header.Get("X-Overleash") == "yes"
-		subscriber := &httpSubscriber{flusher: flusher, writer: w, isOverleashClient: isOverleash, send: make(chan overleash.SseEvent, 32)}
+		subscriber := &httpSubscriber{
+			flusher:              flusher,
+			writer:               w,
+			isOverleashClient:    isOverleash,
+			useActiveEnvironment: !c.Overleash.Config.EnvFromToken,
+			send:                 make(chan overleash.SseEvent, 32),
+		}
 
 		env := c.featureEnvironmentFromRequest(r)
-		env.AddStreamerSubscriber(subscriber, c.Overleash, isOverleash)
-		defer env.RemoveStreamerSubscriber(subscriber)
+		env.AddStreamerSubscriber(subscriber, c.Overleash, true)
+		defer env.RemoveStreamerSubscriber(subscriber, true)
 
 		ctx := r.Context()
 		go subscriber.run(ctx)

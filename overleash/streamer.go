@@ -13,6 +13,8 @@ import (
 
 type StreamSubscriber interface {
 	Notify(e SseEvent)
+	UseActiveEnvironment() bool
+	IsOverleashClient() bool
 }
 
 type SseEvent struct {
@@ -60,9 +62,11 @@ func NewStreamer() *Streamer {
 	}
 }
 
-func (fe *FeatureEnvironment) AddStreamerSubscriber(client StreamSubscriber, o *OverleashContext, isOverleashClient bool) {
-	fe.Streamer.mutex.Lock()
-	defer fe.Streamer.mutex.Unlock()
+func (fe *FeatureEnvironment) AddStreamerSubscriber(client StreamSubscriber, o *OverleashContext, withLock bool) {
+	if withLock {
+		fe.Streamer.mutex.Lock()
+		defer fe.Streamer.mutex.Unlock()
+	}
 
 	fe.Streamer.subscribers = append(fe.Streamer.subscribers, client)
 
@@ -76,7 +80,7 @@ func (fe *FeatureEnvironment) AddStreamerSubscriber(client StreamSubscriber, o *
 		},
 	}
 
-	if isOverleashClient {
+	if client.IsOverleashClient() {
 		events = append(events,
 			&HydrationOverleashEvent{
 				Type:      "hydration-overleash",
@@ -90,9 +94,11 @@ func (fe *FeatureEnvironment) AddStreamerSubscriber(client StreamSubscriber, o *
 	client.Notify(fe.Streamer.createNewConnectDelta(1, events))
 }
 
-func (fe *FeatureEnvironment) RemoveStreamerSubscriber(client StreamSubscriber) {
-	fe.Streamer.mutex.Lock()
-	defer fe.Streamer.mutex.Unlock()
+func (fe *FeatureEnvironment) RemoveStreamerSubscriber(client StreamSubscriber, withLock bool) {
+	if withLock {
+		fe.Streamer.mutex.Lock()
+		defer fe.Streamer.mutex.Unlock()
+	}
 
 	newSubs := make([]StreamSubscriber, 0, len(fe.Streamer.subscribers))
 	for _, sub := range fe.Streamer.subscribers {
@@ -126,6 +132,41 @@ func (o *OverleashContext) processOverleashStreaming() {
 
 			e.Streamer.NotifyWithNewUpdateDelta(id, events, true)
 		}
+	}
+}
+
+func (fe *FeatureEnvironment) processMoveToActive(o *OverleashContext) {
+	fe.Streamer.mutex.Lock()
+	defer fe.Streamer.mutex.Unlock()
+
+	if fe.Streamer == nil {
+		return
+	}
+
+	for _, fe2 := range o.featureEnvironments {
+		if fe == fe2 {
+			continue
+		}
+
+		if fe2.Streamer == nil {
+			continue
+		}
+
+		fe.moveUsingActiveFrom(fe2, o)
+	}
+}
+
+func (fe *FeatureEnvironment) moveUsingActiveFrom(f2 *FeatureEnvironment, o *OverleashContext) {
+	f2.Streamer.mutex.Lock()
+	defer f2.Streamer.mutex.Unlock()
+
+	for _, sub := range f2.Streamer.subscribers {
+		if sub.UseActiveEnvironment() == false {
+			continue
+		}
+
+		f2.RemoveStreamerSubscriber(sub, false)
+		fe.AddStreamerSubscriber(sub, o, false)
 	}
 }
 

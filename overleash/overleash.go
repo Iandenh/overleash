@@ -394,6 +394,8 @@ func (o *OverleashContext) SetFeatureFileIdx(idx int) error {
 
 	o.activeFeatureIdx = idx
 
+	go o.featureEnvironments[idx].processMoveToActive(o)
+
 	return nil
 }
 
