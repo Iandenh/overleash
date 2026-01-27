@@ -12,7 +12,7 @@ require (
 	github.com/launchdarkly/eventsource v1.11.0
 	github.com/medama-io/go-useragent v1.2.3
 	github.com/prometheus/client_golang v1.23.2
-	github.com/redis/go-redis/v9 v9.17.2
+	github.com/redis/go-redis/v9 v9.17.3
 	github.com/rs/cors v1.11.1
 	github.com/spf13/pflag v1.0.10
 	github.com/spf13/viper v1.21.0
