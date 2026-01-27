@@ -119,11 +119,11 @@ func (c *Server) Start() {
 	}
 
 	httpServer := &http.Server{
-		Addr:         c.Overleash.Config.ListenAddress,
-		Handler:      handler,
-		ReadTimeout:  5 * time.Second,
-		WriteTimeout: 10 * time.Second,
-		IdleTimeout:  120 * time.Second,
+		Addr:    c.Overleash.Config.ListenAddress,
+		Handler: handler,
+		//ReadTimeout:  5 * time.Second,
+		//WriteTimeout: 10 * time.Second,
+		//IdleTimeout:  120 * time.Second,
 	}
 
 	go func() {
