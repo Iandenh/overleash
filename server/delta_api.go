@@ -26,10 +26,19 @@ func (h *httpSubscriber) Notify(e overleash.SseEvent) {
 }
 
 func (h *httpSubscriber) run(ctx context.Context) {
+	ticker := time.NewTicker(10 * time.Second)
+	defer ticker.Stop()
+
 	for {
 		select {
 		case <-ctx.Done():
 			return
+		case <-ticker.C:
+			if _, err := fmt.Fprintf(h.writer, ": keep-alive\n\n"); err != nil {
+				log.Printf("failed to write heartbeat: %v", err)
+				return
+			}
+			h.flusher.Flush()
 		case e, ok := <-h.send:
 			if !ok {
 				return
@@ -97,20 +106,11 @@ func (c *Server) registerDeltaApi(s *http.ServeMux) {
 		ctx := r.Context()
 		go subscriber.run(ctx)
 
-		ticker := time.NewTicker(30 * time.Second)
-		defer ticker.Stop()
-
 		for {
 			select {
 			case <-r.Context().Done():
 				log.Printf("SSE client disconnected (overleash=%v)", isOverleash)
 				return
-			case <-ticker.C:
-				if _, err := fmt.Fprintf(w, ": keep-alive\n\n"); err != nil {
-					log.Printf("failed to write heartbeat: %v", err)
-					return
-				}
-				flusher.Flush()
 			}
 		}
 	})
