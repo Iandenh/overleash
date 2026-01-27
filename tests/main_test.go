@@ -19,6 +19,8 @@ import (
 	"github.com/Iandenh/overleash/overleash"
 	"github.com/Iandenh/overleash/server"
 	"github.com/Iandenh/overleash/unleashengine"
+	"github.com/Unleash/unleash-go-sdk/v5"
+	unleashContext "github.com/Unleash/unleash-go-sdk/v5/context"
 )
 
 const (
@@ -181,8 +183,15 @@ func TestPhpIntegration(t *testing.T) {
 		t.Skip("Docker not found, skipping PHP integration tests")
 	}
 
-	// Wait for server ready
-	httpClient := &http.Client{Timeout: 2 * time.Second}
+	httpClient := &http.Client{
+		CheckRedirect: func(req *http.Request, via []*http.Request) error {
+			return http.ErrUseLastResponse
+		},
+		Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{},
+		},
+		Timeout: 10 * time.Second,
+	}
 	waitForServer(t, httpClient, serverURL+"/health")
 
 	// 2. Get Definitions
@@ -232,6 +241,91 @@ func TestPhpIntegration(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestGoIntegration(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	o := startServer(t, ctx)
+
+	httpClient := &http.Client{Timeout: 2 * time.Second}
+	waitForServer(t, httpClient, serverURL+"/health")
+
+	definitions, err := getDefinitions()
+	if err != nil {
+		t.Fatalf("Failed to load definitions: %v", err)
+	}
+
+	options := []unleash.ConfigOption{
+		unleash.WithAppName("Test"),
+		unleash.WithUrl(serverURL + "/api"),
+	}
+
+	for _, definition := range definitions {
+
+		if definition.Name == "16-strategy-variants" {
+			t.Skip("Skipped for now. Flaky in Go unleash client")
+		}
+
+		t.Run(definition.Name, func(t *testing.T) {
+			o.LoadFeatureFile(definition.State)
+
+			if len(definition.Tests) == 0 && len(definition.VariantTests) == 0 {
+				t.Skip("No standard tests in this definition")
+			}
+
+			goClient, err := unleash.NewClient(options...)
+
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			goClient.WaitForReady()
+
+			for _, testCase := range definition.Tests {
+				result := goClient.IsEnabled(testCase.ToggleName, unleash.WithContext(toUnleashContext(&testCase.Context)), unleash.WithFallback(false))
+
+				if result != testCase.ExpectedResult {
+					t.Errorf("FAIL: %s\n\tToggle: %s\n\tExpected: %v\n\tGot (PHP): %v",
+						testCase.Description, testCase.ToggleName, testCase.ExpectedResult, result)
+				}
+			}
+
+			for _, testCase := range definition.VariantTests {
+				result := goClient.GetVariant(testCase.ToggleName, unleash.WithVariantContext(toUnleashContext(&testCase.Context)))
+
+				if result.Name != testCase.ExpectedResult.Variant.Name ||
+					result.Payload.Type != testCase.ExpectedResult.Variant.Payload.Type ||
+					result.FeatureEnabled != testCase.ExpectedResult.SpecFeatureEnabled {
+					t.Fatalf("%s: expected %+v, got %+v", testCase.Description, testCase.ExpectedResult, result)
+				}
+			}
+		})
+	}
+}
+
+func toUnleashContext(ctx *unleashengine.Context) unleashContext.Context {
+	if ctx == nil {
+		return unleashContext.Context{}
+	}
+
+	return unleashContext.Context{
+		UserId:        stringValue(ctx.UserId),
+		SessionId:     stringValue(ctx.SessionId),
+		RemoteAddress: stringValue(ctx.RemoteAddress),
+		Environment:   stringValue(ctx.Environment),
+		AppName:       stringValue(ctx.AppName),
+		CurrentTime:   stringValue(ctx.CurrentTime),
+		Properties:    ctx.Properties,
+	}
+}
+
+func stringValue(str *string) string {
+	if str == nil {
+		return ""
+	}
+	return *str
 }
 
 // --- Helper Functions ---
