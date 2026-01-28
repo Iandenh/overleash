@@ -136,12 +136,12 @@ func (o *OverleashContext) processOverleashStreaming() {
 }
 
 func (fe *FeatureEnvironment) processMoveToActive(o *OverleashContext) {
-	fe.Streamer.mutex.Lock()
-	defer fe.Streamer.mutex.Unlock()
-
 	if fe.Streamer == nil {
 		return
 	}
+
+	fe.Streamer.mutex.Lock()
+	defer fe.Streamer.mutex.Unlock()
 
 	for _, fe2 := range o.featureEnvironments {
 		if fe == fe2 {
