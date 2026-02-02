@@ -42,7 +42,7 @@ func New(config *overleash.OverleashContext, ctx context.Context) *Server {
 	}
 }
 
-func (c *Server) Start() {
+func (c *Server) CreateHandler() http.Handler {
 	s := http.NewServeMux()
 
 	if !c.Overleash.Config.Headless {
@@ -110,7 +110,14 @@ func (c *Server) Start() {
 		})
 	}
 
+	return rootHandler
+}
+
+func (c *Server) Start() {
+	rootHandler := c.CreateHandler()
+
 	handler := cors.AllowAll().Handler(rootHandler)
+
 	compress, _ := httpcompression.DefaultAdapter()
 
 	handler = compress(handler)
