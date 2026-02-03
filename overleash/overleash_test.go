@@ -69,6 +69,10 @@ func (fe *fakeEngine) ResolveAll(context *unleashengine.Context, includeAll bool
 	}, nil
 }
 
+func (fe *fakeEngine) IsEnabled(context *unleashengine.Context, featureName string) bool {
+	return true
+}
+
 // fakeClient implements getFeatures for testing.
 type fakeClient struct {
 	featureFile FeatureFile

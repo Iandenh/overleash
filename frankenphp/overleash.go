@@ -40,15 +40,11 @@ func go_is_enabled(phpFeatureFlag *C.zend_string, ctx *C.zend_array) (bool, *C.c
 
 	env := hub.overleash.ActiveFeatureEnvironment()
 
-	e, err := env.Engine().Resolve(con, flag)
+	e := env.Engine().IsEnabled(con, flag)
 
-	if err != nil {
-		return false, C.CString(fmt.Sprintf("error on context: %s", err))
-	}
+	collectMetric(e, env, flag)
 
-	collectMetric(e.Enabled, env, flag)
-
-	return e.Enabled, nil
+	return e, nil
 }
 
 func collectMetric(e bool, env *overleash.FeatureEnvironment, flagName string) {
