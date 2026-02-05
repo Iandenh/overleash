@@ -21,6 +21,11 @@ const uint8_t *resolve(void *engine_ptr,
                        uintptr_t context_len,
                        uintptr_t *out_len);
 
+bool is_enabled(void *engine_ptr,
+                const char *toggle_name_ptr,
+                const uint8_t *context_data,
+                uintptr_t context_len);
+
 void free_rust_buffer(uint8_t *ptr, uintptr_t len);
 
 void free_response(char *response_ptr);

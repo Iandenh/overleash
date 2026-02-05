@@ -7,8 +7,6 @@ coverage
 # Mac filesystem jank.
 .DS_Store
 
-*_templ.go
-
 .env
 
 *.so

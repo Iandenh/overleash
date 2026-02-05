@@ -19,6 +19,7 @@ type Engine interface {
 	TakeState(json string)
 	Resolve(context *Context, featureName string) (*EvaluatedToggle, error)
 	ResolveAll(context *Context, includeAll bool) (*EvaluatedToggleList, error)
+	IsEnabled(context *Context, featureName string) bool
 }
 
 type UnleashEngine struct {
@@ -81,6 +82,28 @@ func (e *UnleashEngine) Resolve(context *Context, featureName string) (*Evaluate
 	}
 
 	return &toggle, nil
+}
+
+func (e *UnleashEngine) IsEnabled(context *Context, featureName string) bool {
+	inputBytes, err := proto.Marshal(context)
+	if err != nil {
+		return false
+	}
+
+	// 2. Prepare C arguments
+	var inputPtr *C.uint8_t
+	if len(inputBytes) > 0 {
+		inputPtr = (*C.uint8_t)(unsafe.Pointer(&inputBytes[0]))
+	}
+	inputLen := C.size_t(len(inputBytes))
+
+	cFeatureName := C.CString(featureName)
+
+	cResult := C.is_enabled(e.ptr, cFeatureName, inputPtr, inputLen)
+
+	defer C.free(unsafe.Pointer(cFeatureName))
+
+	return bool(cResult)
 }
 
 func (e *UnleashEngine) ResolveAll(context *Context, includeAll bool) (*EvaluatedToggleList, error) {
