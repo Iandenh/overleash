@@ -4,7 +4,7 @@ go 1.25
 
 require (
 	github.com/CAFxX/httpcompression v0.0.9
-	github.com/Unleash/unleash-go-sdk/v5 v5.0.3
+	github.com/Unleash/unleash-go-sdk/v5 v5.1.0
 	github.com/a-h/templ v0.3.977
 	github.com/charmbracelet/log v0.4.2
 	github.com/google/go-cmp v0.7.0
