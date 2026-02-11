@@ -19,7 +19,7 @@ RUN cp target/$(cat /rust_target.txt)/release/libfrontendengine.a libfrontendeng
 # ----------------------------------------------------------------
 
 # Stage 2: Go Build for a fully static binary
-FROM --platform=$BUILDPLATFORM golang:1.25 AS build-stage
+FROM --platform=$BUILDPLATFORM golang:1.26 AS build-stage
 ARG VERSION
 ARG TARGETOS
 ARG TARGETARCH
