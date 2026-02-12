@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-type ParameterMap map[string]interface{}
+type ParameterMap map[string]any
 
 type FeatureFlags []Feature
 

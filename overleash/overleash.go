@@ -22,7 +22,7 @@ import (
 var forceEnable = Strategy{
 	Name:        "default",
 	Constraints: make([]Constraint, 0),
-	Parameters:  make(map[string]interface{}),
+	Parameters:  make(map[string]any),
 	Segments:    make([]int, 0),
 	Variants:    make([]StrategyVariant, 0),
 }
@@ -617,7 +617,7 @@ func mapOverrideToStrategies(override *Override, feature Feature) []Strategy {
 		for _, constraint := range enabledConstraints {
 			strategies = append(strategies, Strategy{
 				Name: "flexibleRollout",
-				Parameters: map[string]interface{}{
+				Parameters: map[string]any{
 					"groupId":    override.FeatureFlag,
 					"rollout":    "100",
 					"stickiness": "default",

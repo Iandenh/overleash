@@ -163,7 +163,7 @@ func (c *Server) registerFrontendApi(s *http.ServeMux) {
 }
 
 func createContextFromGetRequest(r *http.Request) *unleashengine.Context {
-	properties := make(map[string]interface{})
+	properties := make(map[string]any)
 
 	ctx := &unleashengine.Context{}
 
@@ -205,7 +205,7 @@ func createContextFromGetRequest(r *http.Request) *unleashengine.Context {
 }
 
 func createContextFromPostRequest(r *http.Request) (*unleashengine.Context, error) {
-	m := map[string]interface{}{}
+	m := map[string]any{}
 
 	decoder := json.NewDecoder(r.Body)
 
@@ -214,7 +214,7 @@ func createContextFromPostRequest(r *http.Request) (*unleashengine.Context, erro
 	if err != nil {
 		return nil, err
 	}
-	properties := make(map[string]interface{})
+	properties := make(map[string]any)
 
 	ctx := &unleashengine.Context{}
 
@@ -233,7 +233,7 @@ func createContextFromPostRequest(r *http.Request) (*unleashengine.Context, erro
 		case "remoteAddress":
 			ctx.RemoteAddress = getData(v)
 		case "properties":
-			properties = v.(map[string]interface{})
+			properties = v.(map[string]any)
 		default:
 			properties[k] = v
 		}
@@ -262,7 +262,7 @@ func getQuery(r *http.Request, name string) *string {
 	return &result
 }
 
-func getData(data interface{}) *string {
+func getData(data any) *string {
 	var result string
 
 	switch v := data.(type) {

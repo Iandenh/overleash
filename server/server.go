@@ -155,9 +155,7 @@ func (c *Server) Start() {
 	}
 
 	var wg sync.WaitGroup
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
+	wg.Go(func() {
 		<-c.ctx.Done()
 		shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
@@ -171,7 +169,7 @@ func (c *Server) Start() {
 				log.Errorf("error shutting down metrics server: %s", err)
 			}
 		}
-	}()
+	})
 	wg.Wait()
 }
 

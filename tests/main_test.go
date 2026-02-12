@@ -69,8 +69,7 @@ type PhpResult struct {
 // It tests the API using the Go HTTP Client.
 func TestFrontendApi(t *testing.T) {
 	// 1. Start Server
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
+	ctx := t.Context()
 
 	o := startServer(t, ctx)
 
@@ -173,8 +172,7 @@ func TestFrontendApi(t *testing.T) {
 // TestPhpIntegration runs the PHP docker container against the Go Server.
 func TestPhpIntegration(t *testing.T) {
 	// 1. Start Server (New instance for this test)
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
+	ctx := t.Context()
 
 	o := startServer(t, ctx)
 
@@ -244,8 +242,7 @@ func TestPhpIntegration(t *testing.T) {
 }
 
 func TestGoIntegration(t *testing.T) {
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
+	ctx := t.Context()
 
 	o := startServer(t, ctx)
 
@@ -368,7 +365,7 @@ func startServer(t *testing.T, ctx context.Context) *overleash.OverleashContext 
 }
 
 func waitForServer(t *testing.T, client *http.Client, url string) {
-	for i := 0; i < 50; i++ {
+	for range 50 {
 		resp, err := client.Get(url)
 		if err == nil && resp.StatusCode == 200 {
 			resp.Body.Close()
@@ -405,7 +402,7 @@ func getDefinitions() ([]TestDefinition, error) {
 	return definitions, nil
 }
 
-func defToJSON(t *testing.T, v interface{}) []byte {
+func defToJSON(t *testing.T, v any) []byte {
 	b, err := json.Marshal(v)
 	if err != nil {
 		t.Fatal(err)

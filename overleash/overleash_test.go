@@ -1,7 +1,6 @@
 package overleash
 
 import (
-	"context"
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
@@ -511,8 +510,7 @@ func TestStartWithoutReload(t *testing.T) {
 	o.client = &fakeClient{}
 
 	// For this test, set reload to 0.
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
+	ctx := t.Context()
 	// Calling Start with reload==0 should not start any goroutine.
 	o.Start(ctx)
 	// Simply check that no panic occurred and that overleashClient was created.
