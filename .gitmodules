@@ -1,7 +1,3 @@
-[submodule "yggdrasil-bindings"]
-	path = yggdrasil-bindings
-	url = https://github.com/Iandenh/yggdrasil-bindings.git
-	branch = resolve_all
 [submodule "frontendengine"]
 	path = frontendengine
 	url = https://github.com/Iandenh/frontendengine.git
