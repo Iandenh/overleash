@@ -1,5 +1,24 @@
 # Changelog
 
+## [1.1.0](https://github.com/Iandenh/overleash/compare/v1.0.3...v1.1.0) (2026-02-25)
+
+
+### Features
+
+* add httproute to optionally enable it as alternative of ingress ([49e89ba](https://github.com/Iandenh/overleash/commit/49e89ba761fef963a9f0f784848298f6d8bada09))
+* add move to active feature environment for delta ([90c346c](https://github.com/Iandenh/overleash/commit/90c346c70d604b038bab10ba61180c2e58742e28))
+* use protobuf for frontend engine data ([663d58a](https://github.com/Iandenh/overleash/commit/663d58a5293e358abd2c767a433cd5b13c60cce6))
+
+
+### Bug Fixes
+
+* disable timeouts for now ([08a2239](https://github.com/Iandenh/overleash/commit/08a223930680ac65165fbc43b1dfc72545e259f2))
+* locking on stream that don't exist ([cec4d91](https://github.com/Iandenh/overleash/commit/cec4d91d6ab344d800af0bcf7802e59e23fa7a3f))
+* remove test gateway from httproute ([a79a9c9](https://github.com/Iandenh/overleash/commit/a79a9c928cb28ccb88577c8ba29b476e4033352c))
+* search not full width on smaller screens ([4ca9bb1](https://github.com/Iandenh/overleash/commit/4ca9bb1c1934d88f32ece043554caa03883831bb))
+* use compress middleware to prevent sse timeouts ([c129362](https://github.com/Iandenh/overleash/commit/c129362a89b918c3a8d062ef77273c1fcf123c3e))
+* use frontendengine for tests ([0d923da](https://github.com/Iandenh/overleash/commit/0d923dabf9e024bcb0f553d7a42763da5b9c4967))
+
 ## [1.0.3](https://github.com/Iandenh/overleash/compare/v1.0.2...v1.0.3) (2026-01-20)
 
 
