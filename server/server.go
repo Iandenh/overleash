@@ -111,19 +111,20 @@ func (c *Server) Start() {
 	}
 
 	handler := cors.AllowAll().Handler(rootHandler)
-	compress, _ := httpcompression.DefaultAdapter()
+	com, _ := httpcompression.DefaultAdapter()
 
-	handler = compress(handler)
+	handler = compress(handler, com)
+
 	if c.Overleash.Config.PrometheusMetrics {
 		handler = instrumentHandler(handler)
 	}
 
 	httpServer := &http.Server{
-		Addr:    c.Overleash.Config.ListenAddress,
-		Handler: handler,
-		//ReadTimeout:  5 * time.Second,
-		//WriteTimeout: 10 * time.Second,
-		//IdleTimeout:  120 * time.Second,
+		Addr:         c.Overleash.Config.ListenAddress,
+		Handler:      handler,
+		ReadTimeout:  5 * time.Second,
+		WriteTimeout: 10 * time.Second,
+		IdleTimeout:  120 * time.Second,
 	}
 
 	go func() {

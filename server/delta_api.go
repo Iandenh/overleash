@@ -102,8 +102,15 @@ func (c *Server) registerDeltaApi(s *http.ServeMux) {
 
 		// Disable the server's read and write timeouts for this long-lived connection.
 		// Setting a zero-value time.Time effectively means no deadline.
-		rc.SetReadDeadline(time.Time{})
-		rc.SetWriteDeadline(time.Time{})
+		err := rc.SetReadDeadline(time.Time{})
+		if err != nil {
+			log.Printf("failed to set read deadline: %v", err)
+		}
+
+		err = rc.SetWriteDeadline(time.Time{})
+		if err != nil {
+			log.Printf("failed to set write deadline: %v", err)
+		}
 
 		isOverleash := r.Header.Get("X-Overleash") == "yes"
 		subscriber := &httpSubscriber{
