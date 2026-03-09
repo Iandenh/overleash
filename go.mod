@@ -6,7 +6,7 @@ require (
 	github.com/CAFxX/httpcompression v0.0.9
 	github.com/Unleash/unleash-go-sdk/v5 v5.1.0
 	github.com/a-h/templ v0.3.1001
-	github.com/charmbracelet/log v0.4.2
+	github.com/charmbracelet/log v1.0.0
 	github.com/google/go-cmp v0.7.0
 	github.com/google/uuid v1.6.0
 	github.com/launchdarkly/eventsource v1.11.0
