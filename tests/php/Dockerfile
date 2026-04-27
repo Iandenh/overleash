@@ -1,4 +1,4 @@
-FROM php:8.4
+FROM php:8.5
 
 # Install system dependencies (git is needed for composer to download zips)
 RUN apt-get update && apt-get install -y git zip unzip
