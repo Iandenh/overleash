@@ -9,7 +9,6 @@ import (
 	"github.com/Iandenh/overleash/overleash"
 	"github.com/Iandenh/overleash/server"
 	"github.com/charmbracelet/log"
-	"github.com/spf13/viper"
 )
 
 func run(ctx context.Context, cfg *config.Config) {
@@ -33,7 +32,6 @@ func main() {
 	if cfg.Verbose {
 		log.SetLevel(log.DebugLevel)
 		log.Debug("Debug logging enabled")
-		log.Debug(viper.AllSettings())
 	}
 
 	run(context.Background(), cfg)
