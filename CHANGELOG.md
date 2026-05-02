@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.1](https://github.com/Iandenh/overleash/compare/v1.1.0...v1.1.1) (2026-05-02)
+
+
+### Bug Fixes
+
+* remove login all env in debug mode ([bb190b3](https://github.com/Iandenh/overleash/commit/bb190b30962a473408ef4e5a04cbf6bd5f8c03b8))
+
 ## [1.1.0](https://github.com/Iandenh/overleash/compare/v1.0.3...v1.1.0) (2026-02-25)
 
 
