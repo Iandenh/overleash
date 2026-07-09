@@ -6,7 +6,61 @@
       "bump-minor-pre-major": true,
       "bump-patch-for-minor-pre-major": true,
       "draft": false,
-      "last-release-sha": "61e9dc0c142706fab77908e7e3bdaaa997180216"
+      "last-release-sha": "61e9dc0c142706fab77908e7e3bdaaa997180216",
+      "changelog-sections": [
+        {
+          "type": "feat",
+          "section": "Features"
+        },
+        {
+          "type": "fix",
+          "section": "Bug Fixes"
+        },
+        {
+          "type": "perf",
+          "section": "Performance"
+        },
+        {
+          "type": "security",
+          "section": "Security"
+        },
+        {
+          "type": "remove",
+          "section": "Removed"
+        },
+        {
+          "type": "revert",
+          "section": "Reverts"
+        },
+        {
+          "type": "refactor",
+          "section": "Refactors"
+        },
+        {
+          "type": "docs",
+          "section": "Documentation"
+        },
+        {
+          "type": "test",
+          "section": "Tests"
+        },
+        {
+          "type": "build",
+          "section": "Build System"
+        },
+        {
+          "type": "ci",
+          "section": "CI"
+        },
+        {
+          "type": "chore",
+          "section": "Maintenance"
+        },
+        {
+          "type": "style",
+          "section": "Maintenance"
+        }
+      ]
     }
   },
   "last-release-sha": "61e9dc0c142706fab77908e7e3bdaaa997180216",
