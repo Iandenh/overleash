@@ -51,7 +51,19 @@ func (e *UnleashEngine) TakeState(json string) error {
 
 	log.Debugf("TakeState: %s", resJson)
 
-	return parseTakeStateResponse(resJson)
+	warnings, err := parseTakeStateResponse(resJson)
+
+	if err != nil {
+		return err
+	}
+
+	// The state was applied; these name the individual toggles that could not be
+	// compiled and will therefore evaluate as off.
+	for _, warning := range warnings {
+		log.Warnf("Engine reported a toggle it could not compile: %s", warning)
+	}
+
+	return nil
 }
 
 func (e *UnleashEngine) Resolve(context *Context, featureName string) (*EvaluatedToggle, error) {

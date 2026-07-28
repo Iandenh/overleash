@@ -124,3 +124,42 @@ func TestResolveUnknownToggle(t *testing.T) {
 		t.Error("an unknown toggle should be reported as an error")
 	}
 }
+
+// stateWithWarnings applies cleanly but contains one toggle the engine cannot
+// compile, which is routine in a real Unleash feature file.
+const stateWithWarnings = `{
+  "version": 2,
+  "features": [
+    {"name": "flag.on", "enabled": true, "strategies": [{"name": "default"}]},
+    {
+      "name": "flag.uncompilable",
+      "enabled": true,
+      "strategies": [{
+        "name": "default",
+        "constraints": [
+          {"contextName": "userId", "operator": "NOT_A_REAL_OPERATOR", "values": ["1"]}
+        ]
+      }]
+    }
+  ]
+}`
+
+// The engine reports warnings for the toggles it could not compile. The state
+// was still applied, so this must not be an error — otherwise every refresh of a
+// real feature file looks like a failure.
+func TestTakeStateAcceptsStateWithCompileWarnings(t *testing.T) {
+	engine := NewUnleashEngine()
+
+	if err := engine.TakeState(stateWithWarnings); err != nil {
+		t.Fatalf("compile warnings are not a failure, got: %v", err)
+	}
+
+	// The toggles that did compile must still work.
+	toggle, err := engine.Resolve(&Context{}, "flag.on")
+	if err != nil {
+		t.Fatalf("flag.on should resolve: %v", err)
+	}
+	if !toggle.GetEnabled() {
+		t.Error("flag.on should be enabled")
+	}
+}
