@@ -1,6 +1,9 @@
 package unleashengine
 
-import "testing"
+import (
+	"strings"
+	"testing"
+)
 
 func TestParseTakeStateResponseCleanUpdate(t *testing.T) {
 	warnings, err := parseTakeStateResponse(`{"status_code":"Ok","value":[],"error_message":null}`)
@@ -60,5 +63,18 @@ func TestParseTakeStateResponseEmpty(t *testing.T) {
 func TestParseTakeStateResponseUnparseable(t *testing.T) {
 	if _, err := parseTakeStateResponse("not json"); err == nil {
 		t.Error("an unparseable response must be reported")
+	}
+}
+
+// A response with no status at all is a different problem from a response with
+// an unexpected status, and the message should say which.
+func TestParseTakeStateResponseMissingStatus(t *testing.T) {
+	_, err := parseTakeStateResponse(`{"value":[]}`)
+
+	if err == nil {
+		t.Fatal("a response with no status must be reported")
+	}
+	if !strings.Contains(err.Error(), "no status") {
+		t.Errorf("message should say the status was missing, got: %q", err.Error())
 	}
 }

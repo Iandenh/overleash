@@ -45,6 +45,10 @@ func parseTakeStateResponse(raw string) ([]string, error) {
 		return nil, errors.New(response.ErrorMessage)
 	}
 
+	if response.StatusCode == "" {
+		return nil, fmt.Errorf("engine response reported no status: %q", raw)
+	}
+
 	if response.StatusCode != statusCodeOk {
 		return nil, fmt.Errorf("engine reported status %q", response.StatusCode)
 	}
