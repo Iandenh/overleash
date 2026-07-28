@@ -44,13 +44,21 @@ func (fs *fakeStore) Read(filename string) ([]byte, error) {
 	return d, nil
 }
 
-// fakeEngine records the state passed via TakeState.
+// fakeEngine records the state passed via TakeState, and can be told to reject
+// it so that callers can be checked for handling the failure.
 type fakeEngine struct {
 	state string
+	err   error
 }
 
-func (fe *fakeEngine) TakeState(state string) {
+func (fe *fakeEngine) TakeState(state string) error {
+	if fe.err != nil {
+		return fe.err
+	}
+
 	fe.state = state
+
+	return nil
 }
 
 func (fe *fakeEngine) Resolve(context *unleashengine.Context, featureName string) (*unleashengine.EvaluatedToggle, error) {
@@ -149,6 +157,50 @@ func TestCompileFeatureFile(t *testing.T) {
 	// Check that the engine state was updated.
 	if fe.state != string(o.ActiveFeatureEnvironment().cachedJson) {
 		t.Error("Engine state was not updated correctly")
+	}
+}
+
+// TestCompileFeatureFileWithRejectedEngineState verifies that an engine that
+// refuses the state does not stop the rest of the compile: the cached JSON and
+// ETag are still produced, and nothing panics. The engine keeps its previous
+// state, which is why compile logs the failure rather than ignoring it.
+func TestCompileFeatureFileWithRejectedEngineState(t *testing.T) {
+	ff := FeatureFile{
+		Version: 1,
+		Features: FeatureFlags{
+			{
+				Name:       "test-feature",
+				Enabled:    true,
+				Strategies: []Strategy{{Name: "default"}},
+				Project:    "default",
+			},
+		},
+		Segments: []Segment{},
+	}
+
+	cfg := &config.Config{
+		Upstream: "http://example.com",
+		Token:    "dummy.token",
+		Storage:  "file",
+		Reload:   "0",
+	}
+
+	o := NewOverleash(cfg)
+	o.ActiveFeatureEnvironment().featureFile = ff
+
+	fe := &fakeEngine{err: errors.New("engine rejected the state")}
+	o.ActiveFeatureEnvironment().engine = fe
+
+	o.compileFeatureFiles()
+
+	if len(o.ActiveFeatureEnvironment().cachedJson) == 0 {
+		t.Error("cachedJson should still be produced when the engine rejects the state")
+	}
+	if o.ActiveFeatureEnvironment().etagOfCachedJson == "" {
+		t.Error("Expected non-empty etagOfCachedJson")
+	}
+	if fe.state != "" {
+		t.Error("A rejecting engine should not have recorded any state")
 	}
 }
 

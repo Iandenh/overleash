@@ -547,7 +547,12 @@ func (fe *FeatureEnvironment) compile(o *OverleashContext) {
 	fe.etagOfCachedJson = calculateETag(fe.cachedJson)
 
 	if fe.engine != nil {
-		fe.engine.TakeState(string(fe.cachedJson))
+		// A rejected update leaves the engine on its previous state, so this
+		// must not pass silently: the flags served would no longer match the
+		// compiled feature file.
+		if err := fe.engine.TakeState(string(fe.cachedJson)); err != nil {
+			log.Errorf("Failed to update engine state for %s: %v", fe.name, err)
+		}
 	}
 }
 

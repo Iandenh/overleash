@@ -16,7 +16,7 @@ import (
 import "C"
 
 type Engine interface {
-	TakeState(json string)
+	TakeState(json string) error
 	Resolve(context *Context, featureName string) (*EvaluatedToggle, error)
 	ResolveAll(context *Context, includeAll bool) (*EvaluatedToggleList, error)
 }
@@ -30,20 +30,28 @@ func NewUnleashEngine() *UnleashEngine {
 	return &UnleashEngine{ptr: ptr}
 }
 
-func (e *UnleashEngine) TakeState(json string) {
+// TakeState replaces the engine's feature toggle state.
+//
+// A rejected payload leaves the previously loaded state in place, so ignoring
+// the error means serving stale flags while believing the update landed.
+func (e *UnleashEngine) TakeState(json string) error {
 	cjson := C.CString(json)
 
 	defer C.free(unsafe.Pointer(cjson))
 
 	res := C.take_state(e.ptr, cjson)
 
-	if log.GetLevel() == log.DebugLevel {
-		resJson := C.GoString(res)
-
-		log.Debugf("TakeState: %s", string(resJson))
+	if res == nil {
+		return errors.New("engine returned no response")
 	}
 
-	C.free_response(res)
+	defer C.free_response(res)
+
+	resJson := C.GoString(res)
+
+	log.Debugf("TakeState: %s", resJson)
+
+	return parseTakeStateResponse(resJson)
 }
 
 func (e *UnleashEngine) Resolve(context *Context, featureName string) (*EvaluatedToggle, error) {
