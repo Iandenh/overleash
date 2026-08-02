@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.1.2](https://github.com/Iandenh/overleash/compare/v1.1.1...v1.1.2) (2026-07-31)
+
+
+### Bug Fixes
+
+* **unleashengine:** log compile warnings instead of failing the update ([37908b4](https://github.com/Iandenh/overleash/commit/37908b44a986eada9d93173d8dc2123ced875730))
+* **unleashengine:** name a missing status in the parse error ([56597d7](https://github.com/Iandenh/overleash/commit/56597d7f5c972ae9f22762327e8e1c1166e2cbef))
+* **unleashengine:** report take_state failures instead of dropping them ([dcdc411](https://github.com/Iandenh/overleash/commit/dcdc411bada78f17bc6fa01c0322c01b60cf969f))
+* **unleashengine:** report take_state failures instead of dropping them ([e0d6afa](https://github.com/Iandenh/overleash/commit/e0d6afa743af4281b2651ccf5ca0c0dd7729957b))
+
 ## [1.1.1](https://github.com/Iandenh/overleash/compare/v1.1.0...v1.1.1) (2026-05-02)
 
 
