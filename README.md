@@ -2,7 +2,9 @@
 
 ## Override your Unleash feature flags
 
-Overleash is a developer tool to quickly and safely **override feature flags** for your Unleash-powered apps. You can toggle flags in your environment instantly—no need for tricky upstream config changes, and no need to coordinate with the whole team. This helps you move faster, test new features, and keep your development smooth.
+Overleash sits between your app and Unleash so you can flip flags on your own machine. Point your app at it, toggle what you need, carry on. No upstream config changes, no PR to turn a flag on for ten seconds, no asking in Slack whether anyone minds.
+
+Your overrides stay yours. Nobody else's environment changes.
 
 ---
 
