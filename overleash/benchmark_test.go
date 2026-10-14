@@ -14,15 +14,27 @@ func BenchmarkOverrideUpdate(b *testing.B) {
 			file := FeatureFile{Version: 2, Features: make(FeatureFlags, size)}
 			for i := range file.Features {
 				file.Features[i] = Feature{
-					Name: fmt.Sprintf("feature-%04d", i), Enabled: true, Project: "default",
-					Strategies: []Strategy{{Name: "flexibleRollout", Parameters: ParameterMap{"rollout": "50", "stickiness": "userId"}, Constraints: []Constraint{{ContextName: "region", Operator: OperatorIn, Values: []string{"eu", "us"}}}}},
+					Name:    fmt.Sprintf("feature-%04d", i),
+					Enabled: true,
+					Project: "default",
+					Strategies: []Strategy{{
+						Name:       "flexibleRollout",
+						Parameters: ParameterMap{"rollout": "50", "stickiness": "userId"},
+						Constraints: []Constraint{{
+							ContextName: "region",
+							Operator:    OperatorIn,
+							Values:      []string{"eu", "us"},
+						}},
+					}},
 				}
 			}
 			o.LoadFeatureFile(file)
 			b.ReportAllocs()
 			b.ResetTimer()
-			for i := 0; b.Loop(); i++ {
-				o.AddOverride("feature-0000", i%2 == 0)
+			enabled := true
+			for b.Loop() {
+				o.AddOverride("feature-0000", enabled)
+				enabled = !enabled
 			}
 		})
 	}

@@ -7,8 +7,6 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
-
-	"github.com/CAFxX/httpcompression"
 )
 
 func TestCompressionAdapterIsConstructedOnce(t *testing.T) {
@@ -32,14 +30,8 @@ func TestCompressionAdapterIsConstructedOnce(t *testing.T) {
 }
 
 func TestClientCompressionRoundTrip(t *testing.T) {
-	o := benchmarkContext(100)
-	mux := http.NewServeMux()
-	New(o, t.Context()).registerClientApi(mux)
-	adapter, err := httpcompression.DefaultAdapter()
-	if err != nil {
-		t.Fatal(err)
-	}
-	handler := compress(mux, adapter)
+	o := newFeatureContext(100)
+	handler := newClientHandler(t, o, true)
 	var expected bytes.Buffer
 	snapshot := o.ActiveFeatureEnvironment().Snapshot()
 	snapshot.WriteTo(&expected)
@@ -65,13 +57,12 @@ func TestClientCompressionRoundTrip(t *testing.T) {
 
 func TestClientServingAllocationBudget(t *testing.T) {
 	o := testStateContext()
-	mux := http.NewServeMux()
-	New(o, t.Context()).registerClientApi(mux)
+	handler := newClientHandler(t, o, false)
 	request := httptest.NewRequest(http.MethodGet, "/api/client/features", nil)
-	writer := &benchmarkResponseWriter{header: make(http.Header)}
+	writer := &discardResponseWriter{header: make(http.Header)}
 	allocations := testing.AllocsPerRun(100, func() {
 		writer.reset()
-		mux.ServeHTTP(writer, request)
+		handler.ServeHTTP(writer, request)
 	})
 	if allocations > 2 {
 		t.Fatalf("cached client response allocated %g times, want at most two header values", allocations)
