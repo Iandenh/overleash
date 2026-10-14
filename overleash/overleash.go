@@ -11,6 +11,7 @@ import (
 	"slices"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/Iandenh/overleash/config"
@@ -57,6 +58,7 @@ type FeatureEnvironment struct {
 	etagOfCachedJson  string
 	engine            unleashengine.Engine
 	Streamer          *Streamer
+	snapshot          atomic.Pointer[environmentSnapshot]
 }
 
 func (o *OverleashContext) ActiveFeatureEnvironment() *FeatureEnvironment {
@@ -598,14 +600,34 @@ func (fe *FeatureEnvironment) compile(o *OverleashContext) {
 			log.Errorf("Failed to update engine state for %s: %v", fe.name, err)
 		}
 	}
+	// Overrides do not change feature names. Reuse the immutable lookup index
+	// until the upstream feature slice is replaced, rather than rebuilding it for
+	// every toggle or pause operation.
+	var index *featureIndex
+	if previous := fe.snapshot.Load(); previous != nil {
+		oldFeatures := previous.remote.file.Features
+		if len(oldFeatures) == len(fe.featureFile.Features) && (len(oldFeatures) == 0 || &oldFeatures[0] == &fe.featureFile.Features[0]) {
+			index = previous.remote.index
+		}
+	}
+	if index == nil {
+		index = newFeatureIndex(df.Features)
+	}
+	fe.snapshot.Store(&environmentSnapshot{
+		cached: FeatureSnapshot{file: df, index: index, json: fe.cachedJson, etag: fe.etagOfCachedJson},
+		remote: FeatureSnapshot{file: fe.featureFile, index: index},
+	})
 }
 
 func (fe *FeatureEnvironment) featureFileWithOverwrites(o *OverleashContext) FeatureFile {
-	featureFile := cloneFeatureFile(fe.featureFile)
+	// Input files are owned by Overleash and never mutated in place. Overrides
+	// replace feature values; unchanged nested data can be shared across versions.
+	featureFile := fe.featureFile
 
-	if o.paused {
+	if o.paused || len(o.overrides) == 0 {
 		return featureFile
 	}
+	featureFile.Features = slices.Clone(featureFile.Features)
 
 	for _, override := range o.overrides {
 		for idx, flag := range featureFile.Features {
@@ -654,7 +676,7 @@ func mapOverrideToStrategies(override *Override, feature Feature) []Strategy {
 
 	if len(disabledConstraints) > 0 {
 		for idx, strategy := range strategies {
-			strategies[idx].Constraints = append(strategy.Constraints, disabledConstraints...)
+			strategies[idx].Constraints = append(slices.Clone(strategy.Constraints), disabledConstraints...)
 		}
 	}
 

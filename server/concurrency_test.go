@@ -22,7 +22,7 @@ func testStateContext() *overleash.OverleashContext {
 func TestDashboardSearchDoesNotSortSharedState(t *testing.T) {
 	o := testStateContext()
 	list := search(httptest.NewRequest(http.MethodGet, "/?sort=name-asc", nil), o)
-	if list.flags[0].Name != "a" {
+	if list.flags[0].Name() != "a" {
 		t.Fatal("search did not sort results")
 	}
 	if o.ActiveFeatureEnvironment().FeatureFile().Features[0].Name != "b" {
@@ -53,8 +53,11 @@ func TestConcurrentClientAndDashboardReads(t *testing.T) {
 					return
 				}
 				search(httptest.NewRequest(http.MethodGet, "/?sort=name-asc&filter=overridden", nil), o)
-				stale := false
-				if err := feature(overleash.Feature{Name: "b", Stale: &stale}, o, false).Render(t.Context(), io.Discard); err != nil {
+				if err := feature(o.ActiveFeatureEnvironment().Snapshot().Get("b"), o, false).Render(t.Context(), io.Discard); err != nil {
+					t.Error(err)
+					return
+				}
+				if err := feature(o.ActiveFeatureEnvironment().Snapshot().Get("b"), o, true).Render(t.Context(), io.Discard); err != nil {
 					t.Error(err)
 					return
 				}

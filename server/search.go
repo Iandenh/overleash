@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"net/url"
 	"slices"
-	"sort"
 	"strings"
 
 	"github.com/Iandenh/overleash/overleash"
@@ -13,7 +12,7 @@ import (
 )
 
 type featureList struct {
-	flags      overleash.FeatureFlags
+	flags      overleash.FeatureViews
 	searchTerm string
 	sort       string
 	filter     string
@@ -43,10 +42,20 @@ func search(r *http.Request, o *overleash.OverleashContext) featureList {
 
 	q := searchTerm(r)
 
-	flags := fuzzyFeatureFlags(q, o)
+	snapshot := o.ActiveFeatureEnvironment().Snapshot()
+	nameSorted := q == "" && (sortField == "name-asc" || sortField == "name-desc")
+	var allFlags overleash.FeatureViews
+	if nameSorted {
+		allFlags = snapshot.FeaturesByName(sortField == "name-desc")
+	} else {
+		allFlags = snapshot.Features()
+	}
+	flags := fuzzyFeatureFlags(q, allFlags)
 	flags = filterFeaturesByOverrideStatus(flags, filterOption, o)
 
-	sortFeatures(flags, sortField)
+	if !nameSorted {
+		sortFeatures(flags, sortField)
+	}
 
 	urlValues := url.Values{}
 
@@ -74,24 +83,23 @@ func search(r *http.Request, o *overleash.OverleashContext) featureList {
 		sort:       sortField,
 		filter:     filterOption,
 		url:        finalURL,
-		totalFlags: o.ActiveFeatureEnvironment().FeatureFile().Features.Len(),
+		totalFlags: len(allFlags),
 	}
 }
 
-func fuzzyFeatureFlags(search string, o *overleash.OverleashContext) overleash.FeatureFlags {
+func fuzzyFeatureFlags(search string, flags overleash.FeatureViews) overleash.FeatureViews {
 	search = strings.TrimSpace(search)
-	file := o.ActiveFeatureEnvironment().FeatureFile()
 
 	if search == "" {
-		return file.Features
+		return flags
 	}
 
-	results := fuzzy.FindFrom(search, file.Features)
+	results := fuzzy.FindFrom(search, flags)
 
-	flags := make(overleash.FeatureFlags, 0, len(results))
+	matched := make(overleash.FeatureViews, 0, len(results))
 
 	for _, r := range results {
-		flag := file.Features[r.Index]
+		flag := flags[r.Index]
 
 		var nameBuilder strings.Builder
 
@@ -104,39 +112,42 @@ func fuzzyFeatureFlags(search string, o *overleash.OverleashContext) overleash.F
 		}
 
 		flag.SearchTerm = nameBuilder.String()
-		flags = append(flags, flag)
+		matched = append(matched, flag)
 	}
 
-	return flags
+	return matched
 }
 
-func sortFeatures(flags overleash.FeatureFlags, sortOption string) {
+func sortFeatures(flags overleash.FeatureViews, sortOption string) {
 	switch sortOption {
 	case "name-asc":
-		sort.Slice(flags, func(i, j int) bool {
-			return strings.ToLower(flags[i].Name) < strings.ToLower(flags[j].Name)
+		slices.SortFunc(flags, func(a, b overleash.FeatureView) int {
+			return strings.Compare(strings.ToLower(a.Name()), strings.ToLower(b.Name()))
 		})
 	case "name-desc":
-		sort.Slice(flags, func(i, j int) bool {
-			return strings.ToLower(flags[i].Name) > strings.ToLower(flags[j].Name)
+		slices.SortFunc(flags, func(a, b overleash.FeatureView) int {
+			return strings.Compare(strings.ToLower(b.Name()), strings.ToLower(a.Name()))
 		})
 	}
 }
 
-func filterFeaturesByOverrideStatus(flags overleash.FeatureFlags, filterOption string, o *overleash.OverleashContext) overleash.FeatureFlags {
-	var filteredFlags overleash.FeatureFlags
+func filterFeaturesByOverrideStatus(flags overleash.FeatureViews, filterOption string, o *overleash.OverleashContext) overleash.FeatureViews {
+	var filteredFlags overleash.FeatureViews
+	if filterOption != "overridden" && filterOption != "not-overridden" {
+		return flags
+	}
 	overrides := o.Overrides()
 
 	switch filterOption {
 	case "overridden":
 		for _, flag := range flags {
-			if _, exists := overrides[flag.Name]; exists {
+			if _, exists := overrides[flag.Name()]; exists {
 				filteredFlags = append(filteredFlags, flag)
 			}
 		}
 	case "not-overridden":
 		for _, flag := range flags {
-			if _, exists := overrides[flag.Name]; !exists {
+			if _, exists := overrides[flag.Name()]; !exists {
 				filteredFlags = append(filteredFlags, flag)
 			}
 		}

@@ -71,6 +71,11 @@ func TestConcurrentStateReadsAndUpdates(t *testing.T) {
 		wg.Go(func() {
 			for i := 0; i < 100; i++ {
 				fe := o.ActiveFeatureEnvironment()
+				snapshot := fe.Snapshot()
+				snapshot.Get("flag").Name()
+				snapshot.Get("flag").Strategies()
+				snapshot.Features()
+				fe.RemoteSnapshot().Get("flag").Status()
 				fe.FeatureFile()
 				fe.RemoteFeatureFile()
 				fe.CachedJson()

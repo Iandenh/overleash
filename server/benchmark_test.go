@@ -2,6 +2,7 @@ package server
 
 import (
 	"fmt"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -63,6 +64,28 @@ func BenchmarkDashboardSearch(b *testing.B) {
 			b.ResetTimer()
 			for b.Loop() {
 				search(httptest.NewRequest(http.MethodGet, "/?sort=name-asc", nil), o)
+			}
+		})
+	}
+}
+
+func BenchmarkDashboardRender(b *testing.B) {
+	for _, size := range []int{100, 1000} {
+		b.Run(fmt.Sprintf("flags=%d", size), func(b *testing.B) {
+			o := benchmarkContext(size)
+			file := o.ActiveFeatureEnvironment().FeatureFile()
+			stale := false
+			for i := range file.Features {
+				file.Features[i].Stale = &stale
+			}
+			o.LoadFeatureFile(file)
+			b.ReportAllocs()
+			b.ResetTimer()
+			for b.Loop() {
+				list := search(httptest.NewRequest(http.MethodGet, "/?sort=name-asc", nil), o)
+				if err := featureTemplate(list, o).Render(b.Context(), io.Discard); err != nil {
+					b.Fatal(err)
+				}
 			}
 		})
 	}

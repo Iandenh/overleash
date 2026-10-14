@@ -12,7 +12,8 @@ import (
 func (c *Server) registerClientApi(s *http.ServeMux) {
 	s.Handle("GET /api/client/features", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		env := c.featureEnvironmentFromRequest(r)
-		etag, data := env.CachedResponse()
+		snapshot := env.Snapshot()
+		etag := snapshot.ETag()
 
 		ifNoneMatch := strings.Trim(strings.TrimPrefix(r.Header.Get("If-None-Match"), "W/"), "\"")
 
@@ -26,7 +27,7 @@ func (c *Server) registerClientApi(s *http.ServeMux) {
 		h.Add("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 
-		w.Write(data)
+		snapshot.WriteTo(w)
 	}))
 
 	s.Handle("GET /api/client/features/{key}", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -35,7 +36,7 @@ func (c *Server) registerClientApi(s *http.ServeMux) {
 		w.Header().Add("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 
-		flag, _ := c.featureEnvironmentFromRequest(r).FeatureFile().Features.Get(key)
+		flag, _ := c.featureEnvironmentFromRequest(r).Snapshot().Feature(key)
 
 		writer := json.NewEncoder(w)
 

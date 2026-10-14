@@ -256,26 +256,27 @@ templ featureTemplate(list featureList, o *overleash.OverleashContext) {
     </div>
 }
 
-templ feature(flag overleash.Feature, o *overleash.OverleashContext, showDetail bool) {
-    {{ remote := o.ActiveFeatureEnvironment().RemoteFeatureFile() }}
-    {{ override := o.GetOverride(flag.Name) }}
+templ feature(flag overleash.FeatureView, o *overleash.OverleashContext, showDetail bool) {
+    {{ remote := o.ActiveFeatureEnvironment().RemoteSnapshot() }}
+    {{ remoteFlag := remote.Get(flag.Name()) }}
+    {{ override := o.GetOverride(flag.Name()) }}
     {{ paused := o.IsPaused() }}
     <div class="flag-name">
         <div class="key">
             if flag.SearchTerm != "" {
                 @templ.Raw(flag.SearchTerm)
             } else {
-                { flag.Name }
+                { flag.Name() }
             }
         </div>
-        if *flag.Stale == true {
+        if flag.Stale() {
             <div class="stale-status">Stale</div>
         }
     </div>
 
-    if flag.Description != "" {
+    if flag.Description() != "" {
         <div class="description">
-            @templ.Raw(renderJiraLink(flag.Description))
+            @templ.Raw(renderJiraLink(flag.Description()))
         </div>
     }
 
@@ -286,7 +287,7 @@ templ feature(flag overleash.Feature, o *overleash.OverleashContext, showDetail 
             <div>
                 <span class="label">Feature flag:</span>
                 <span class="text">
-                    if remote.FeatureFlagEnabled(flag.Name) {
+                    if remoteFlag.Enabled() {
                         enabled
                     } else {
                         disabled
@@ -297,7 +298,7 @@ templ feature(flag overleash.Feature, o *overleash.OverleashContext, showDetail 
 
         <!-- Strategy summaries in collapsed view -->
         if !showDetail {
-            for _, status := range remote.FeatureFlagStatus(flag.Name) {
+            for _, status := range remoteFlag.Status() {
                 <div class="strategy-summary">
                     <span class="label">{ status.Strategy }:</span>
                     <span class="text">{ status.Status }</span>
@@ -309,31 +310,30 @@ templ feature(flag overleash.Feature, o *overleash.OverleashContext, showDetail 
         if showDetail {
             if o.HasMultipleEnvironments() {
                 for idx, env := range o.FeatureEnvironments() {
-                    {{ environmentFile := env.RemoteFeatureFile() }}
+                    {{ environmentFile := env.RemoteSnapshot() }}
+                    {{ environmentFlag := environmentFile.Get(flag.Name()) }}
                     <div class={"detail-environment", templ.KV("detail-environment-separator", idx > 0)}>
                         <div class="detail-environment-container">
                             <h4 class={templ.KV("active", o.ActiveFeatureEnvironment().Environment() == env.Environment())}>{ env.Environment() }</h4>
                             <div>
                                 <span class="label">Feature flag:</span>
                                 <span class="text">
-                                    if environmentFile.FeatureFlagEnabled(flag.Name) {
+                                    if environmentFlag.Enabled() {
                                         enabled
                                     } else {
                                         disabled
                                     }
                                 </span>
                             </div>
-                            {{ remoteFlag := environmentFile.Get(flag.Name) }}
-                            if remoteFlag != nil {
-                                @featureDetail(remoteFlag.Strategies, environmentFile.SegmentsMap())
+                            if environmentFlag.Exists() {
+                                @featureDetail(environmentFlag.Strategies(), environmentFile.SegmentsMap())
                             }
                         </div>
                     </div>
                 }
             } else {
-                {{ remoteFlag := remote.Get(flag.Name) }}
-                if remoteFlag != nil {
-                    @featureDetail(remoteFlag.Strategies, remote.SegmentsMap())
+                if remoteFlag.Exists() {
+                    @featureDetail(remoteFlag.Strategies(), remote.SegmentsMap())
                 }
             }
         }
@@ -341,14 +341,14 @@ templ feature(flag overleash.Feature, o *overleash.OverleashContext, showDetail 
 
     <div class="action">
         <button class="btn black"
-                hx-post={"override/" + flag.Name + "/true"}
+                hx-post={"override/" + flag.Name() + "/true"}
                 hx-target="closest .flag"
                 hx-swap="innerHTML"
                 hx-trigger="click, enable-flag from:closest .flag">
             Enable <span class="shortcuts">(e)</span>
         </button>
         <button class="btn white"
-                hx-post={"override/" + flag.Name + "/false"}
+                hx-post={"override/" + flag.Name() + "/false"}
                 hx-target="closest .flag"
                 hx-swap="innerHTML"
                 hx-trigger="click, disable-flag from:closest .flag">
@@ -357,14 +357,14 @@ templ feature(flag overleash.Feature, o *overleash.OverleashContext, showDetail 
 
         if showDetail {
             <button class="list muted"
-                    hx-get={"dashboard/feature/" + flag.Name}
+                    hx-get={"dashboard/feature/" + flag.Name()}
                     hx-target="closest .flag"
                     hx-swap="innerHTML"
                     hx-trigger="click, toggle-detail from:closest .flag"
                     title="Collapse details"></button>
         } else {
             <button class="list"
-                    hx-get={"dashboard/feature/" + flag.Name + "?details=true"}
+                    hx-get={"dashboard/feature/" + flag.Name() + "?details=true"}
                     hx-target="closest .flag"
                     hx-swap="innerHTML"
                     hx-trigger="click, toggle-detail from:closest .flag"
@@ -390,7 +390,7 @@ templ feature(flag overleash.Feature, o *overleash.OverleashContext, showDetail 
                 }
             </div>
             <button class="btn white"
-                    hx-delete={"override/" + flag.Name}
+                    hx-delete={"override/" + flag.Name()}
                     hx-target="closest .flag"
                     hx-swap="innerHTML"
                     hx-trigger="click, remove-flag from:closest .flag">

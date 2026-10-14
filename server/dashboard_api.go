@@ -21,9 +21,9 @@ func (c *Server) registerDashboardApi(s *http.ServeMux) {
 	s.HandleFunc("POST /override/constrain/{key}/{enabled}", func(w http.ResponseWriter, request *http.Request) {
 		key := request.PathValue("key")
 		enabled := request.PathValue("enabled")
-		flag, err := c.Overleash.ActiveFeatureEnvironment().FeatureFile().Features.Get(key)
+		flag := c.Overleash.ActiveFeatureEnvironment().Snapshot().Get(key)
 
-		if err != nil {
+		if !flag.Exists() {
 			http.Error(w, "Feature not found", http.StatusNotFound)
 			return
 		}
@@ -34,7 +34,7 @@ func (c *Server) registerDashboardApi(s *http.ServeMux) {
 		decoder.DisallowUnknownFields()
 
 		var constrain overleash.Constraint
-		err = decoder.Decode(&constrain)
+		err := decoder.Decode(&constrain)
 		if err != nil {
 			http.Error(w, "Error parsing json", http.StatusBadRequest)
 			return
@@ -48,9 +48,9 @@ func (c *Server) registerDashboardApi(s *http.ServeMux) {
 	s.HandleFunc("POST /override/{key}/{enabled}", func(w http.ResponseWriter, request *http.Request) {
 		key := request.PathValue("key")
 		enabled := request.PathValue("enabled")
-		flag, err := c.Overleash.ActiveFeatureEnvironment().FeatureFile().Features.Get(key)
+		flag := c.Overleash.ActiveFeatureEnvironment().Snapshot().Get(key)
 
-		if err != nil {
+		if !flag.Exists() {
 			http.Error(w, "Feature not found", http.StatusNotFound)
 			return
 		}
@@ -63,9 +63,9 @@ func (c *Server) registerDashboardApi(s *http.ServeMux) {
 	s.HandleFunc("DELETE /override/{key}", func(w http.ResponseWriter, request *http.Request) {
 		key := request.PathValue("key")
 
-		flag, err := c.Overleash.ActiveFeatureEnvironment().FeatureFile().Features.Get(key)
+		flag := c.Overleash.ActiveFeatureEnvironment().Snapshot().Get(key)
 
-		if err != nil {
+		if !flag.Exists() {
 			http.Error(w, "Feature not found", http.StatusNotFound)
 			return
 		}
@@ -141,9 +141,9 @@ func (c *Server) registerDashboardApi(s *http.ServeMux) {
 	s.HandleFunc("GET /dashboard/feature/{key}", func(w http.ResponseWriter, request *http.Request) {
 		key := request.PathValue("key")
 
-		flag, err := c.Overleash.ActiveFeatureEnvironment().FeatureFile().Features.Get(key)
+		flag := c.Overleash.ActiveFeatureEnvironment().Snapshot().Get(key)
 
-		if err != nil {
+		if !flag.Exists() {
 			http.Error(w, "Feature not found", http.StatusNotFound)
 			return
 		}
