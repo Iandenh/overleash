@@ -20,12 +20,13 @@ func cacheControlMiddleware(next http.Handler) http.Handler {
 }
 
 func compress(next http.Handler, c func(http.Handler) http.Handler) http.Handler {
+	compressed := c(next)
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if strings.HasPrefix(r.URL.Path, "/api/client/streaming") {
 			next.ServeHTTP(w, r)
 			return
 		}
 
-		c(next).ServeHTTP(w, r)
+		compressed.ServeHTTP(w, r)
 	})
 }

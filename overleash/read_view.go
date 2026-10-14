@@ -10,10 +10,11 @@ import (
 // FeatureSnapshot is an immutable view of one published feature file. It remains
 // valid across updates. Mutable data is copied only when explicitly requested.
 type FeatureSnapshot struct {
-	file  FeatureFile
-	index *featureIndex
-	json  []byte
-	etag  string
+	file     FeatureFile
+	index    *featureIndex
+	json     []byte
+	etag     string
+	httpETag string
 }
 
 // Name lookups and sort order depend only on upstream names, not overrides.
@@ -58,6 +59,14 @@ func (fe *FeatureEnvironment) RemoteSnapshot() FeatureSnapshot {
 }
 
 func (s FeatureSnapshot) ETag() string { return s.etag }
+
+// HTTPETag returns the preformatted weak validator for the cached JSON.
+func (s FeatureSnapshot) HTTPETag() string {
+	if s.httpETag == "" {
+		return `W/""`
+	}
+	return s.httpETag
+}
 
 // WriteTo writes immutable cached bytes. As required by io.Writer, the writer
 // must neither modify nor retain the supplied byte slice.

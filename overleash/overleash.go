@@ -614,7 +614,7 @@ func (fe *FeatureEnvironment) compile(o *OverleashContext) {
 		index = newFeatureIndex(df.Features)
 	}
 	fe.snapshot.Store(&environmentSnapshot{
-		cached: FeatureSnapshot{file: df, index: index, json: fe.cachedJson, etag: fe.etagOfCachedJson},
+		cached: FeatureSnapshot{file: df, index: index, json: fe.cachedJson, etag: fe.etagOfCachedJson, httpETag: `W/"` + fe.etagOfCachedJson + `"`},
 		remote: FeatureSnapshot{file: fe.featureFile, index: index},
 	})
 }

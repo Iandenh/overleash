@@ -2,7 +2,6 @@ package server
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"strings"
 
@@ -23,7 +22,7 @@ func (c *Server) registerClientApi(s *http.ServeMux) {
 		}
 
 		h := w.Header()
-		h.Set("ETag", fmt.Sprintf("W/\"%s\"", etag))
+		h.Set("ETag", snapshot.HTTPETag())
 		h.Add("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 
