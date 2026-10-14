@@ -8,8 +8,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"slices"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/Iandenh/overleash/config"
@@ -32,17 +34,21 @@ type OverleashContext struct {
 	featureEnvironments []*FeatureEnvironment
 	activeFeatureIdx    int
 	overrides           map[string]*Override
-	LockMutex           sync.RWMutex
-	lastSync            time.Time
-	paused              bool
-	ticker              ticker
-	store               storage.Store
-	client              client
-	reload              time.Duration
-	metrics             *metrics
+	// mu protects mutable context and environment state. When both are needed,
+	// acquire mu before a Streamer's mutex. Config and environment metadata are
+	// immutable after construction.
+	mu       sync.RWMutex
+	lastSync time.Time
+	paused   bool
+	ticker   ticker
+	store    storage.Store
+	client   client
+	reload   time.Duration
+	metrics  *metrics
 }
 
 type FeatureEnvironment struct {
+	owner             *OverleashContext
 	name              string
 	environment       string
 	token             string
@@ -52,9 +58,12 @@ type FeatureEnvironment struct {
 	etagOfCachedJson  string
 	engine            unleashengine.Engine
 	Streamer          *Streamer
+	snapshot          atomic.Pointer[environmentSnapshot]
 }
 
 func (o *OverleashContext) ActiveFeatureEnvironment() *FeatureEnvironment {
+	o.mu.RLock()
+	defer o.mu.RUnlock()
 	return o.featureEnvironments[o.activeFeatureIdx]
 }
 
@@ -63,15 +72,27 @@ func (o *OverleashContext) HasMultipleEnvironments() bool {
 }
 
 func (o *OverleashContext) FeatureEnvironments() []*FeatureEnvironment {
-	return o.featureEnvironments
+	return slices.Clone(o.featureEnvironments)
 }
 
 func (fe *FeatureEnvironment) EtagOfCachedJson() string {
+	fe.owner.mu.RLock()
+	defer fe.owner.mu.RUnlock()
 	return fe.etagOfCachedJson
 }
 
+// CachedResponse returns an ETag and body from the same compiled state.
+func (fe *FeatureEnvironment) CachedResponse() (string, []byte) {
+	fe.owner.mu.RLock()
+	defer fe.owner.mu.RUnlock()
+	return fe.etagOfCachedJson, slices.Clone(fe.cachedJson)
+}
+
 func (fe *FeatureEnvironment) Engine() unleashengine.Engine {
-	return fe.engine
+	if fe.engine == nil {
+		return nil
+	}
+	return lockedEngine{fe}
 }
 
 func (fe *FeatureEnvironment) Name() string {
@@ -106,6 +127,9 @@ func NewOverleash(cfg *config.Config) *OverleashContext {
 		reload:              cfg.ParseReload(),
 	}
 
+	for _, fe := range o.featureEnvironments {
+		fe.owner = o
+	}
 	return o
 }
 
@@ -154,11 +178,15 @@ func (o *OverleashContext) Start(ctx context.Context) {
 	}
 
 	if overrides, err := o.readOverrides(); err == nil {
+		o.mu.Lock()
 		o.overrides = overrides
+		o.mu.Unlock()
 	}
 
 	if paused, err := o.readPaused(); err == nil {
+		o.mu.Lock()
 		o.paused = paused
+		o.mu.Unlock()
 	}
 
 	if es, ok := o.store.(storage.EventStore); ok {
@@ -183,6 +211,7 @@ func (o *OverleashContext) Start(ctx context.Context) {
 
 	if err != nil {
 		if o.Config.Backup {
+			o.mu.Lock()
 			for idx, feature := range o.featureEnvironments {
 				data, err := o.store.Read(feature.name + "-backup.json")
 
@@ -201,6 +230,7 @@ func (o *OverleashContext) Start(ctx context.Context) {
 				o.featureEnvironments[idx].featureFile = f
 			}
 			o.compileFeatureFiles()
+			o.mu.Unlock()
 
 			log.Info("Loaded from backup")
 		} else {
@@ -221,8 +251,8 @@ func (o *OverleashContext) registerEventStore(ctx context.Context, store storage
 
 	store.Subscribe(ctx, func(key string, data []byte) {
 		if key == "overrides.json" {
-			o.LockMutex.Lock()
-			defer o.LockMutex.Unlock()
+			o.mu.Lock()
+			defer o.mu.Unlock()
 
 			overrides := &map[string]*Override{}
 			err := json.Unmarshal(data, overrides)
@@ -236,8 +266,8 @@ func (o *OverleashContext) registerEventStore(ctx context.Context, store storage
 			log.Debug("Overrides loaded from store")
 			o.compileFeatureFiles()
 		} else if key == "paused.json" {
-			o.LockMutex.Lock()
-			defer o.LockMutex.Unlock()
+			o.mu.Lock()
+			defer o.mu.Unlock()
 
 			var paused bool
 			if err := json.Unmarshal(data, &paused); err != nil {
@@ -313,14 +343,16 @@ func (o *OverleashContext) registerRemotes() {
 }
 
 func (o *OverleashContext) loadRemotesWithLock() error {
-	o.LockMutex.Lock()
-	defer o.LockMutex.Unlock()
+	o.mu.Lock()
+	defer o.mu.Unlock()
 
 	return o.loadRemotes()
 }
 
 func (o *OverleashContext) LoadFeatureFile(state FeatureFile) {
-	o.ActiveFeatureEnvironment().featureFile = state
+	o.mu.Lock()
+	defer o.mu.Unlock()
+	o.featureEnvironments[o.activeFeatureIdx].featureFile = cloneFeatureFile(state)
 	o.compileFeatureFiles()
 }
 
@@ -337,7 +369,7 @@ func (o *OverleashContext) loadRemotes() error {
 			continue
 		}
 
-		o.featureEnvironments[idx].featureFile = *featureFile
+		o.featureEnvironments[idx].featureFile = cloneFeatureFile(*featureFile)
 		hasRefreshed = true
 
 		if o.Config.Backup {
@@ -381,12 +413,14 @@ func (o *OverleashContext) RefreshFeatureFiles() error {
 }
 
 func (o *OverleashContext) FeatureFileIdx() int {
+	o.mu.RLock()
+	defer o.mu.RUnlock()
 	return o.activeFeatureIdx
 }
 
 func (o *OverleashContext) SetFeatureFileIdx(idx int) error {
-	o.LockMutex.Lock()
-	defer o.LockMutex.Unlock()
+	o.mu.Lock()
+	defer o.mu.Unlock()
 
 	if idx < 0 || idx >= len(o.featureEnvironments) {
 		return fmt.Errorf("invalid data file index: %d", idx)
@@ -394,14 +428,14 @@ func (o *OverleashContext) SetFeatureFileIdx(idx int) error {
 
 	o.activeFeatureIdx = idx
 
-	go o.featureEnvironments[idx].processMoveToActive(o)
+	o.featureEnvironments[idx].processMoveToActive(o)
 
 	return nil
 }
 
 func (o *OverleashContext) AddOverride(featureFlag string, enabled bool) {
-	o.LockMutex.Lock()
-	defer o.LockMutex.Unlock()
+	o.mu.Lock()
+	defer o.mu.Unlock()
 
 	o.overrides[featureFlag] = &Override{
 		FeatureFlag: featureFlag,
@@ -411,12 +445,12 @@ func (o *OverleashContext) AddOverride(featureFlag string, enabled bool) {
 
 	o.compileFeatureFiles()
 	o.writeOverrides(o.overrides)
-	go o.processOverleashStreaming()
+	o.processOverleashStreaming()
 }
 
 func (o *OverleashContext) AddOverrideConstraint(featureFlag string, enabled bool, constraint Constraint) {
-	o.LockMutex.Lock()
-	defer o.LockMutex.Unlock()
+	o.mu.Lock()
+	defer o.mu.Unlock()
 
 	if o.overrides[featureFlag] == nil || o.overrides[featureFlag].IsGlobal {
 		o.overrides[featureFlag] = &Override{
@@ -429,56 +463,62 @@ func (o *OverleashContext) AddOverrideConstraint(featureFlag string, enabled boo
 
 	o.overrides[featureFlag].Constraints = append(o.overrides[featureFlag].Constraints, OverrideConstraint{
 		Enabled:    enabled,
-		Constraint: constraint,
+		Constraint: cloneConstraint(constraint),
 	})
 
 	o.compileFeatureFiles()
 	o.writeOverrides(o.overrides)
-	go o.processOverleashStreaming()
+	o.processOverleashStreaming()
 }
 
 func (o *OverleashContext) DeleteOverride(featureFlag string) {
-	o.LockMutex.Lock()
-	defer o.LockMutex.Unlock()
+	o.mu.Lock()
+	defer o.mu.Unlock()
 
 	delete(o.overrides, featureFlag)
 
 	o.compileFeatureFiles()
 	o.writeOverrides(o.overrides)
-	go o.processOverleashStreaming()
+	o.processOverleashStreaming()
 }
 
 func (o *OverleashContext) DeleteAllOverride() {
-	o.LockMutex.Lock()
-	defer o.LockMutex.Unlock()
+	o.mu.Lock()
+	defer o.mu.Unlock()
 
 	o.overrides = make(map[string]*Override)
 
 	o.compileFeatureFiles()
 	o.writeOverrides(o.overrides)
-	go o.processOverleashStreaming()
+	o.processOverleashStreaming()
 }
 
 func (o *OverleashContext) SetPaused(paused bool) {
-	o.LockMutex.Lock()
-	defer o.LockMutex.Unlock()
+	o.mu.Lock()
+	defer o.mu.Unlock()
 
 	o.paused = paused
 
 	o.compileFeatureFiles()
 	o.writePaused(paused)
-	go o.processOverleashStreaming()
+	o.processOverleashStreaming()
 }
 
 func (o *OverleashContext) IsPaused() bool {
+	o.mu.RLock()
+	defer o.mu.RUnlock()
 	return o.paused
 }
 func (fe *FeatureEnvironment) FeatureFile() FeatureFile {
-	return fe.cachedFeatureFile
+	fe.owner.mu.RLock()
+	defer fe.owner.mu.RUnlock()
+	return cloneFeatureFile(fe.cachedFeatureFile)
 }
 
 func (fe *FeatureEnvironment) RemoteFeatureFile() FeatureFile {
-	return fe.featureFile
+	fe.owner.mu.RLock()
+	defer fe.owner.mu.RUnlock()
+	return cloneFeatureFile(fe.featureFile)
 }
 
 func (fe *FeatureEnvironment) Token() string {
@@ -504,17 +544,23 @@ func (o *OverleashContext) Upstream() string {
 }
 
 func (fe *FeatureEnvironment) CachedJson() []byte {
-	return fe.cachedJson
+	_, data := fe.CachedResponse()
+	return data
 }
 
 func (o *OverleashContext) Overrides() map[string]*Override {
-	return o.overrides
+	o.mu.RLock()
+	defer o.mu.RUnlock()
+	return cloneOverrides(o.overrides)
 }
 
 func (o *OverleashContext) LastSync() time.Time {
+	o.mu.RLock()
+	defer o.mu.RUnlock()
 	return o.lastSync
 }
 
+// compileFeatureFiles requires mu to be held exclusively after startup.
 func (o *OverleashContext) compileFeatureFiles() {
 	log.Debug("Compiling feature files")
 
@@ -527,7 +573,7 @@ func (fe *FeatureEnvironment) compile(o *OverleashContext) {
 	df := fe.featureFileWithOverwrites(o)
 
 	if fe.Streamer != nil {
-		go fe.Streamer.processFeature(fe.cachedFeatureFile, df, fe.featureFile)
+		fe.Streamer.processFeature(fe.cachedFeatureFile, df, fe.featureFile)
 	}
 
 	fe.cachedFeatureFile = df
@@ -554,18 +600,34 @@ func (fe *FeatureEnvironment) compile(o *OverleashContext) {
 			log.Errorf("Failed to update engine state for %s: %v", fe.name, err)
 		}
 	}
+	// Overrides do not change feature names. Reuse the immutable lookup index
+	// until the upstream feature slice is replaced, rather than rebuilding it for
+	// every toggle or pause operation.
+	var index *featureIndex
+	if previous := fe.snapshot.Load(); previous != nil {
+		oldFeatures := previous.remote.file.Features
+		if len(oldFeatures) == len(fe.featureFile.Features) && (len(oldFeatures) == 0 || &oldFeatures[0] == &fe.featureFile.Features[0]) {
+			index = previous.remote.index
+		}
+	}
+	if index == nil {
+		index = newFeatureIndex(df.Features)
+	}
+	fe.snapshot.Store(&environmentSnapshot{
+		cached: FeatureSnapshot{file: df, index: index, json: fe.cachedJson, etag: fe.etagOfCachedJson, httpETag: `W/"` + fe.etagOfCachedJson + `"`},
+		remote: FeatureSnapshot{file: fe.featureFile, index: index},
+	})
 }
 
 func (fe *FeatureEnvironment) featureFileWithOverwrites(o *OverleashContext) FeatureFile {
-	featureFile := fe.RemoteFeatureFile()
+	// Input files are owned by Overleash and never mutated in place. Overrides
+	// replace feature values; unchanged nested data can be shared across versions.
+	featureFile := fe.featureFile
 
-	f := make(FeatureFlags, len(featureFile.Features))
-	copy(f, featureFile.Features)
-	featureFile.Features = f
-
-	if o.paused {
+	if o.paused || len(o.overrides) == 0 {
 		return featureFile
 	}
+	featureFile.Features = slices.Clone(featureFile.Features)
 
 	for _, override := range o.overrides {
 		for idx, flag := range featureFile.Features {
@@ -614,7 +676,7 @@ func mapOverrideToStrategies(override *Override, feature Feature) []Strategy {
 
 	if len(disabledConstraints) > 0 {
 		for idx, strategy := range strategies {
-			strategies[idx].Constraints = append(strategy.Constraints, disabledConstraints...)
+			strategies[idx].Constraints = append(slices.Clone(strategy.Constraints), disabledConstraints...)
 		}
 	}
 
@@ -654,6 +716,8 @@ func (o *OverleashContext) AddRegistration(data *ClientData) {
 }
 
 func (o *OverleashContext) HasOverride(key string) (bool, bool) {
+	o.mu.RLock()
+	defer o.mu.RUnlock()
 	override, ok := o.overrides[key]
 
 	if !ok {
@@ -664,13 +728,15 @@ func (o *OverleashContext) HasOverride(key string) (bool, bool) {
 }
 
 func (o *OverleashContext) GetOverride(key string) *Override {
+	o.mu.RLock()
+	defer o.mu.RUnlock()
 	override, ok := o.overrides[key]
 
 	if !ok {
 		return nil
 	}
 
-	return override
+	return cloneOverride(override)
 }
 
 func (o *OverleashContext) writeOverrides(overrides map[string]*Override) error {

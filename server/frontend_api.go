@@ -13,9 +13,6 @@ import (
 
 func (c *Server) registerFrontendApi(s *http.ServeMux) {
 	s.Handle("GET /api/frontend", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		c.Overleash.LockMutex.RLock()
-		defer c.Overleash.LockMutex.RUnlock()
-
 		w.Header().Add("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 
@@ -35,9 +32,6 @@ func (c *Server) registerFrontendApi(s *http.ServeMux) {
 	}))
 
 	s.Handle("POST /api/frontend", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		c.Overleash.LockMutex.RLock()
-		defer c.Overleash.LockMutex.RUnlock()
-
 		w.Header().Add("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 
@@ -63,9 +57,6 @@ func (c *Server) registerFrontendApi(s *http.ServeMux) {
 	}))
 
 	s.Handle("GET /api/frontend/all", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		c.Overleash.LockMutex.RLock()
-		defer c.Overleash.LockMutex.RUnlock()
-
 		w.Header().Add("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 
@@ -85,9 +76,6 @@ func (c *Server) registerFrontendApi(s *http.ServeMux) {
 	}))
 
 	s.Handle("POST /api/frontend/features/{featureName}", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		c.Overleash.LockMutex.RLock()
-		defer c.Overleash.LockMutex.RUnlock()
-
 		featureName := r.PathValue("featureName")
 
 		ctx, err := createContextFromPostRequest(r)
@@ -116,9 +104,6 @@ func (c *Server) registerFrontendApi(s *http.ServeMux) {
 	}))
 
 	s.Handle("GET /api/frontend/features/{featureName}", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		c.Overleash.LockMutex.RLock()
-		defer c.Overleash.LockMutex.RUnlock()
-
 		featureName := r.PathValue("featureName")
 
 		ctx := createContextFromGetRequest(r)

@@ -2,7 +2,6 @@ package server
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"strings"
 
@@ -12,20 +11,22 @@ import (
 func (c *Server) registerClientApi(s *http.ServeMux) {
 	s.Handle("GET /api/client/features", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		env := c.featureEnvironmentFromRequest(r)
+		snapshot := env.Snapshot()
+		etag := snapshot.ETag()
 
 		ifNoneMatch := strings.Trim(strings.TrimPrefix(r.Header.Get("If-None-Match"), "W/"), "\"")
 
-		if ifNoneMatch != "" && ifNoneMatch == env.EtagOfCachedJson() {
+		if ifNoneMatch != "" && ifNoneMatch == etag {
 			w.WriteHeader(http.StatusNotModified)
 			return
 		}
 
 		h := w.Header()
-		h.Set("ETag", fmt.Sprintf("W/\"%s\"", env.EtagOfCachedJson()))
+		h.Set("ETag", snapshot.HTTPETag())
 		h.Add("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 
-		w.Write(env.CachedJson())
+		snapshot.WriteTo(w)
 	}))
 
 	s.Handle("GET /api/client/features/{key}", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -34,7 +35,7 @@ func (c *Server) registerClientApi(s *http.ServeMux) {
 		w.Header().Add("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 
-		flag, _ := c.featureEnvironmentFromRequest(r).FeatureFile().Features.Get(key)
+		flag, _ := c.featureEnvironmentFromRequest(r).Snapshot().Feature(key)
 
 		writer := json.NewEncoder(w)
 

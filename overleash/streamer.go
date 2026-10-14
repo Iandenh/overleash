@@ -2,6 +2,7 @@ package overleash
 
 import (
 	"encoding/json"
+	"slices"
 	"strconv"
 	"sync"
 	"sync/atomic"
@@ -12,6 +13,7 @@ import (
 )
 
 type StreamSubscriber interface {
+	// Notify must not block or call back into Overleash state methods.
 	Notify(e SseEvent)
 	UseActiveEnvironment() bool
 	IsOverleashClient() bool
@@ -33,7 +35,7 @@ type Streamer struct {
 func (s *Streamer) NotifyWithNewUpdateDelta(id int, events []Event, overleashEvent bool) {
 	j, _ := json.Marshal(Events{events})
 
-	for _, subscriber := range s.subscribers {
+	for _, subscriber := range s.subscriberSnapshot() {
 		subscriber.Notify(SseEvent{
 			Id:             strconv.Itoa(id),
 			Event:          "unleash-updated",
@@ -62,11 +64,26 @@ func NewStreamer() *Streamer {
 	}
 }
 
-func (fe *FeatureEnvironment) AddStreamerSubscriber(client StreamSubscriber, o *OverleashContext, withLock bool) {
-	if withLock {
-		fe.Streamer.mutex.Lock()
-		defer fe.Streamer.mutex.Unlock()
+func (s *Streamer) subscriberSnapshot() []StreamSubscriber {
+	s.mutex.RLock()
+	defer s.mutex.RUnlock()
+	return slices.Clone(s.subscribers)
+}
+
+func (fe *FeatureEnvironment) AddStreamerSubscriber(client StreamSubscriber) {
+	o := fe.owner
+	o.mu.Lock()
+	defer o.mu.Unlock()
+	if client.UseActiveEnvironment() {
+		fe = o.featureEnvironments[o.activeFeatureIdx]
 	}
+	fe.addStreamerSubscriberLocked(client, o)
+}
+
+// The context state lock must be held before accessing hydration state.
+func (fe *FeatureEnvironment) addStreamerSubscriberLocked(client StreamSubscriber, o *OverleashContext) {
+	fe.Streamer.mutex.Lock()
+	defer fe.Streamer.mutex.Unlock()
 
 	fe.Streamer.subscribers = append(fe.Streamer.subscribers, client)
 
@@ -94,11 +111,20 @@ func (fe *FeatureEnvironment) AddStreamerSubscriber(client StreamSubscriber, o *
 	client.Notify(fe.Streamer.createNewConnectDelta(1, events))
 }
 
-func (fe *FeatureEnvironment) RemoveStreamerSubscriber(client StreamSubscriber, withLock bool) {
-	if withLock {
-		fe.Streamer.mutex.Lock()
-		defer fe.Streamer.mutex.Unlock()
+func (fe *FeatureEnvironment) RemoveStreamerSubscriber(client StreamSubscriber) {
+	fe.owner.mu.Lock()
+	defer fe.owner.mu.Unlock()
+	// A dashboard-driven subscriber may have moved to another environment.
+	for _, environment := range fe.owner.featureEnvironments {
+		if environment.Streamer != nil {
+			environment.removeStreamerSubscriberLocked(client)
+		}
 	}
+}
+
+func (fe *FeatureEnvironment) removeStreamerSubscriberLocked(client StreamSubscriber) {
+	fe.Streamer.mutex.Lock()
+	defer fe.Streamer.mutex.Unlock()
 
 	newSubs := make([]StreamSubscriber, 0, len(fe.Streamer.subscribers))
 	for _, sub := range fe.Streamer.subscribers {
@@ -109,10 +135,12 @@ func (fe *FeatureEnvironment) RemoveStreamerSubscriber(client StreamSubscriber, 
 	fe.Streamer.subscribers = newSubs
 }
 
+// processOverleashStreaming runs under the state lock so the event's overrides
+// cannot change during encoding or overtake an earlier state update.
 func (o *OverleashContext) processOverleashStreaming() {
 	for _, e := range o.featureEnvironments {
 		if e.Streamer != nil {
-			if len(e.Streamer.subscribers) == 0 {
+			if len(e.Streamer.subscriberSnapshot()) == 0 {
 				continue
 			}
 
@@ -135,13 +163,12 @@ func (o *OverleashContext) processOverleashStreaming() {
 	}
 }
 
+// processMoveToActive requires the context state lock. Serializing switches here
+// avoids taking two streamer locks in opposite order during concurrent switches.
 func (fe *FeatureEnvironment) processMoveToActive(o *OverleashContext) {
 	if fe.Streamer == nil {
 		return
 	}
-
-	fe.Streamer.mutex.Lock()
-	defer fe.Streamer.mutex.Unlock()
 
 	for _, fe2 := range o.featureEnvironments {
 		if fe == fe2 {
@@ -157,24 +184,18 @@ func (fe *FeatureEnvironment) processMoveToActive(o *OverleashContext) {
 }
 
 func (fe *FeatureEnvironment) moveUsingActiveFrom(f2 *FeatureEnvironment, o *OverleashContext) {
-	f2.Streamer.mutex.Lock()
-	defer f2.Streamer.mutex.Unlock()
-
-	for _, sub := range f2.Streamer.subscribers {
+	for _, sub := range f2.Streamer.subscriberSnapshot() {
 		if sub.UseActiveEnvironment() == false {
 			continue
 		}
 
-		f2.RemoveStreamerSubscriber(sub, false)
-		fe.AddStreamerSubscriber(sub, o, false)
+		f2.removeStreamerSubscriberLocked(sub)
+		fe.addStreamerSubscriberLocked(sub, o)
 	}
 }
 
 func (s *Streamer) processFeature(old, new, remote FeatureFile) {
-	s.mutex.RLock()
-	defer s.mutex.RUnlock()
-
-	if len(s.subscribers) == 0 {
+	if len(s.subscriberSnapshot()) == 0 {
 		log.Debug("No subscribers, skipping processing")
 		return
 	}

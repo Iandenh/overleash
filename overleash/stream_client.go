@@ -33,8 +33,8 @@ func (fe *FeatureEnvironment) processSseEvent(event eventsource.Event, o *Overle
 }
 
 func (fe *FeatureEnvironment) processEvents(events Events, o *OverleashContext, main bool) {
-	o.LockMutex.Lock()
-	defer o.LockMutex.Unlock()
+	o.mu.Lock()
+	defer o.mu.Unlock()
 
 	currentFeatures := make(map[string]Feature)
 
