@@ -3,7 +3,6 @@ package overleash
 import (
 	"bytes"
 	"context"
-	"crypto/tls"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -25,14 +24,15 @@ const (
 	unleashAppNameHeader      string = "Unleash-Appname"
 	unleashSdkHeader          string = "Unleash-Sdk"
 
-	supportedSpecVersion string = "5.1.0"
+	supportedSpecVersion   string = "5.1.0"
+	upstreamRequestTimeout        = 10 * time.Second
 )
 
 type client interface {
 	getFeatures(token string) (*FeatureFile, error)
 	validateToken(token string) (*EdgeToken, error)
 	registerClient(token *EdgeToken) error
-	bulkMetrics(token string, applications []*ClientData, metrics []*MetricsData) error
+	bulkMetrics(ctx context.Context, token string, applications []*ClientData, metrics []*MetricsData) error
 	streamFeatures(token string, channel chan eventsource.Event) error
 }
 
@@ -45,20 +45,37 @@ type overleashClient struct {
 }
 
 func newClient(upstream string, interval time.Duration, ctx context.Context) *overleashClient {
+	transport := http.DefaultTransport.(*http.Transport).Clone()
+	// Preserve direct upstream connections while using Go's bounded dial/TLS
+	// defaults and idle-connection pooling.
+	transport.Proxy = nil
 	return &overleashClient{
 		upstream:     upstream,
 		interval:     int(interval.Seconds()),
 		connectionId: uuid.New().String(),
 		httpClient: &http.Client{
+			Timeout: upstreamRequestTimeout,
 			CheckRedirect: func(req *http.Request, via []*http.Request) error {
 				return http.ErrUseLastResponse
 			},
-			Transport: &http.Transport{
-				TLSClientConfig: &tls.Config{},
-			},
+			Transport: transport,
 		},
 		ctx: ctx,
 	}
+}
+
+// do checks the HTTP status before callers decode a success payload. Error
+// responses are closed here; callers own successful response bodies.
+func (c *overleashClient) do(req *http.Request, expectedStatus int) (*http.Response, error) {
+	res, err := c.httpClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	if res.StatusCode != expectedStatus {
+		res.Body.Close()
+		return nil, fmt.Errorf("upstream returned HTTP %d, expected %d", res.StatusCode, expectedStatus)
+	}
+	return res, nil
 }
 
 type validationRequest struct {
@@ -149,7 +166,7 @@ type validationResponse struct {
 }
 
 func (c *overleashClient) getFeatures(token string) (*FeatureFile, error) {
-	req, err := http.NewRequest(http.MethodGet, c.upstream+"/api/client/features", nil)
+	req, err := http.NewRequestWithContext(c.ctx, http.MethodGet, c.upstream+"/api/client/features", nil)
 
 	if err != nil {
 		return nil, err
@@ -163,14 +180,10 @@ func (c *overleashClient) getFeatures(token string) (*FeatureFile, error) {
 	req.Header.Add(unleashIntervalHeader, strconv.Itoa(c.interval))
 	req.Header.Add(unleashSdkHeader, "overleash@"+version.Version)
 
-	res, err := c.httpClient.Do(req)
+	res, err := c.do(req, http.StatusOK)
 
 	if err != nil {
 		return nil, err
-	}
-
-	if res == nil {
-		return nil, fmt.Errorf("httpClient.Do returned nil response without error")
 	}
 
 	defer res.Body.Close()
@@ -193,7 +206,7 @@ func (c *overleashClient) getFeatures(token string) (*FeatureFile, error) {
 }
 
 func (c *overleashClient) validateToken(token string) (*EdgeToken, error) {
-	req, err := http.NewRequest(http.MethodPost, c.upstream+"/edge/validate", nil)
+	req, err := http.NewRequestWithContext(c.ctx, http.MethodPost, c.upstream+"/edge/validate", nil)
 
 	if err != nil {
 		return nil, err
@@ -216,14 +229,10 @@ func (c *overleashClient) validateToken(token string) (*EdgeToken, error) {
 
 	req.Body = io.NopCloser(bytes.NewReader(tokenJson))
 
-	res, err := c.httpClient.Do(req)
+	res, err := c.do(req, http.StatusOK)
 
 	if err != nil {
 		return nil, err
-	}
-
-	if res == nil {
-		return nil, fmt.Errorf("httpClient.Do returned nil response without error")
 	}
 
 	defer res.Body.Close()
@@ -252,7 +261,7 @@ func (c *overleashClient) validateToken(token string) (*EdgeToken, error) {
 }
 
 func (c *overleashClient) registerClient(token *EdgeToken) error {
-	req, err := http.NewRequest(http.MethodPost, c.upstream+"/api/client/register", nil)
+	req, err := http.NewRequestWithContext(c.ctx, http.MethodPost, c.upstream+"/api/client/register", nil)
 
 	if err != nil {
 		return err
@@ -287,25 +296,20 @@ func (c *overleashClient) registerClient(token *EdgeToken) error {
 
 	req.Body = io.NopCloser(bytes.NewReader(requestJson))
 
-	res, err := c.httpClient.Do(req)
+	res, err := c.do(req, http.StatusOK)
 
 	if err != nil {
 		return err
 	}
 
-	if res == nil {
-		return fmt.Errorf("httpClient.Do returned nil response without error")
-	}
-
-	if res.StatusCode != http.StatusOK {
-		return fmt.Errorf("invalid status code: %d", res.StatusCode)
-	}
-
-	return nil
+	defer res.Body.Close()
+	// Drain small acknowledgements for connection reuse, not unbounded bodies.
+	_, err = io.Copy(io.Discard, io.LimitReader(res.Body, 64<<10))
+	return err
 }
 
-func (c *overleashClient) bulkMetrics(token string, applications []*ClientData, metrics []*MetricsData) error {
-	req, err := http.NewRequest(http.MethodPost, c.upstream+"/api/client/metrics/bulk", nil)
+func (c *overleashClient) bulkMetrics(ctx context.Context, token string, applications []*ClientData, metrics []*MetricsData) error {
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.upstream+"/api/client/metrics/bulk", nil)
 	if err != nil {
 		return err
 	}
@@ -341,17 +345,16 @@ func (c *overleashClient) bulkMetrics(token string, applications []*ClientData, 
 
 	req.Body = io.NopCloser(bytes.NewReader(requestJson))
 
-	res, err := c.httpClient.Do(req)
+	res, err := c.do(req, http.StatusAccepted)
 
 	if err != nil {
 		return err
 	}
 
-	if res.StatusCode != http.StatusAccepted {
-		return fmt.Errorf("invalid status code: %d", res.StatusCode)
-	}
-
-	return nil
+	defer res.Body.Close()
+	// Drain small acknowledgements for connection reuse, not unbounded bodies.
+	_, err = io.Copy(io.Discard, io.LimitReader(res.Body, 64<<10))
+	return err
 }
 
 func (c *overleashClient) streamFeatures(token string, channel chan eventsource.Event) error {

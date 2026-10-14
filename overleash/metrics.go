@@ -31,7 +31,11 @@ func (o *OverleashContext) startMetrics(ctx context.Context) {
 		for {
 			select {
 			case <-ctx.Done():
-				o.sendMetrics()
+				// Preserve the best-effort final flush, but do not let shutdown
+				// wait indefinitely or inherit an already-canceled context.
+				flushCtx, cancel := context.WithTimeout(context.WithoutCancel(ctx), upstreamRequestTimeout)
+				o.sendMetrics(flushCtx)
+				cancel()
 				return
 
 			case val := <-o.metrics.metricChannel:
@@ -43,7 +47,7 @@ func (o *OverleashContext) startMetrics(ctx context.Context) {
 				break
 
 			case <-t.ticker.C:
-				o.sendMetrics()
+				o.sendMetrics(ctx)
 			}
 		}
 	}()
@@ -54,14 +58,14 @@ func (m *metrics) reset() {
 	m.metrics = m.metrics[:0]
 }
 
-func (o *OverleashContext) sendMetrics() {
+func (o *OverleashContext) sendMetrics(ctx context.Context) {
 	if len(o.metrics.metrics) == 0 && len(o.metrics.clientData) == 0 {
 		log.Debug("No metrics to send")
 		return
 	}
 
 	log.Debug("Sending metrics")
-	err := o.client.bulkMetrics(o.ActiveFeatureEnvironment().token, o.metrics.clientData, o.metrics.metrics)
+	err := o.client.bulkMetrics(ctx, o.ActiveFeatureEnvironment().token, o.metrics.clientData, o.metrics.metrics)
 
 	if err != nil {
 		log.Errorf("Failed to send metrics to upstream: %v", err)

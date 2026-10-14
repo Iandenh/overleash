@@ -108,8 +108,11 @@ func (fe *FeatureEnvironment) processEvents(events Events, o *OverleashContext, 
 		segmentSlice = append(segmentSlice, segment)
 	}
 
-	fe.featureFile.Features = featureSlice
-	fe.featureFile.Segments = segmentSlice
+	fe.setRemoteFeatureFile(FeatureFile{
+		Version:  fe.featureFile.Version,
+		Features: featureSlice,
+		Segments: segmentSlice,
+	})
 
 	fe.compile(o)
 	o.lastSync = time.Now()

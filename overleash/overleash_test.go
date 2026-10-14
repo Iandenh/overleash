@@ -1,6 +1,7 @@
 package overleash
 
 import (
+	"context"
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
@@ -94,7 +95,7 @@ func (fc *fakeClient) getFeatures(token string) (*FeatureFile, error) {
 	return &fc.featureFile, fc.err
 }
 
-func (fc *fakeClient) bulkMetrics(token string, applications []*ClientData, metrics []*MetricsData) error {
+func (fc *fakeClient) bulkMetrics(ctx context.Context, token string, applications []*ClientData, metrics []*MetricsData) error {
 	return nil
 }
 
@@ -419,7 +420,7 @@ func TestWriteAndReadOverrides(t *testing.T) {
 	}
 }
 
-// TestLoadRemotes verifies that loadRemotesWithLock updates featureFile using a fake overleashClient.
+// TestLoadRemotes verifies that loadRemotes updates featureFile using a fake client.
 func TestLoadRemotes(t *testing.T) {
 	cfg := &config.Config{
 		Upstream: "http://example.com",
@@ -446,9 +447,8 @@ func TestLoadRemotes(t *testing.T) {
 	fc := &fakeClient{featureFile: ff, err: nil}
 	o.client = fc
 
-	// Call loadRemotesWithLock.
-	if err := o.loadRemotesWithLock(); err != nil {
-		t.Errorf("loadRemotesWithLock returned error: %v", err)
+	if err := o.loadRemotes(); err != nil {
+		t.Errorf("loadRemotes returned error: %v", err)
 	}
 	// Verify that featureFile[0] is updated.
 	if o.ActiveFeatureEnvironment().featureFile.Version != 2 {
