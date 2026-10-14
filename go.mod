@@ -1,6 +1,6 @@
 module github.com/Iandenh/overleash
 
-go 1.26.0
+go 1.27.0
 
 require (
 	github.com/CAFxX/httpcompression v0.0.9
