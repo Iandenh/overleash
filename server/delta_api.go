@@ -122,8 +122,8 @@ func (c *Server) registerDeltaApi(s *http.ServeMux) {
 		}
 
 		env := c.featureEnvironmentFromRequest(r)
-		env.AddStreamerSubscriber(subscriber, c.Overleash, true)
-		defer env.RemoveStreamerSubscriber(subscriber, true)
+		env.AddStreamerSubscriber(subscriber)
+		defer env.RemoveStreamerSubscriber(subscriber)
 
 		ctx := r.Context()
 		go subscriber.run(ctx)

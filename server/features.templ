@@ -257,6 +257,9 @@ templ featureTemplate(list featureList, o *overleash.OverleashContext) {
 }
 
 templ feature(flag overleash.Feature, o *overleash.OverleashContext, showDetail bool) {
+    {{ remote := o.ActiveFeatureEnvironment().RemoteFeatureFile() }}
+    {{ override := o.GetOverride(flag.Name) }}
+    {{ paused := o.IsPaused() }}
     <div class="flag-name">
         <div class="key">
             if flag.SearchTerm != "" {
@@ -283,7 +286,7 @@ templ feature(flag overleash.Feature, o *overleash.OverleashContext, showDetail 
             <div>
                 <span class="label">Feature flag:</span>
                 <span class="text">
-                    if o.ActiveFeatureEnvironment().RemoteFeatureFile().FeatureFlagEnabled(flag.Name) {
+                    if remote.FeatureFlagEnabled(flag.Name) {
                         enabled
                     } else {
                         disabled
@@ -294,7 +297,7 @@ templ feature(flag overleash.Feature, o *overleash.OverleashContext, showDetail 
 
         <!-- Strategy summaries in collapsed view -->
         if !showDetail {
-            for _, status := range o.ActiveFeatureEnvironment().RemoteFeatureFile().FeatureFlagStatus(flag.Name) {
+            for _, status := range remote.FeatureFlagStatus(flag.Name) {
                 <div class="strategy-summary">
                     <span class="label">{ status.Strategy }:</span>
                     <span class="text">{ status.Status }</span>
@@ -306,25 +309,32 @@ templ feature(flag overleash.Feature, o *overleash.OverleashContext, showDetail 
         if showDetail {
             if o.HasMultipleEnvironments() {
                 for idx, env := range o.FeatureEnvironments() {
+                    {{ environmentFile := env.RemoteFeatureFile() }}
                     <div class={"detail-environment", templ.KV("detail-environment-separator", idx > 0)}>
                         <div class="detail-environment-container">
                             <h4 class={templ.KV("active", o.ActiveFeatureEnvironment().Environment() == env.Environment())}>{ env.Environment() }</h4>
                             <div>
                                 <span class="label">Feature flag:</span>
                                 <span class="text">
-                                    if env.RemoteFeatureFile().FeatureFlagEnabled(flag.Name) {
+                                    if environmentFile.FeatureFlagEnabled(flag.Name) {
                                         enabled
                                     } else {
                                         disabled
                                     }
                                 </span>
                             </div>
-                            @featureDetail(env.RemoteFeatureFile().Get(flag.Name).Strategies, env.RemoteFeatureFile().SegmentsMap())
+                            {{ remoteFlag := environmentFile.Get(flag.Name) }}
+                            if remoteFlag != nil {
+                                @featureDetail(remoteFlag.Strategies, environmentFile.SegmentsMap())
+                            }
                         </div>
                     </div>
                 }
             } else {
-                @featureDetail(o.ActiveFeatureEnvironment().RemoteFeatureFile().Get(flag.Name).Strategies, o.ActiveFeatureEnvironment().RemoteFeatureFile().SegmentsMap())
+                {{ remoteFlag := remote.Get(flag.Name) }}
+                if remoteFlag != nil {
+                    @featureDetail(remoteFlag.Strategies, remote.SegmentsMap())
+                }
             }
         }
     </div>
@@ -363,17 +373,17 @@ templ feature(flag overleash.Feature, o *overleash.OverleashContext, showDetail 
     </div>
 
     <!-- Override banner with clear enabled/disabled styling -->
-    if ok, status := o.HasOverride(flag.Name); ok == true {
-        <div class={"override", templ.KV("enabled", status && !o.IsPaused()), templ.KV("disabled", !status && !o.IsPaused()), templ.KV("paused", o.IsPaused())}>
+    if override != nil {
+        <div class={"override", templ.KV("enabled", override.Enabled && !paused), templ.KV("disabled", !override.Enabled && !paused), templ.KV("paused", paused)}>
             <div>
-                if o.IsPaused() {
+                if paused {
                     Override paused:
                 } else {
                     Override active:
                 }
-                if status && o.GetOverride(flag.Name).IsGlobal {
+                if override.Enabled && override.IsGlobal {
                     <div class="status">ENABLED</div>
-                } else if status {
+                } else if override.Enabled {
                     <div class="status">ENABLED (with constraints)</div>
                 } else {
                     <div class="status">DISABLED</div>

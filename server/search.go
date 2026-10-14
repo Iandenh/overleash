@@ -80,17 +80,18 @@ func search(r *http.Request, o *overleash.OverleashContext) featureList {
 
 func fuzzyFeatureFlags(search string, o *overleash.OverleashContext) overleash.FeatureFlags {
 	search = strings.TrimSpace(search)
+	file := o.ActiveFeatureEnvironment().FeatureFile()
 
 	if search == "" {
-		return o.ActiveFeatureEnvironment().FeatureFile().Features
+		return file.Features
 	}
 
-	results := fuzzy.FindFrom(search, o.ActiveFeatureEnvironment().FeatureFile().Features)
+	results := fuzzy.FindFrom(search, file.Features)
 
 	flags := make(overleash.FeatureFlags, 0, len(results))
 
 	for _, r := range results {
-		flag := o.ActiveFeatureEnvironment().FeatureFile().Features[r.Index]
+		flag := file.Features[r.Index]
 
 		var nameBuilder strings.Builder
 
@@ -124,17 +125,18 @@ func sortFeatures(flags overleash.FeatureFlags, sortOption string) {
 
 func filterFeaturesByOverrideStatus(flags overleash.FeatureFlags, filterOption string, o *overleash.OverleashContext) overleash.FeatureFlags {
 	var filteredFlags overleash.FeatureFlags
+	overrides := o.Overrides()
 
 	switch filterOption {
 	case "overridden":
 		for _, flag := range flags {
-			if _, exists := o.Overrides()[flag.Name]; exists {
+			if _, exists := overrides[flag.Name]; exists {
 				filteredFlags = append(filteredFlags, flag)
 			}
 		}
 	case "not-overridden":
 		for _, flag := range flags {
-			if _, exists := o.Overrides()[flag.Name]; !exists {
+			if _, exists := overrides[flag.Name]; !exists {
 				filteredFlags = append(filteredFlags, flag)
 			}
 		}
