@@ -37,14 +37,15 @@ type OverleashContext struct {
 	// mu protects mutable context and environment state. When both are needed,
 	// acquire mu before a Streamer's mutex. Config and environment metadata are
 	// immutable after construction.
-	mu       sync.RWMutex
-	lastSync time.Time
-	paused   bool
-	ticker   ticker
-	store    storage.Store
-	client   client
-	reload   time.Duration
-	metrics  *metrics
+	mu        sync.RWMutex
+	refreshMu sync.Mutex // serializes refreshes without blocking state readers/writers
+	lastSync  time.Time
+	paused    bool
+	ticker    ticker
+	store     storage.Store
+	client    client
+	reload    time.Duration
+	metrics   *metrics
 }
 
 type FeatureEnvironment struct {
@@ -53,6 +54,7 @@ type FeatureEnvironment struct {
 	environment       string
 	token             string
 	featureFile       FeatureFile
+	remoteRevision    uint64
 	cachedFeatureFile FeatureFile
 	cachedJson        []byte
 	etagOfCachedJson  string
@@ -207,7 +209,7 @@ func (o *OverleashContext) Start(ctx context.Context) {
 		return
 	}
 
-	err := o.loadRemotesWithLock()
+	err := o.loadRemotes()
 
 	if err != nil {
 		if o.Config.Backup {
@@ -227,7 +229,7 @@ func (o *OverleashContext) Start(ctx context.Context) {
 					panic(err)
 				}
 
-				o.featureEnvironments[idx].featureFile = f
+				o.featureEnvironments[idx].setRemoteFeatureFile(f)
 			}
 			o.compileFeatureFiles()
 			o.mu.Unlock()
@@ -305,7 +307,7 @@ func (o *OverleashContext) startFetcher(ctx context.Context) {
 			case <-ctx.Done():
 				return
 			case <-o.ticker.ticker.C:
-				o.loadRemotesWithLock()
+				o.loadRemotes()
 			}
 		}
 	}()
@@ -342,53 +344,80 @@ func (o *OverleashContext) registerRemotes() {
 	}
 }
 
-func (o *OverleashContext) loadRemotesWithLock() error {
-	o.mu.Lock()
-	defer o.mu.Unlock()
-
-	return o.loadRemotes()
-}
-
 func (o *OverleashContext) LoadFeatureFile(state FeatureFile) {
+	state = cloneFeatureFile(state)
 	o.mu.Lock()
 	defer o.mu.Unlock()
-	o.featureEnvironments[o.activeFeatureIdx].featureFile = cloneFeatureFile(state)
+	o.featureEnvironments[o.activeFeatureIdx].setRemoteFeatureFile(state)
 	o.compileFeatureFiles()
 }
 
-func (o *OverleashContext) loadRemotes() error {
-	e := error(nil)
+// setRemoteFeatureFile takes ownership of the file; the state lock must be held.
+func (fe *FeatureEnvironment) setRemoteFeatureFile(file FeatureFile) {
+	fe.featureFile = file
+	fe.remoteRevision++
+}
 
-	hasRefreshed := false
-	for idx, featureEnvironment := range o.featureEnvironments {
-		featureFile, err := o.client.getFeatures(featureEnvironment.token)
+func (o *OverleashContext) loadRemotes() error {
+	o.refreshMu.Lock()
+	defer o.refreshMu.Unlock()
+
+	// Fetch and take ownership of the results outside the state lock. Capture a
+	// revision so a newer streaming/import update cannot be overwritten later.
+	type update struct {
+		file     *FeatureFile
+		revision uint64
+	}
+	updates := make([]update, len(o.featureEnvironments))
+	var fetchErr error
+	for idx, environment := range o.featureEnvironments {
+		o.mu.RLock()
+		revision := environment.remoteRevision
+		o.mu.RUnlock()
+		file, err := o.client.getFeatures(environment.token)
 
 		if err != nil {
 			log.Errorf("Error loading features: %s", err.Error())
-			e = errors.Join(e, err)
+			fetchErr = errors.Join(fetchErr, err)
 			continue
 		}
 
-		o.featureEnvironments[idx].featureFile = cloneFeatureFile(*featureFile)
-		hasRefreshed = true
-
-		if o.Config.Backup {
-			data, err := json.Marshal(featureFile)
-
-			if err != nil {
-				continue
-			}
-
-			o.store.Write(o.featureEnvironments[idx].name+"-backup.json", data)
-		}
+		owned := cloneFeatureFile(*file)
+		updates[idx] = update{file: &owned, revision: revision}
 	}
 
+	o.mu.Lock()
+	hasRefreshed := false
+	for idx, pending := range updates {
+		environment := o.featureEnvironments[idx]
+		if pending.file == nil || pending.revision != environment.remoteRevision {
+			updates[idx].file = nil
+			continue
+		}
+		environment.setRemoteFeatureFile(*pending.file)
+		hasRefreshed = true
+	}
 	if hasRefreshed {
 		o.compileFeatureFiles()
 		o.lastSync = time.Now()
 	}
+	o.mu.Unlock()
 
-	return e
+	// Backups may involve Redis or slow disks. Keep them outside the state lock
+	// too, but inside refreshMu so concurrent refreshes cannot reorder backups.
+	if o.Config.Backup {
+		for idx, pending := range updates {
+			if pending.file == nil {
+				continue
+			}
+			data, err := json.Marshal(pending.file)
+			if err != nil {
+				continue
+			}
+			o.store.Write(o.featureEnvironments[idx].name+"-backup.json", data)
+		}
+	}
+	return fetchErr
 }
 
 func (o *OverleashContext) ProcessWebhook() error {
@@ -406,7 +435,7 @@ func (o *OverleashContext) ProcessWebhook() error {
 }
 
 func (o *OverleashContext) RefreshFeatureFiles() error {
-	err := o.loadRemotesWithLock()
+	err := o.loadRemotes()
 	o.ticker.resetTicker()
 
 	return err
