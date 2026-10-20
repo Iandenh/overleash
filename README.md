@@ -18,6 +18,8 @@ Easily override flags without changing upstream configs. Overleash lets you stor
 ### Reliable and Resilient Bootstrapping
 Overleash always tries to fetch configs from your upstream Unleash first. If that's not available, it uses the most recent backup from your storage (file or Redis). This keeps your app working even if Unleash is down.
 
+Polling startup and refresh recover each environment independently: fresh upstream flags take priority, followed by previously loaded flags, then a backup if backups are enabled. A successfully loaded empty configuration is valid. Startup fails if any environment has no usable configuration; a failed environment never replaces another environment's fresh flags. Backup-write failures are logged without rejecting fresh flags. This recovery policy does not change delta-streaming startup.
+
 Ordinary upstream requests have a 10-second timeout, including reading the response body, and are canceled on shutdown. Streaming connections are exempt. Refreshes keep the last good state on failure and do not block flag evaluation or overrides while waiting for the upstream or writing backups. The final metrics flush has its own 10-second shutdown deadline.
 
 ### Instant Updates with Delta Streaming
