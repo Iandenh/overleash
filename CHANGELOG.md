@@ -1,5 +1,23 @@
 # Changelog
 
+## [1.1.3](https://github.com/Iandenh/overleash/compare/v1.1.2...v1.1.3) (2026-10-22)
+
+
+### Bug Fixes
+
+* bound upstream requests and fetch outside state lock ([62a4680](https://github.com/Iandenh/overleash/commit/62a468053922662d377cbdd0dafd9280e75d84bb))
+* encapsulate state locking and isolate read snapshots ([80b1cb0](https://github.com/Iandenh/overleash/commit/80b1cb00c82c4ecebe9919486832cabd557c5a7a))
+* encapsulate state locking and isolate read snapshots ([959e6f8](https://github.com/Iandenh/overleash/commit/959e6f8ce089cc604316534099b855772a1971e7))
+* improve upstream request reliability without blocking core state ([4522c34](https://github.com/Iandenh/overleash/commit/4522c348ae254e71767c2d5e0e3b3366fc64c9b0))
+* recover feature state per environment ([47bb033](https://github.com/Iandenh/overleash/commit/47bb033992e83c15faf65365429ac33aba89d351))
+* recover feature state per environment ([5b7c003](https://github.com/Iandenh/overleash/commit/5b7c0030f68e0d3856ca629a6425409bae01652c))
+
+
+### Performance Improvements
+
+* cache client ETag formatting and reuse compression handler ([0e2b96a](https://github.com/Iandenh/overleash/commit/0e2b96a340a1f8abd317a2eddc19a6bb71261692))
+* publish immutable feature views and reuse name ordering ([3fa44de](https://github.com/Iandenh/overleash/commit/3fa44de8ce8a5af6a811598865341f612855f016))
+
 ## [1.1.2](https://github.com/Iandenh/overleash/compare/v1.1.1...v1.1.2) (2026-07-31)
 
 
