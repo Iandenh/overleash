@@ -36,11 +36,10 @@ RUN addgroup --gid 1001 noroot && adduser --disabled-password --no-create-home -
 COPY --from=rust-build-stage /frontendengine/libfrontendengine.a /app/unleashengine/libfrontendengine.a
 
 # Standard Go build steps
-RUN go install github.com/a-h/templ/cmd/templ@latest
 COPY go.mod go.sum ./
 RUN go mod download
 COPY . /app
-RUN templ generate
+RUN go tool templ generate
 
 RUN \
     # Ensure the script exits on any error
