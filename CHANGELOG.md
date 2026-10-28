@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.1.4](https://github.com/Iandenh/overleash/compare/v1.1.3...v1.1.4) (2026-10-28)
+
+
+### Bug Fixes
+
+* keep templ generator and runtime versions in sync ([6e50368](https://github.com/Iandenh/overleash/commit/6e503686697923c2c887f4afa0dbe83f6e72efea))
+* keep templ generator and runtime versions in sync ([15247a2](https://github.com/Iandenh/overleash/commit/15247a20b25516a0165de4d5ccec20567f898831))
+
 ## [1.1.3](https://github.com/Iandenh/overleash/compare/v1.1.2...v1.1.3) (2026-10-22)
 
 
