@@ -77,7 +77,8 @@ Overleash supports the Unleash Frontend API, powered by [yggdrasil](https://gith
 
 ## Local build
 - Written in Go; uses [templ](https://github.com/a-h/templ/tree/main) for templates
-- After editing templates, re-run: `templ generate`
+- After editing templates, re-run: `go tool templ generate`
+- The templ generator and runtime share the version pinned in `go.mod`. To upgrade both, run `go get -tool github.com/a-h/templ/cmd/templ@<version>`, then regenerate templates and run tests.
 - Make sure the `libyggdrasilffi.so` library is available and linked:
    ```bash
    export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$(pwd)/unleashengine
